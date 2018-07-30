@@ -1,0 +1,51 @@
+<markdown>
+# The WE1S Topic Modeling Workspace
+This workspace allows you to create a topic model from your project and visualize it in [dfr-browser](http://agoldst.github.io/dfr-browser/). The output may be viewed on the WE1S preview server, saved to the WE1S projects database, or exported for use on your local hard drive.
+
+_Note: This notebook is read-only. It may be customized and run, but settings will only be saved to this projects._
+</markdown>
+
+<markdown>
+## CONFIGURATION
+
+The settings file can be used to adjust the default settings before the workflow notebooks are run. This should be done with caution.
+
+[Open Settings File](settings.py)
+</markdown>
+
+<markdown>
+## ACTIONS
+</markdown>
+
+<code>
+## Generate links to the each notebook in the pipeline
+
+from IPython.display import display, HTML
+link1 = '<li><h3><a href="' + project_directory + '/1_import_data.ipynb" target="top">1. Clean Data</a></h3></li>'
+link2 = '<li><h3><a href="' + project_directory + '/1_import_data.ipynb" target="top">2. Make Topic Model</a></h3></li>'
+link3 = '<li><h3><a href="' + project_directory + '/1_import_data.ipynb" target="top">3. Generate dfr-browser</a></h3></li>'
+links = [link1, link2, link3]
+ol = '<ol style="list-style-type:none;margin:0;padding:0">'
+browser_link_html = HTML(ol + ' '.join(links) + '</ol>')
+display(browser_link_html)
+</code>
+
+<markdown>
+----------
+</markdown>
+
+<markdown>
+## Version History
+
+-  v0.1 2018-07-07
+</markdown>
+
+<code>
+## INFO
+
+__author__    = 'Scott Kleinman'
+__copyright__ = 'copyright 2018, The WE1S Project'
+__license__   = 'MIT'
+__version__   = '0.1'
+__email__     = 'scott.kleinman@csun.edu
+</code>

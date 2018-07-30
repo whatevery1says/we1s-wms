@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block main %}
+<script>
+  var dbQuery = ''
+</script>
+
+<form method="POST" id="manifestForm">
+<br>
+<div class="row">
+    <div class="col-sm">
+        <header class="major">
+            <h2>Create a New Manifest for a Script or Tool</h2>
+        </header>
+    </div>    
+    <div class="col-sm text-right">
+            <div class="btn-group">
+                <button type="button" id="preview" class="btn btn-lg btn-outline-editorial" title="Preview"><i class="fa fa-search"></i></button>
+                <button type="button" id="save" class="btn btn-lg btn-outline-editorial" title="Save Script" data-action="insert"><i class="fa fa-save"></i></button>
+                <button type="button" id="delete" class="btn btn-lg btn-outline-editorial" title="Delete"><i class="fa fa-trash"></i></button>
+                <button type="button" id="export" class="btn btn-lg btn-outline-editorial" title="Export"><i class="fa fa-download"></i></button>  
+            </div>  
+        </div>
+    </div>
+<div class="card card-body">
+    <ul class="nav nav-tabs" id="scriptsFormNav" role="tablist">
+      <li class="nav-item">
+          <a class="nav-link active" id="required-tab" data-toggle="tab" href="#required" role="tab" aria-controls="required" aria-selected="true">Required Properties</a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" id="optional-tab" data-toggle="tab" href="#optional" role="tab" aria-controls="optional" aria-selected="false">Optional Properties</a>
+      </li>
+    </ul>
+    <br>
+    <div id="manifestCard">
+        <div class="tab-content" id="projectForm">
+          {% set template = templates['script-template'] %}
+          {% set required_opts = template[0]['required'] %}
+          {% set optional_opts = template[1]['optional'] %}
+            <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+                {% for opt in required_opts %}
+                {% if not opt.skip %}
+                <div class="form-group row">
+                  {% if opt.fieldtype == 'text' %}
+                  <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                  <div class="col-sm-10">
+                      <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.name in ['metapath'] }} {{ 'disabled' if opt.name in ['metapath'] }}>
+                  </div>
+                  {% elif opt.fieldtype == 'textarea' %}
+                  <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                  <div class="col-sm-10">
+                    <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>   
+                  </div>
+                  {% endif %}
+                </div> 
+                {% endif %}
+                {% endfor %}
+                <div class="form-group row">
+                    <div class="col-sm-2">
+                        <label class="col-form-label" for="path">path</label>
+                        <p style="color: #3d4449; font-weight: 600">- or -</p>
+                        <label class="col-form-label" for="upload">upload</label>
+                    </div>
+                    <div class="col-sm-4">
+                        <input name="path" id="path" type="text" placeholder="Path to script or tool" class="form-control">
+                        <br>
+                        <span class="btn btn-outline-editorial fileinput-button">
+                            <i class="fa fa-plus"></i>
+                            <span>Select file...</span>
+                        </span>
+                        <br>
+                        <!-- The global file processing state -->
+                        <span class="fileupload-process">
+                            <div id="total-progress" class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                            <div class="progress-bar progress-bar-success" style="width:0%;" data-dz-uploadprogress></div>
+                            </div>
+                        </span>
+                    <!-- Begin Upload Template -->
+                    <div class="table table-striped files" id="previews">
+                            <div id="template" class="file-row">
+                            <!-- This is used as the file preview template -->
+                            <div>
+                                <span class="preview"><img data-dz-thumbnail /></span>
+                            </div>
+                            <div>
+                                <p class="name" data-dz-name></p>
+                                <strong class="error text-danger" data-dz-errormessage></strong>
+                            </div>
+                            <div>
+                                <p class="size" data-dz-size></p>
+                                <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                                    <div class="progress-bar progress-bar-success" style="width:0%;" data-dz-uploadprogress></div>
+                                </div>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-editorial start">
+                                    <i class="fa fa-upload"></i>
+                                    <span>Upload</span>
+                                </button>
+                                <button data-dz-remove class="btn btn-sm btn-outline-editorial cancel">
+                                    <i class="fa fa-ban"></i>
+                                    <span>Cancel</span>
+                                </button>
+                                <button data-dz-remove class="btn btn-sm btn-outline-editorial delete">
+                                <i class="fa fa-trash"></i>
+                                <span>Remove</span>
+                                </button>
+                            </div>
+                            </div>
+                        </div>
+                    <!-- End Upload Template -->
+                    </div>        
+                    <label class="col-sm-1 col-form-label" for="script">- or - </label>
+                    <div class="col-sm-5">
+                      <textarea name="script" id="script" class="form-control" placeholder="Paste script here." style="height: 200px;"></textarea>   
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+              {% for opt in optional_opts %}
+              {% if not opt.skip %}
+              <div class="form-group row">
+                {% if opt.fieldtype == 'text' %}
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                    <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
+                </div>
+                {% elif opt.fieldtype == 'textarea' %}
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                  <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>   
+                </div>
+                {% endif %}
+              </div> 
+              {% endif %}
+              {% endfor %}
+            </div> <!-- /tab-pane -->
+        </div> <!-- /scriptForm -->
+    </div> <!-- /manifestCard -->
+</div>
+</form>
+<!-- Preview -->
+<div id="previewDisplay" style="display: none;">
+    <br>
+    <button id="hide" class="btn btn-lg btn-outline-editorial">Hide</button>
+    <pre id="manifest"></pre>
+</div>
+
+<!-- Script Form Template -->
+<script type="text/html" id="script-template">
+  <div class="tab-content" id="scriptForm">
+    {% set template = templates['script-template'] %}
+    {% set required_opts = template[0]['required'] %}
+    {% set optional_opts = template[1]['optional'] %}
+      <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+        {% for opt in required_opts %}
+        {% if not opt.skip %}
+        <div class="form-group row">
+          {% if opt.fieldtype == 'text' %}
+          <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+          <div class="col-sm-10">
+              <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.name in ['name'] }} {{ 'disabled' if opt.name in ['metapath'] }}>
+          </div>
+          {% elif opt.fieldtype == 'textarea' %}
+          <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+          <div class="col-sm-10">
+            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>   
+          </div>
+          {% endif %}
+        </div> 
+        {% endif %}
+        {% endfor %}
+      </div> <!-- /tab-pane -->
+  </div> <!-- /scriptForm -->
+</script>
+{% endblock main %}

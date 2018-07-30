@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block main %}
+<!-- Section -->
+<a name="features"></a>
+<section>
+    <!-- <header class="major">
+        <h2>Actions</h2>
+    </header> -->
+    <div class="features">
+        <article>
+            <a href="/corpus/create" class="module"><span class="icon fa-book"></span></a>
+            <div class="content">
+                <h3>Create Corpus Manifest</h3>
+                <p>Create a new corpus manifest.</p>
+            </div>
+        </article>
+        <article>
+            <span class="icon fa-book"></span>
+            <div class="content">
+                <h3>Display Corpus Manifest</h3>
+                <div class="input-group input-group-sm"><input type="text" id="display" placeholder="Enter manifest name." class="form-control" aria-label="Enter name to display." aria-describedby="go">
+                  <div class="input-group-append">
+                    <span class="input-group-text fa fa-search" id="go"></span>
+                  </div>
+              </div>
+            </div>
+        </article>
+        <article>
+            <a href="/corpus/search" class="module"><span class="icon fa-book"></span></a>
+            <div class="content">
+                <h3>Search the Corpus</h3>
+                <p>Search all collection manifests.</p>
+            </div>
+        </article>    
+        <article>
+            <a href="/corpus/import" class="module"><span class="icon fa-book"></span></a>
+            <div class="content">
+                <h3>Import Corpus Data</h3>
+                <p>Bulk import data from files or from a url.</p>
+             </div>
+        </article>
+    </div>
+</section>
+{% endblock main %}

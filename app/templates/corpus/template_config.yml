@@ -1,0 +1,256 @@
+---
+collection-template:
+- required:
+  - name: name
+    fieldtype: text
+    required: true
+  - name: metapath
+    fieldtype: text
+    required: true
+    value: "Corpus"
+  - name: namespace
+    fieldtype: text
+    required: true
+    value: "we1sv2.0"
+  - name: title
+    fieldtype: text
+    required: true
+  - name: sources
+    fieldtype: textarea
+    required: true
+    placeholder: List each source on a separate line. Use the format 'title, path, email' (in that order). Both the title and path properties are required.
+  - name: contributors
+    fieldtype: textarea
+    required: true
+    placeholder: List each contributor on a separate line. Use the format 'title, path, email, role, group, organization' (in that order). Only the title property is required.
+  - name: created
+    fieldtype: textarea
+    required: true
+    placeholder: List each date on a separate line. Date ranges should separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS.
+- optional:
+  - name: workstation
+    fieldtype: text
+  - name: queryterms
+    fieldtype: textarea
+    placeholder: List each term on a separate line.
+  - name: processes
+    placeholder: List each process on a separate line.
+    fieldtype: textarea
+  - name: id
+    fieldtype: text
+  - name: _id
+    fieldtype: text
+  - name: description
+    fieldtype: textarea
+  - name: version
+    fieldtype: text
+  - name: shortTitle
+    fieldtype: text
+  - name: label
+    fieldtype: text
+  - name: notes
+    placeholder: List each note on a separate line.
+    fieldtype: textarea
+  - name: keywords
+    fieldtype: textarea
+    placeholder: List each keyword on a separate line.
+  - name: image
+    fieldtype: text
+  - name: updated
+    fieldtype: textarea
+    placeholder: List each date on a separate line. Date ranges should separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS.
+  - name: licenses
+    fieldtype: textarea
+    placeholder: List each license on a separate line. Use the format 'name, path, title' (in that order). At least one of properties name or path is required.
+  - name: format
+    fieldtype: text
+  - name: mediatype
+    fieldtype: text
+  - name: encoding
+    fieldtype: text
+rawdata-template:
+- required:
+  - name: name
+    fieldtype: text
+    required: true
+    value: "RawData"
+  - name: metapath
+    fieldtype: text
+    required: true
+    placeholder: The metapath should be 'Corpus', followed by a comma and the collection name.
+  - name: namespace
+    fieldtype: text
+    required: true
+    value: "we1sv2.0"
+  - name: title
+    fieldtype: text
+    required: true
+    value: "RawData"
+- optional:
+  - name: licenses
+    fieldtype: textarea
+    placeholder: The WMS cannot yet process licenses arrays!!!
+  - name: OCR
+    fieldtype: checkbox
+  - name: relationships
+    placeholder: List each relationship on a separate line.
+    fieldtype: textarea
+  - name: id
+    fieldtype: text
+  - name: _id
+    fieldtype: text
+  - name: description
+    fieldtype: textarea
+  - name: version
+    fieldtype: text
+  - name: shortTitle
+    fieldtype: text
+  - name: label
+    fieldtype: text
+  - name: notes
+    placeholder: List each note on a separate line.
+    fieldtype: textarea
+  - name: keywords
+    fieldtype: textarea
+    placeholder: List each keyword on a separate line.
+  - name: image
+    fieldtype: text
+  - name: updated
+    fieldtype: textarea
+    placeholder: List each date on a separate line. Date ranges should separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS.
+  - name: documentType
+    fieldtype: text
+  - name: format
+    fieldtype: text
+  - name: mediatype
+    fieldtype: text
+  - name: encoding
+    fieldtype: text
+processeddata-template:
+- required:
+  - name: name
+    fieldtype: text
+    required: true
+    value: ProcessedData
+  - name: metapath
+    fieldtype: text
+    required: true
+    placeholder: The metapath should be 'Corpus', followed by a comma and the collection name.
+  - name: namespace
+    fieldtype: text
+    required: true
+    value: "we1sv2.0"
+  - name: title
+    fieldtype: text
+    required: true
+    value: ProcessedData
+  - name: processes
+    placeholder: List each process on a separate line.
+    fieldtype: textarea
+    required: true
+- optional:
+  - name: id
+    fieldtype: text
+  - name: _id
+    fieldtype: text
+  - name: description
+    fieldtype: textarea
+  - name: version
+    fieldtype: text
+  - name: shortTitle
+    fieldtype: text
+  - name: label
+    fieldtype: text
+  - name: notes
+    placeholder: List each note on a separate line.
+    fieldtype: textarea
+  - name: keywords
+    fieldtype: textarea
+    placeholder: List each keyword on a separate line.
+  - name: image
+    fieldtype: text
+  - name: updated
+    fieldtype: textarea
+    placeholder: List each date on a separate line. Date ranges should separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS.
+  - name: documentType
+    fieldtype: text
+  - name: format
+    fieldtype: text
+  - name: mediatype
+    fieldtype: text
+  - name: encoding
+    fieldtype: text
+branch-template:
+- required:
+  - name: name
+    fieldtype: text
+    required: true
+    placeholder: The name of branch to be created.
+  - name: metapath
+    fieldtype: text
+    required: true
+    placeholder: The metapath should be 'Corpus', followed by the collection and any branch name(s), separated by commas.
+  - name: namespace
+    fieldtype: text
+    required: true
+    value: "we1sv2.0"
+  - name: title
+    fieldtype: text
+    required: true
+    placeholder: The name of branch to be created.
+- optional:
+  - name: id
+    fieldtype: text
+  - name: _id
+    fieldtype: text
+  - name: description
+    fieldtype: textarea
+  - name: version
+    fieldtype: text
+  - name: shortTitle
+    fieldtype: text
+  - name: label
+    fieldtype: text
+  - name: notes
+    placeholder: List each note on a separate line.
+    fieldtype: textarea
+  - name: keywords
+    fieldtype: textarea
+    placeholder: List each keyword on a separate line.
+  - name: image
+    fieldtype: text
+  - name: updated
+    fieldtype: textarea
+    placeholder: List each date on a separate line. Date ranges should separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS.
+  - name: documentType
+    fieldtype: text
+  - name: format
+    fieldtype: text
+  - name: mediatype
+    fieldtype: text
+  - name: encoding
+    fieldtype: text
+generic-template:
+- required:
+  - name: name
+    fieldtype: text
+    required: true
+  - name: namespace
+    fieldtype: text
+    required: true
+    value: "we1sv2.0"
+  - name: path
+    fieldtype: text
+    required: true
+- optional:
+  - name: mimetype
+    fieldtype: text
+  - name: title
+    fieldtype: text
+  - name: altTitle
+    fieldtype: text
+  - name: label
+    fieldtype: text
+  - name: notes
+    placeholder: List each note on a separate line.
+    fieldtype: textarea

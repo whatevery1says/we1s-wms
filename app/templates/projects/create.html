@@ -1,0 +1,138 @@
+{% extends "base.html" %}
+{% block main %}
+<script>
+  var dbQuery = ''
+</script>
+
+<form method="POST" id="manifestForm">
+<br>
+<div class="row">
+    <div class="col-sm">
+        <header class="major">
+            <h2>Create a New Project</h2>
+        </header>
+    </div>    
+    <div class="col-sm text-right">
+            <div class="btn-group">
+                <button type="button" id="preview" class="btn btn-lg btn-outline-editorial" title="Preview"><i class="fa fa-search"></i></button>
+                <button type="button" id="save" class="btn btn-lg btn-outline-editorial" title="Save Project" data-action="insert"><i class="fa fa-save"></i></button>
+                <button type="button" id="delete" class="btn btn-lg btn-outline-editorial" title="Delete"><i class="fa fa-trash"></i></button>
+                <button type="button" id="export" class="btn btn-lg btn-outline-editorial" title="Export"><i class="fa fa-download"></i></button>  
+                <button type="button" title="Open in Virtual Workspace" class="btn btn-lg btn-outline-editorial dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  <i class="fa fa-rocket"></i>
+              </button>
+              <div class="dropdown-menu dropdown-menu-right">
+                <button id="topic-modeling-btn" class="dropdown-item" type="button">Topic Modeling</button>
+                <button id="word-embedding-btn" class="dropdown-item" type="button" disabled>Word Embedding</button>
+              </div>
+            </div>  
+        </div>
+    </div>
+<div class="card card-body">
+    <ul class="nav nav-tabs" id="publicationsFormNav" role="tablist">
+      <li class="nav-item">
+          <a class="nav-link active" id="required-tab" data-toggle="tab" href="#required" role="tab" aria-controls="required" aria-selected="true">Required Properties</a>
+      </li>
+      <li class="nav-item">
+          <a class="nav-link" id="optional-tab" data-toggle="tab" href="#optional" role="tab" aria-controls="optional" aria-selected="false">Optional Properties</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="resources-tab" data-toggle="tab" href="#resources" role="tab" aria-controls="resources" aria-selected="false">Data Resources</a>
+      </li>
+    </ul>
+    <br>
+    <div id="manifestCard">
+        <div class="tab-content" id="projectForm">
+          {% set template = templates['project-template'] %}
+          {% set required_opts = template[0]['required'] %}
+          {% set optional_opts = template[1]['optional'] %}
+            <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+                {% for opt in required_opts %}
+                {% if not opt.skip %}
+                <div class="form-group row">
+                  {% if opt.fieldtype == 'text' %}
+                  <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                  <div class="col-sm-10">
+                      <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.name in ['metapath'] }} {{ 'disabled' if opt.name in ['metapath'] }}>
+                  </div>
+                  {% elif opt.fieldtype == 'textarea' %}
+                  <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                  <div class="col-sm-10">
+                    <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>   
+                  </div>
+                  {% endif %}
+                </div> 
+                {% endif %}
+                {% endfor %}
+            </div>
+            <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+              {% for opt in optional_opts %}
+              {% if not opt.skip %}
+              <div class="form-group row">
+                {% if opt.fieldtype == 'text' %}
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                    <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
+                </div>
+                {% elif opt.fieldtype == 'textarea' %}
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                  <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>   
+                </div>
+                {% endif %}
+              </div> 
+              {% endif %}
+              {% endfor %}
+            </div> <!-- /tab-pane -->
+            <div class="tab-pane fade show" id="resources" role="tabpanel" aria-labelledby="resources-tab">
+              <div class="form-group row">
+                <div class="col-sm-12">
+                    <div id="search-form">
+                      <textarea id="db-query" name="db-query" placeholder="Show database query here." readonly></textarea>
+                      <br>
+                      <div id="builder"></div>
+                      <br>
+                      <button id="test-query" class="btn btn-outline-editorial">Test Query</button>
+                    </div>                  
+                </div>
+              </div> 
+          </div> <!-- /tab-pane -->
+        </div> <!-- /projectForm -->
+    </div> <!-- /manifestCard -->
+</div>
+</form>
+<!-- Preview -->
+<div id="previewDisplay" style="display: none;">
+    <br>
+    <button id="hide" class="btn btn-lg btn-outline-editorial">Hide</button>
+    <pre id="manifest"></pre>
+</div>
+
+<!-- Project Form Template -->
+<script type="text/html" id="project-template">
+  <div class="tab-content" id="projectForm">
+    {% set template = templates['project-template'] %}
+    {% set required_opts = template[0]['required'] %}
+    {% set optional_opts = template[1]['optional'] %}
+      <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+        {% for opt in required_opts %}
+        {% if not opt.skip %}
+        <div class="form-group row">
+          {% if opt.fieldtype == 'text' %}
+          <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+          <div class="col-sm-10">
+              <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.name in ['name'] }} {{ 'disabled' if opt.name in ['metapath'] }}>
+          </div>
+          {% elif opt.fieldtype == 'textarea' %}
+          <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+          <div class="col-sm-10">
+            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>   
+          </div>
+          {% endif %}
+        </div> 
+        {% endif %}
+        {% endfor %}
+      </div> <!-- /tab-pane -->
+  </div> <!-- /projectForm -->
+</script>
+{% endblock main %}

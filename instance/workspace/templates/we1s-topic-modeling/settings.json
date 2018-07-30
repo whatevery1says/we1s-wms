@@ -1,0 +1,94 @@
+[{
+        "manifest": {},
+        "container": "",
+        "project_dir": ""
+    },
+    {
+        "caches": [{
+                "caches": "Workspace/we1s-topic-modeling/caches"
+            },
+            {
+                "metadata_dir": "Workspace/we1s-topic-modeling/caches/metadata"
+            },
+            {
+                "metadata_file": "Workspace/we1s-topic-modeling/caches/metadata/metadata.csv"
+            },
+            {
+                "metadata_file_reorder": "Workspace/we1s-topic-modeling/caches/metadata/metadata-dfrb.csv"
+            },
+            {
+                "model_dir": "Workspace/we1s-topic-modeling/caches/model"
+            },
+            {
+                "text_files_dir": "Workspace/we1s-topic-modeling/caches/text_files"
+            },
+            {
+                "text_files_clean_dir": "Workspace/we1s-topic-modeling/caches/text_files_clean"
+            }
+        ]
+    }, {
+        "metadata_csv_files": [
+            "../../../read/metadata/la_times-2010-h-master-clean.csv",
+            "../../../read/metadata/la_times-2011-h-master-clean.csv",
+            "../../../read/metadata/la_times-2012-h-master-clean.csv",
+            "../../../read/metadata/la_times-2013-h-master-clean.csv",
+            "../../../read/metadata/la_times-2014-h-master-clean.csv"
+        ]
+    }, {
+        "scripts": [{
+                "scrub_dir": "Workspace/we1s-topic-modeling/scripts/scrub"
+            },
+            {
+                "scrub": "scrub.py"
+            },
+            {
+                "dedup_dir": "Workspace/we1s-topic-modeling/scripts/deduplicate"
+            },
+            {
+                "dedup": "corpus_compare.py"
+            },
+            {
+                "dedup_name": "corpus_compare"
+            }
+        ]
+    }, {
+        "model_settings": [{
+            "model_dir": "Workspace/we1s-topic-modeling/caches/model"
+        }, {
+            "model_num_topics": "50"
+        }]
+    }, {
+        "model_resources": [{
+                "model_file": "topics.mallet"
+            },
+            {
+                "model_state": "topic-state.gz"
+            },
+            {
+                "model_keys": "keys.txt"
+            },
+            {
+                "model_composition": "composition.txt"
+            },
+            {
+                "model_counts": "topic_counts.txt"
+            },
+            {
+                "stopwords_dir": "Workspace/we1s-topic-modeling/scripts/scrub"
+            },
+            {
+                "stopwords_file": "stopwords.txt"
+            }
+        ]
+    }, {
+        "dfr_browser": [{
+                "dfb_script": "Workspace/we1s-topic-modeling/scripts/dfrbrowser/js/dfb.min.js.custom"
+            }, {
+                "dfb_output_dir": "browser"
+            },
+            {
+                "dfb_zip_file": "browser.zip"
+            }
+        ]
+    }
+]

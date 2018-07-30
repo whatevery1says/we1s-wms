@@ -1,0 +1,136 @@
+<!DOCTYPE HTML>
+<!--
+	Editorial by HTML5 UP
+	html5up.net | @ajlkn
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>WhatEvery1Says Workflow Manager</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+		<link rel="icon" href="{{ url_for('static', filename='img/Logo_Small.png') }}" sizes="32x32" />
+		<link rel="apple-touch-icon-precomposed" href="{{ url_for('static', filename='img/Logo_Small.png') }}" />
+		<!-- <link rel="icon" href="http://we1s.ucsb.edu/wp-content/uploads/4humanities-imagemark-100x100.png" sizes="32x32" />
+		<link rel="icon" href="http://we1s.ucsb.edu/wp-content/uploads/4humanities-imagemark.png" sizes="192x192" />
+		<link rel="apple-touch-icon-precomposed" href="http://we1s.ucsb.edu/wp-content/uploads/4humanities-imagemark.png" /> -->
+
+		<!--[if lte IE 8]><script src="{{ url_for('static', filename='js/ie/html5shiv.js') }}"></script><![endif]-->
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}" />
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/we1s.css') }}" />
+		<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery-ui.css') }}" />
+		<!--[if lte IE 9]><link rel="stylesheet" href="{{ url_for('static', filename='css/ie9.css') }}" /><![endif]-->
+		<!--[if lte IE 8]><link rel="stylesheet" href="{{ url_for('static', filename='css/ie8.css') }}" /><![endif]-->
+		<link rel="stylesheet" href="{{ url_for('static', filename='bootstrap-4.1.0-dist/css/bootstrap.min.css') }}" />
+		<!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous"> -->
+		{% if styles %}{% for style in styles %}<link rel="stylesheet" href="{{ url_for('static', filename=style) }}">{% endfor %}{% endif %}
+		<!-- <link href="{{ url_for('static', filename='css/fontawesome-all.css') }}" rel="stylesheet"> -->
+	</head>
+	<body>
+		<!-- Wrapper -->
+			<div id="wrapper">
+
+				<!-- Main -->
+				<!-- BackToTop Button -->
+				<a href="javascript:void(0);" id="scroll" title="Scroll to Top" style="display: none;">Top<span></span></a>
+				
+					<div id="main">
+						<div class="inner">
+
+							<!-- Header -->
+								<header id="header">
+									<div class="header-container">
+										<a href="{{url_for('home')}}" class="logo"><strong>WhatEvery1Says Workflow Manager</strong></a>
+										{% if breadcrumbs %}
+											<span class="breadcrumb-divider"> &gt;</span> 
+											{% for breadcrumb in breadcrumbs %}
+											    <a href="{{ breadcrumb.link }}">{{ breadcrumb.label }}</a>
+										    {{ '<span class="breadcrumb-divider"> &gt;</span>'|safe if not loop.last }}
+											{% endfor %}
+									{% endif %}
+									</div>
+								</header>
+
+								{% block main %}{% endblock main %}
+
+						</div>
+					</div>
+
+				<!-- Sidebar -->
+				<div id="sidebar">
+						<div class="inner">
+
+							<!-- Search -->
+								<section id="search" class="alt">
+									<form method="post" action="#">
+										<input type="text" name="query" id="query" placeholder="Search" />
+									</form>
+								</section>
+
+							<!-- Menu -->
+								<nav id="menu">
+									<header class="major">
+										<h2>Menu</h2>
+									</header>
+									<ul>
+										<li><a href="{{url_for('home')}}">Homepage</a></li>
+										<li><a href="/guide">Guide</a></li>
+<!-- 										<li><a href="/schema">Manifest Schema</a></li>
+ -->										<li>
+											<span class="opener">Manifest Schema</span>
+											<ul>
+												<li><a href="/schema">Documentation</a></li>
+												<li><a href="https://github.com/whatevery1says/manifest/tree/master/schema" target="_blank">JSON Schema Files</a></li>
+											</ul>
+										</li>
+										<li><a href="/todo">To Do List</a></li>
+										<li><a href="https://we1s.ucsb.edu">WE1S Homepage</a></li>										
+									</ul>
+								</nav>
+
+							<!-- Section -->
+								<section>
+									<header class="major">
+										<h2>Need help?</h2>
+									</header>
+									<p>Contact the Project PIs at</p>
+									<ul class="contact">
+										<li class="fa-envelope-o"><a href="mailto:contact@we1s.ucsb.edu">contact@we1s.ucsb.edu</a></li>
+									</ul>
+								</section>
+
+							<!-- Footer -->
+								<footer id="footer">
+									<p class="copyright">&copy; <a href="https://we1s.ucsb.edu" target="_blank">The WhatEvery1Says Project</a>. All rights reserved.</p>
+									<p class="copyright">Materials created by the WE1S project are published under a <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" class="customize-unpreviewable">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</p>
+									<p class="copyright">Demo Images: <a href="https://unsplash.com">Unsplash.com</a>.<br>
+										Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
+								</footer>
+
+						</div>
+					</div>
+
+			</div>
+
+			<div id="processingIcon">
+				<i class="fa fa-spinner fa-pulse fa-3x fa-fw text-info"></i>
+				<span class="sr-only">Loading...</span>
+			</div>
+	
+		<!-- Scripts -->
+			<script src="{{ url_for('static', filename='js/jquery.min.js') }}"></script>
+			<script src="{{ url_for('static', filename='js/skel.min.js') }}"></script>
+			<script src="{{ url_for('static', filename='js/util.js') }}"></script>
+			<!--[if lte IE 8]><script src="{{ url_for('static', filename='js/ie/respond.min.js') }}"></script><![endif]-->
+			<script src="{{ url_for('static', filename='js/main.js') }}"></script>
+			<script src="{{ url_for('static', filename='js/jquery.scrollTo.min.js') }}"></script>
+			<script src="{{ url_for('static', filename='js/base.js') }}"></script>
+			<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script> -->
+			<script src="{{ url_for('static', filename='bootstrap-4.1.0-dist/js/bootstrap.bundle.min.js') }}"></script>
+			<!-- <script src="{{ url_for('static', filename='bootstrap-4.1.0-dist/js/bootstrap.min.js') }}"></script> -->
+			<!-- <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script> -->
+			<script src="{{ url_for('static', filename='js/bootbox.min.js') }}"></script>
+			<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script> -->
+			{% if scripts %}{% for script in scripts %}<script src="{{ url_for('static', filename=script) }}"></script>{% endfor %}{% endif %}
+	</body>
+</html>

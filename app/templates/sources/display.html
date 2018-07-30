@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+{% block main %}
+{% if errors %}
+{% for error in errors %}
+<p>{{ error|safe }}</p>
+{% endfor %}
+{% else %}
+<form method="POST">
+<br>
+<div class="row">
+    <div class="col-sm">
+        <header class="major">
+            <h2>Display a Source Manifest</h2>
+        </header>
+    </div>    
+    <div class="col-sm text-right">
+        <button id="preview" class="btn btn-lg btn-outline-editorial">Preview</button>
+        <button id="update" class="btn btn-lg  btn-outline-editorial">Edit</button>
+        <button id="delete" class="btn btn-lg  btn-outline-editorial">Delete</button>
+        <button id="export" class="btn btn-lg  btn-outline-editorial">Export</button>
+    </div>
+</div>
+<ul class="nav nav-tabs" id="sourcesFormNav" role="tablist">
+    <li class="nav-item">
+        <a class="nav-link active" id="required-tab" data-toggle="tab" href="#required" role="tab" aria-controls="required" aria-selected="true">Required Properties</a>
+    </li>
+    <li class="nav-item">
+        <a class="nav-link" id="optional-tab" data-toggle="tab" href="#optional" role="tab" aria-controls="optional" aria-selected="false">Optional Properties</a>
+    </li>
+</ul>
+<br>
+<div class="tab-content" id="sourcesForm">
+    {% set template = templates['source-template'] %}
+    {% set required_opts = template[0]['required'] %}
+    {% set optional_opts = template[1]['optional'] %}
+
+    <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+        {% for opt in required_opts %}
+        {% set prop = opt.name|safe %}
+        {% if not opt.skip %}
+        <div class="form-group row">
+            {% if opt.fieldtype == 'text' %}
+            <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+            <div class="col-sm-10">
+                <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" value="{{ manifest[prop]|safe or '' }}" class="form-control" {{ 'required' if opt.required }} readonly>
+            </div>
+            {% elif opt.fieldtype == 'textarea' %}
+            <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+            <div class="col-sm-10">
+            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly>{{ manifest[prop]|safe or '' }}</textarea>   
+            </div>
+            {% endif %}
+        </div> 
+        {% endif %}
+        {% endfor %}
+    </div>
+    <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+        {% for opt in optional_opts %}
+        {% set prop = opt.name|safe %}
+        {% if not opt.skip %}
+        <div class="form-group row">
+            {% if opt.fieldtype == 'text' %}
+            <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+            <div class="col-sm-10">
+                <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" value="{{ manifest[prop]|safe or '' }}" class="form-control" {{ 'required' if opt.required }} readonly>
+            </div>
+            {% elif opt.fieldtype == 'textarea' %}
+            <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+            <div class="col-sm-10">
+            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly>{{ manifest[prop]|safe or '' }}</textarea>   
+            </div>
+            {% elif opt.fieldtype == 'select' %}
+            <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+            <div class="col-sm-10">
+                {% if opt.name == 'language' %}
+                {% set select_opts = lang_list %}
+                {% set default = opt.default %}
+                {% else %}
+                {% set select_opts = country_list %}
+                {% set default = opt.default %}
+                {% endif %}
+                <select name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text"class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }} readonly>
+                    {% for item in select_opts %}
+                    <option value="{{ item }}" {{ 'selected="selected"' if item == default }}>{{ item }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            {% endif %}
+        </div> 
+        {% endif %}
+        {% endfor %}
+    </div>
+</div>
+</form>
+<!-- Preview -->
+<div id="previewDisplay" style="display: none;">
+    <br>
+    <button id="hide" class="btn btn-lg btn-outline-editorial">Hide</button>
+    <pre id="manifest"></pre>
+</div>
+{% endif %}
+{% endblock main %}

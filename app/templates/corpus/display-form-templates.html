@@ -1,0 +1,356 @@
+<!-- Collection Form Template -->
+<script type="text/html" id="collection-template">
+    <div class="tab-content" id="collectionsForm">
+        <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="name">name</label>
+                <div class="col-sm-10">
+                    <input name="name" id="name" type="text" class="form-control disabled" required readonly value="{{ manifest['name']|safe or '' }}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="path">path</label>
+                <div class="col-sm-10">
+                    <input name="path" id="path" type="text" class="form-control disabled" required readonly value="{{ manifest['path']|safe or '' }}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="publications">publications</label>
+                <div class="col-sm-10">
+                    <textarea name="publications" id="publications" class="form-control disabled" placeholder="List each publication on a separate line." readonly>{{ manifest['publications']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="description">description</label>
+                <div class="col-sm-10">
+                    <textarea name="description" id="description" class="form-control disabled" required readonly>{{ manifest['description']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="collectors">collectors</label>
+                <div class="col-sm-10">
+                    <textarea name="collectors" id="collectors" class="form-control disabled" placeholder="List each collector on a separate line." required readonly>{{ manifest['collectors']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="date">date</label>
+                <div class="col-sm-10">
+                    <textarea name="date" id="date" placeholder="List each date on a separate line. Date ranges should use the separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS." class="form-control disabled" required readonly>{{ manifest['date']|safe or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="workstation">workstation</label>
+                <div class="col-sm-10">
+                    <input name="workstation" id="workstation" type="text" class="form-control disabled" value="{{ manifest['workstation']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="queryterms">queryterms</label>
+                <div class="col-sm-10">
+                    <textarea name="queryterms" id="queryterms" class="form-control disabled" placeholder="List each query term on a separate line." readonly>{{ manifest['queryterms']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="processes">processes</label>
+                <div class="col-sm-10">
+                    <textarea name="processes" id="processes" class="form-control disabled" placeholder="List each process on a separate line." readonly>{{ manifest['processes']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="title">title</label>
+                <div class="col-sm-10">
+                    <input name="title" id="title" type="text" class="form-control disabled" value="{{ manifest['title']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="altTitle">altTitle</label>
+                <div class="col-sm-10">
+                    <input name="altTitle" id="altTitle" type="text" class="form-control disabled" value="{{ manifest['altTitle']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="label">label</label>
+                <div class="col-sm-10">
+                    <input name="label" id="label" type="text" class="form-control disabled" value="{{ manifest['label']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">            
+                <label class="col-sm-2 col-form-label" for="notes">notes</label>
+                <div class="col-sm-10">
+                    <textarea name="notes" id="notes" placeholder="List each note on a separate line." class="form-control disabled" readonly>{{ manifest['notes']|safe or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- RawData Form Template -->
+<script type="text/html" id="rawdata-template">
+    <div class="tab-content" id="collectionsForm">
+        <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="name">name</label>
+                <div class="col-sm-10">
+                    <input id="name" name="name" value=",RawData," class="form-control disabled" required readonly value="{{ manifest['name']|safe or '' }}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="path">path</label>
+                <div class="col-sm-10">
+                    <input id="path" name="path" class="form-control disabled" required value="{{ manifest['path']|safe or '' }}" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="rights" class="form-control disabled">rights</label>
+                <div class="col-sm-10">
+                    <input id="rights" name="rights" class="form-control disabled" value="{{ manifest['rights']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="relationships">relationships</label>
+                <div class="col-sm-10">
+                    <textarea id="relationships" name="relationships" placeholder="List each relationship keyword and path to related collections, separated by a comma, on a separate line." class="form-control disabled" readonly>{{ manifest['relationships']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <div class="col-sm-12">
+                    <input class="form-control form-check-input" id="ocr" name="ocr" type="checkbox"><label class="form-check-label" for="ocr" checked="{{ 'checked' if manifest['ocr'] == True }}" readonly>OCR</label>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="title">title</label>
+                <div class="col-sm-10">
+                    <input name="title" id="title" type="text" class="form-control disabled" value="{{ manifest['title']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="altTitle">altTitle</label>
+                <div class="col-sm-10">
+                    <input name="altTitle" id="altTitle" type="text" class="form-control disabled" value="{{ manifest['altTitle']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="description">description</label>
+                <div class="col-sm-10">
+                    <textarea name="description" id="description" class="form-control disabled" readonly>{{ manifest['description']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="date">date</label>
+                <div class="col-sm-10">
+                    <textarea name="date" id="date" placeholder="List each date on a separate line. Date ranges should use the separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS." class="form-control disabled" readonly>{{ manifest['date']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="label">label</label>
+                <div class="col-sm-10">
+                    <input name="label" id="label" type="text" class="form-control disabled" value="{{ manifest['label']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">            
+                <label class="col-sm-2 col-form-label" for="notes">notes</label>
+                <div class="col-sm-10">
+                    <textarea name="notes" id="notes" placeholder="List each note on a separate line." class="form-control disabled" readonly>{{ manifest['notes']|safe or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- ProcessedData Form Template -->
+<script type="text/html" id="processeddata-template">
+    <div class="tab-content" id="collectionsForm">
+        <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="name">name</label>
+                <div class="col-sm-10">
+                    <input id="name" name="name" class="form-control disabled" required readonly value="{{ manifest['name']|safe or '' }}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="path">path</label>
+                <div class="col-sm-10">
+                    <input id="path" name="path" class="form-control disabled" required value="{{ manifest['path']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="processes">processes</label>
+                <div class="col-sm-10">
+                    <textarea name="processes" id="processes" placeholder="List each process on a separate line." class="form-control disabled" required readonly>{{ manifest['processes']|safe or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="title">title</label>
+                <div class="col-sm-10">
+                    <input name="title" id="title" type="text" class="form-control disabled" value="{{ manifest['title']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="altTitle">altTitle</label>
+                <div class="col-sm-10">
+                    <input name="altTitle" id="altTitle" type="text" class="form-control disabled" value="{{ manifest['altTitle']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="description">description</label>
+                <div class="col-sm-10">
+                    <textarea name="description" id="description" class="form-control disabled" readonly>{{ manifest['description']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="date">date</label>
+                <div class="col-sm-10">
+                    <textarea name="date" id="date" placeholder="List each date on a separate line. Date ranges should use the separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS." class="form-control disabled" readonly>{{ manifest['date']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="label">label</label>
+                <div class="col-sm-10">
+                    <input name="label" id="label" type="text" class="form-control disabled" value="{{ manifest['label']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">            
+                <label class="col-sm-2 col-form-label" for="notes">notes</label>
+                <div class="col-sm-10">
+                    <textarea name="notes" id="notes" placeholder="List each note on a separate line." class="form-control disabled" readonly>{{ manifest['notes']|safe or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+
+<!-- Branch Form Template -->
+<script type="text/html" id="branch-template">
+    <div class="tab-content" id="collectionsForm">
+        <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="name">name</label>
+                <div class="col-sm-10">
+                    <input id="name" name="name" class="form-control disabled" required value="{{ manifest['name']|safe or '' }}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="path">path</label>
+                <div class="col-sm-10">
+                    <input id="path" name="path" class="form-control disabled" required value="{{ manifest['path']|safe or '' }}" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="title">title</label>
+                <div class="col-sm-10">
+                    <input name="title" id="title" type="text" class="form-control disabled" value="{{ manifest['title']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="altTitle">altTitle</label>
+                <div class="col-sm-10">
+                    <input name="altTitle" id="altTitle" type="text" class="form-control disabled" value="{{ manifest['altTitle']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="description">description</label>
+                <div class="col-sm-10">
+                    <textarea name="description" id="description" class="form-control disabled" readonly>{{ manifest['description']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="date">date</label>
+                <div class="col-sm-10">
+                    <textarea name="date" id="date" placeholder="List each date on a separate line. Date ranges should use the separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS." class="form-control disabled" readonly>{{ manifest['date']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="label">label</label>
+                <div class="col-sm-10">
+                    <input name="label" id="label" type="text" class="form-control disabled" value="{{ manifest['label']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">            
+                <label class="col-sm-2 col-form-label" for="notes">notes</label>
+                <div class="col-sm-10">
+                    <textarea name="notes" id="notes" placeholder="List each note on a separate line." class="form-control disabled" readonly>{{ manifest['notes']|safe or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="manifest-content" role="tabpanel" aria-labelledby="manifest-content-tab">
+            <div class="form-group row">
+                <br>
+                <div class="col-sm-10">
+                        <textarea style="height: 375px;" name="content" id="manifest-content" placeholder="List each note on a separate line." class="form-control disabled" readonly>{{ manifest['content']|safe or '' }}</textarea>
+                </div>
+            </div>
+        </div>    
+    </div>
+</script>
+
+<!-- Generic Form Template -->
+<script type="text/html" id="generic-template">
+    <div class="tab-content" id="collectionsForm">
+        <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="name">name</label>
+                <div class="col-sm-10">
+                    <input id="name" name="name" class="form-control disabled" required readonly value="{{ manifest['name']|safe or '' }}">
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="path">path</label>
+                <div class="col-sm-10">
+                    <input id="path" name="path" class="form-control disabled" required value="{{ manifest['path']|safe or '' }}" readonly>
+                </div>
+            </div>
+        </div>
+        <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="mimetype">mimetype</label>
+                <div class="col-sm-10">
+                    <input name="mimetype" id="mimetype" type="text" class="form-control disabled" value="{{ manifest['mimetype']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="title">title</label>
+                <div class="col-sm-10">
+                    <input name="title" id="title" type="text" class="form-control disabled" value="{{ manifest['title']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="altTitle">altTitle</label>
+                <div class="col-sm-10">
+                    <input name="altTitle" id="altTitle" type="text" class="form-control disabled" value="{{ manifest['altTitle']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="description">description</label>
+                <div class="col-sm-10">
+                    <textarea name="description" id="description" class="form-control disabled" readonly>{{ manifest['description']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="date">date</label>
+                <div class="col-sm-10">
+                    <textarea name="date" id="date" placeholder="List each date on a separate line. Date ranges should use the separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS." class="form-control disabled" readonly>{{ manifest['date']|safe or '' }}</textarea>
+                </div>
+            </div>
+            <div class="form-group row">
+                <label class="col-sm-2 col-form-label" for="label">label</label>
+                <div class="col-sm-10">
+                    <input name="label" id="label" type="text" class="form-control disabled" value="{{ manifest['label']|safe or '' }}" readonly>
+                </div>
+            </div>
+            <div class="form-group row">            
+                <label class="col-sm-2 col-form-label" for="notes">notes</label>
+                <div class="col-sm-10">
+                    <textarea name="notes" id="notes" placeholder="List each note on a separate line." class="form-control disabled" readonly>{{ manifest['notes']|safe or '' }}</textarea>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>

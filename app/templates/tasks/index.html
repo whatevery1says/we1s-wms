@@ -1,0 +1,117 @@
+{% extends "base.html" %}
+{% block main %}
+<script>
+  var tasks = {{tasks|safe}}
+  sessionStorage.tasks = JSON.stringify(tasks)
+</script>
+<!-- Section -->
+<a name="features"></a>
+<br>
+
+<div class="container">
+  <header class="major">
+    <h2>Lexis-Nexis Task Queue</h2>
+  </header>
+</div>
+
+<div class="container">
+  <form>
+    <div class="card">
+      <h5 class="card-header">Add a New Task</h5>
+      <div class="card-body">
+        <div class="form-row">
+        <div class="col">
+          <label for="task_name">Task name:</label>
+          <input type="text" class="form-control" id="task_name" name="task_name" placeholder="Enter a name for this task.">
+        </div>
+        <div class="col">
+          <label for="task_name">Keywords:</label>
+          <input type="text" class="form-control" id="task_keywords" name="task_keywords" placeholder="Separate keywords with commas.">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="col">
+          <label for="task_start">Sources:</label>
+          <select style="height: 95px" class="form-control" id="task_sources" name="task_sources" multiple>
+            <!-- <option disabled selected value> -- Select Sources -- </option> -->
+            <option value="123">The Guardian</option>
+              <option value="456">The New York Times</option>
+          </select>
+        </div>
+        <div class="col">
+          <label for="task_start">Start Date:</label>
+          <input type="date" class="form-control" id="task_start" name="task_start" placeholder="Enter a date in mm/dd/yyyy format."  required pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}">
+        </div>
+        <div class="col">
+          <label for="task_end">End Date:</label>
+          <input type="date" class="form-control" id="task_end" name="task_end" placeholder="Enter a date in mm/dd/yyyy format."  required pattern="[0-9]{4}-[0-9]{2}-[0-9]{2}">
+        </div>
+        </div>
+        <br>
+        <button id="queuetask" class="btn btn-default">Queue Task</button>
+      </div>      
+    </div>
+    </form>
+
+    <br>
+
+    <div class="card">
+        <h5 class="card-header">Queue Content <button type="button" id="clear" class="btn btn-sm btn-outline-editorial pull-right" title="Clear Tasks"><i class="fa fa-trash"></i> Clear Tasks</button></h5>
+        <div class="card-body">  
+          <table id="queueTable" class="table">
+            <thead>
+              <tr>
+                <th>Task name</th>
+                <th>Task ID</th>
+                <th>Status</th>
+                <th colspan="2">Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for task in tasks %}
+              <tr id="{{task.task_id|safe}}" class="taskrow">
+                <td>{{task.task_name|safe}}</td>
+                <td>{{task.task_id|safe}}</td>
+                <td>
+                  {% if task.task_status == 3 %}
+                  <span id="task-{{task.task_id|safe}}" class="label label-primary">{{task.task_status|safe}}</span>
+                  {% elif task.task_status == 2 %}
+                  <span id="task-{{task.task_id|safe}}" class="label label-info">{{task.task_status|safe}}</span>
+                  {% elif task.task_status == 1 %}
+                  <span id="task-{{task.task_id|safe}}" class="label label-success">{{task.task_status|safe}}</span>
+                  {% elif task.task_status == 0 %}
+                  <span id="task-{{task.task_id|safe}}" class="label label-danger">{{task.task_status|safe}}</span>
+                  {% else %}
+                  <span id="task-{{task.task_id|safe}}" class="label label-default">{{task.task_status|safe}}</span>
+                  {% endif %}
+                  <!-- I'm not sure I've converted from Angular correctly. Here is the original: -->
+                  <!-- <span ng-if="['QUEUED'].indexOf(task.status) > -1" class="label label-primary">{{task.status|safe}}</span>
+                  <span ng-if="['STARTED'].indexOf(task.status) > -1" class="label label-info">{{task.status|safe}}</span>
+                  <span ng-if="['FINISHED'].indexOf(task.status) > -1" class="label label-success">{{task.status|safe}}</span>
+                  <span ng-if="['FAILED'].indexOf(task.status) > -1" class="label label-danger">{{task.status|safe}}</span>
+                  <span ng-if="['QUEUED', 'STARTED', 'FINISHED', 'FAILED'].indexOf(task.status) === -1" class="label label-default">{{task.status|safe}}</span> -->
+                </td>
+                <td>
+                    {% if task.task_status == 3 %}
+                    <span id="taskResult-{{task.task_id|safe}}" class="label label-primary">{{task.task_result|safe}}</span>
+                    {% elif task.task_status == 2 %}
+                    <span id="taskResult-{{task.task_id|safe}}" class="label label-info">{{task.task_result|safe}}</span>
+                    {% elif task.task_status == 1 %}
+                    <span id="taskResult-{{task.task_id|safe}}" class="label label-success">{{task.task_result|safe}}</span>
+                    {% elif task.task_status == 0 %}
+                    <span id="taskResult-{{task.task_id|safe}}" class="label label-danger">{{task.task_result|safe}}</span>
+                    {% else %}
+                    <span id="taskResult-{{task.task_id|safe}}" class="label label-default">{{task.task_result|safe}}</span>
+                    {% endif %}
+                  </td>
+                <td><button type="button" data-delete="{{task.task_id|safe}}" class="btn btn-sm btn-outline-editorial pull-right remove" title="Remove Task"><i class="fa fa-trash"></i></button></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+      </div>
+    </div>
+    <br>
+
+</div>
+{% endblock main %}
