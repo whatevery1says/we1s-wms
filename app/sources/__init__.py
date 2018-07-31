@@ -49,7 +49,9 @@ def index():
 	# 'js/jQuery-File-Upload-9.20.0/js/jquery.fileupload.js',
 	'js/corpus/dropzone.js',
 	'js/sources/sources.js',
-	'js/sources/upload.js'
+	'js/sources/upload.js',
+	'js/dateformat.js',
+	'js/jquery-ui.js'
 	]
 	styles = []
 	breadcrumbs = [{'link': '/sources', 'label': 'Sources'}]

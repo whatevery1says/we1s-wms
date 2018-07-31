@@ -5,7 +5,7 @@
 function jsonifyForm () {
   /* Handles JSON form serialisation */
   var form = {}
-  $.each($('form').serializeArray(), function (i, field) {
+  $.each($('form *').not('.datepicker').serializeArray(), function (i, field) {
     form[field.name] = field.value || ''
   })
   return form
@@ -273,6 +273,12 @@ function cleanup () {
       newform[key] = value
     }
   })
+  const arrays_for_days = ['date']
+  for (const property of arrays_for_days) {
+    // Only process defined properties
+    console.log(property)
+  }
+
   // Convert comma-separated values to arrays
   const csvs = ['keywords']
   for (const property of csvs) {
@@ -414,6 +420,8 @@ $(document).ready(function () {
     }
   })
 
+  $('#date').dateformat()
+
   // Handle Property Cloning
   function serialiseTextareas (cls) {
     var values = []
@@ -424,6 +432,7 @@ $(document).ready(function () {
         values.push(item)
       }
     })
+    console.log(values)
     return JSON.stringify(values)
   }
 
