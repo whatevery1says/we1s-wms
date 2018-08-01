@@ -2,7 +2,7 @@
 // General Helper Functions
 //
 
-function jsonifyForm() {
+function jsonifyForm () {
   /* Handles JSON form serialisation */
   var form = {}
   $.each($('form *').not('.datepicker').serializeArray(), function (i, field) {
@@ -15,7 +15,7 @@ function jsonifyForm() {
 // Ajax Functions
 //
 
-function createManifest(jsonform) {
+function createManifest (jsonform) {
   /* Creates a new manifest
      Input: A JSON serialisation of the form values
      Returns: A copy of the manifest and an array of errors for display */
@@ -54,7 +54,7 @@ function createManifest(jsonform) {
     })
 }
 
-function deleteManifest(name, metapath) {
+function deleteManifest (name, metapath) {
   /* Deletes a manifest
      Input: A name value
      Returns: An array of errors for display */
@@ -62,9 +62,11 @@ function deleteManifest(name, metapath) {
     method: 'POST',
     url: '/sources/delete-manifest',
     data: JSON.stringify({ 'name': name, 'metapath': metapath }),
-    contentType: 'application/json;charset=UTF-8'
+    contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
   })
     .done(function (response) {
+      hideProcessing()
       var errors = JSON.parse(response)['errors']
       if (errors !== '') {
         var msg = '<p>Could not delete the manifest because of the following errors:</p>' + errors
@@ -79,6 +81,7 @@ function deleteManifest(name, metapath) {
       })
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
+      hideProcessing()
       bootbox.alert({
         message: '<p>The manifest could not be saved because of the following errors:</p>' + response,
         callback: function () {
@@ -88,7 +91,7 @@ function deleteManifest(name, metapath) {
     })
 }
 
-function exportSourceManifest() {
+function exportSourceManifest () {
   /* Exports a single source manifest from the Display page.
      Input: Values from the search form
      Returns: An array containing results and errors for display */
@@ -98,9 +101,11 @@ function exportSourceManifest() {
     method: 'POST',
     url: '/sources/export-manifest',
     data: JSON.stringify({ 'name': $('#name').val() }),
-    contentType: 'application/json;charset=UTF-8'
+    contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
   })
     .done(function (response) {
+      hideProcessing()
       response = JSON.parse(response)
       if (response['errors'].length !== 0) {
         var result = JSON.stringify(response['errors'])
@@ -115,6 +120,7 @@ function exportSourceManifest() {
       }
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
+      hideProcessing()
       bootbox.alert({
         message: '<p>Sorry, mate! You\'ve got an error!</p>',
         callback: function () {
@@ -124,7 +130,7 @@ function exportSourceManifest() {
     })
 }
 
-function exportSearch(data) {
+function exportSearch (data) {
   /* Exports the results of a Sources search
      Input: Values from the search form
      Returns: An array containing results and errors for display */
@@ -132,9 +138,11 @@ function exportSearch(data) {
     method: 'POST',
     url: '/sources/export-search',
     data: JSON.stringify(data),
-    contentType: 'application/json;charset=UTF-8'
+    contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
   })
     .done(function (response) {
+      hideProcessing()
       response = JSON.parse(response)
       if (response['errors'].length !== 0) {
         var result = JSON.stringify(response['errors'])
@@ -149,6 +157,7 @@ function exportSearch(data) {
       }
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
+      hideProcessing()
       bootbox.alert({
         message: '<p>Sorry, mate! You\'ve got an error!</p>',
         callback: function () {
@@ -158,7 +167,7 @@ function exportSearch(data) {
     })
 }
 
-function searchSources(data) {
+function searchSources (data) {
   /* Searches the Sources database
     Input: Values from the search form
     Returns: An array containing results and errors for display */
@@ -166,9 +175,11 @@ function searchSources(data) {
     method: 'POST',
     url: '/sources/search',
     data: JSON.stringify(data),
-    contentType: 'application/json;charset=UTF-8'
+    contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
   })
     .done(function (response) {
+      hideProcessing()
       $('#results').empty()
       response = JSON.parse(response)
       if (response['errors'].length !== 0) {
@@ -218,6 +229,7 @@ function searchSources(data) {
       $('#pagination').show()
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
+      hideProcessing()
       bootbox.alert({
         message: '<p>Sorry, mate! You\'ve got an error!</p>',
         callback: function () {
@@ -227,7 +239,7 @@ function searchSources(data) {
     })
 }
 
-function updateManifest(jsonform, name) {
+function updateManifest (jsonform, name) {
   /* Updates the displayed manifest
      Input: A JSON serialisation of the form values
      Returns: A copy of the manifest and an array of errors for display */
@@ -236,9 +248,11 @@ function updateManifest(jsonform, name) {
     method: 'POST',
     url: '/sources/update-manifest',
     data: manifest,
-    contentType: 'application/json;charset=UTF-8'
+    contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
   })
     .done(function (response) {
+      hideProcessing()
       var manifest = JSON.parse(response)['manifest']
       var errors = JSON.parse(response)['errors']
       if (errors !== '') {
@@ -254,6 +268,7 @@ function updateManifest(jsonform, name) {
       })
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
+      hideProcessing()
       bootbox.alert({
         message: '<p>The manifest could not be updated because of the following errors:</p>' + response,
         callback: function () {
@@ -263,7 +278,7 @@ function updateManifest(jsonform, name) {
     })
 }
 
-function cleanup() {
+function cleanup () {
   const form = jsonifyForm()
   var date = JSON.parse(sessionStorage.getItem('date'))
   form['date'] = date
@@ -419,9 +434,8 @@ $(document).ready(function () {
 
   $('#date').dateformat()
 
-
   // Handle Property Cloning
-  function serialiseTextareas(cls) {
+  function serialiseTextareas (cls) {
     var values = []
     $(cls).each(function () {
       var item = {}
@@ -523,9 +537,6 @@ $(document).ready(function () {
     // console.log($('#notes').val())
   })
   // End Property Cloning
-
-  // Initialize the datepicker
-  //   $('#date').dateformat()
 
   //
   // Display Page Functions
