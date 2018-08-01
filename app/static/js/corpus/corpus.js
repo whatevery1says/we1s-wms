@@ -28,6 +28,7 @@ function createManifest (jsonform) {
     beforeSend: showProcessing()
   })
     .done(function (response) {
+      hideProcessing()
       var manifest = JSON.parse(response)['manifest']
       var errors = JSON.parse(response)['errors']
       if (errors !== '') {
@@ -508,13 +509,13 @@ $(document).ready(function () {
       $('#search-form').hide()
       $('#exportSearchResults').show()
       $('#results').show()
-      $('#pagination').show()	
+      $('#pagination').show()
       $('#hideSearch').html('Show Form')
     } else {
       $('#hideSearch').html('Hide Form')
       $('#exportSearchResults').hide()
       $('#results').hide()
-      $('#pagination').hide()		
+      $('#pagination').hide()
       $('#search-form').show()
     }
   })
