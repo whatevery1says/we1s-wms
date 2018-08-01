@@ -495,42 +495,5 @@ $(document).ready(function () {
     }
   })
 
-  $(document).on('click', '.add-note', function () {
-    if ('noteCount' in sessionStorage) {
-      var count = parseInt(sessionStorage.getItem('noteCount')) + 1
-      sessionStorage.setItem('noteCount', count.toString())
-    } else {
-      count = 0
-      sessionStorage.setItem('noteCount', '0')
-    }
-    $(this).next().removeClass('hidden')
-    var $template = $('#notes-template').clone()
-    $(this).closest('.row').after($template.html())
-    $('.note-field').last().attr('id', 'note' + count)
-    var serialisedTextareas = serialiseTextareas('.note-field')
-    $('#notes').val(serialisedTextareas)
-    // console.log($('#notes').val())
-  })
-
-  $(document).on('click', '.remove-note', function () {
-    if ($('.note-field').length === 1) {
-      var count = parseInt(sessionStorage.getItem('noteCount')) + 1
-      sessionStorage.setItem('noteCount', count.toString())
-      var $template = $('#notes-template').clone()
-      $(this).closest('.row').after($template.html())
-      $('.note-field').last().attr('id', 'note' + count)
-    }
-    $(this).parent().parent().remove()
-    $('.note-field').eq(0).parent().prev().text('notes')
-    var serialisedTextareas = serialiseTextareas('.note-field')
-    $('#notes').val(serialisedTextareas)
-    // console.log($('#notes').val())
-  })
-
-  $(document).on('blur', '.note-field', function () {
-    var serialisedTextareas = serialiseTextareas('.note-field')
-    $('#notes').val(serialisedTextareas)
-    // console.log($('#notes').val())
-  })
 
 }) /* End $(document).ready() */
