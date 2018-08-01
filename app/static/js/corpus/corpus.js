@@ -300,6 +300,13 @@ function cleanup () {
       newform[property] = newform[property].trim().split(/\s*,\s*/)
     }
   }
+    const csvs4 = ['relationships']
+  for (const property of csvs4) {
+    // Only process defined properties
+    if (typeof newform[property] !== 'undefined') {
+      newform[property] = newform[property].trim().split(/\s*,\s*/)
+    }
+  }
 
   // Convert arrays stored as hidden input string values
   const arrays = ['notes']
