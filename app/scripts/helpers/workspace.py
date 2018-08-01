@@ -7,7 +7,7 @@ from bson import BSON, Binary, json_util
 JSON_UTIL = json_util.default
 import pymongo
 from pymongo import MongoClient
-client = MongoClient('mongodb://localhost:27017')
+client = MongoClient('mongodb://mongo:27017')
 db = client.we1s
 projects_db = db.Projects
 corpus_db = db.Corpus
