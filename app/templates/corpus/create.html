@@ -78,15 +78,15 @@
                   {% if opt.name == 'sources' %}
                     <input type="hidden" id="sources" name="sources" value="">
                     <div class="form-group row">
-                        <label class="col-sm-2 col-form-label" for="sourceTitle0">sources</label>
+                        <label class="col-sm-2 col-form-label" for="sourceEmail0">sources</label>
                         <div class="col-sm-3">
-                            <input type="text" class="source-field" id="sourceTitle0" name="sourceTitle" placeholder="Title">
+                            <input type="text" class="source-field" id="sourceEmail0" name="sourceEmail" placeholder="Email">
                         </div>
                         <div class="col-sm-3">
                             <input type="text" class="source-field" id="sourcePath0" name="sourcePath" placeholder="Path">
                         </div>
                         <div class="col-sm-3">
-                            <input type="text" class="source-field" id="sourceEmail0" name="sourceEmail" placeholder="Email">
+                            <input type="text" class="source-field" id="sourceTitle0" name="sourceTitle" placeholder="Title">
                         </div>    
                         <div class="col-sm-1" style="padding: 5px 0px;">
                             <button type="button" class="btn btn-sm btn-outline-editorial add-source" title="Add another source"><i class="fa fa-plus-circle"></i></button>
@@ -227,15 +227,15 @@
                   {% if opt.name == 'sources' %}
                     <input type="hidden" id="sources" name="sources" value="">
                     <div class="form-group row">
-                        <label class="col-sm-2 col-form-label" for="sourceTitle0">sources</label>
+                        <label class="col-sm-2 col-form-label" for="sourceEmail0">sources</label>
                         <div class="col-sm-3">
-                            <input type="text" class="source-field" id="sourceTitle0" name="sourceTitle" placeholder="Title">
+                            <input type="text" class="source-field" id="sourceEmail0" name="sourceEmail" placeholder="Email">
                         </div>
                         <div class="col-sm-3">
                             <input type="text" class="source-field" id="sourcePath0" name="sourcePath" placeholder="Path">
                         </div>
                         <div class="col-sm-3">
-                            <input type="text" class="source-field" id="sourceEmail0" name="sourceEmail" placeholder="Email">
+                            <input type="text" class="source-field" id="sourceTitle0" name="sourceTitle" placeholder="Title">
                         </div>    
                         <div class="col-sm-1" style="padding: 5px 0px;">
                             <button type="button" class="btn btn-sm btn-outline-editorial add-source" title="Add another source"><i class="fa fa-plus-circle"></i></button>
@@ -627,5 +627,92 @@
         {% endfor %}
       </div> <!-- /tab-pane -->
   </div> <!-- /collectionsForm -->
+</script>
+
+<!-- contributors Template -->
+<script type="text/html" id="contributors-template">
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label" for="contributorTitle">&nbsp;</label>
+        <div class="col-sm-3">
+            <input type="text" class="contributor-field contributorTitle" name="contributorTitle" placeholder="Contributor Title">
+        </div>
+        <div class="col-sm-3">
+            <input type="text" class="contributor-field contributorGroup" name="contributorGroup" placeholder="Group">
+        </div>
+        <div class="col-sm-3">
+            <input type="text" class="contributor-field contributorOrg" name="contributorOrg" placeholder="Organization">
+        </div>    
+        <div class="col-sm-1" style="padding: 5px 0px;">
+            <button type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-editorial remove-contributor" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+        </div>
+        <label class="col-sm-2 col-form-label" for="contributorTitle">&nbsp;</label>
+        <div class="col-sm-3">
+            <input type="text" class="contributor-field contributorPath" name="contributorPath" placeholder="Path">
+        </div>
+        <div class="col-sm-3">
+            <input type="text" class="contributor-field contributorEmail" name="contributorEmail" placeholder="Email">
+        </div>
+        <div class="col-sm-3">
+            <input type="text" class="contributor-field contributorRole" name="contributorRole" placeholder="Role">
+        </div>    
+        <div class="col-sm-1" style="padding: 5px 0px;">
+            <button hidden type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
+            <button hidden type="button" class="btn btn-sm btn-outline-editorial remove-contributor" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+        </div>
+    </div>            
+</script>     
+
+<!-- sources Template -->
+<script type="text/html" id="sources-template">
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label" for="sourceEmail">&nbsp;</label>
+        <div class="col-sm-3">
+            <input type="text" class="source-field sourceEmail" name="sourceEmail" required="" placeholder="Email">
+        </div>
+        <div class="col-sm-3">
+            <input type="text" class="source-field sourcePath" name="sourcePath" required="" placeholder="Path">
+        </div>
+        <div class="col-sm-3">
+            <input type="text" class="source-field sourceTitle" name="sourceTitle" placeholder="Title">
+        </div>    
+        <div class="col-sm-1" style="padding: 5px 0px;">
+            <button type="button" class="btn btn-sm btn-outline-editorial add-source" title="Add another source"><i class="fa fa-plus-circle"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-editorial remove-source" title="Remove source"><i class="fa fa-minus-circle"></i></button>
+        </div>
+    </div>            
+</script>
+
+<!-- licenses Template -->
+<script type="text/html" id="licenses-template">
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label" for="licenseName">&nbsp;</label>
+        <div class="col-sm-3">
+            <input type="text" class="license-field licenseName" name="licenseName" required="" placeholder="Author name">
+        </div>
+        <div class="col-sm-3">
+            <input type="text" class="license-field licensePath" name="licensePath" required="" placeholder="Path">
+        </div>
+        <div class="col-sm-3">
+            <input type="text" class="license-field licenseTitle" name="licenseTitle" placeholder="Title">
+        </div>    
+        <div class="col-sm-1" style="padding: 5px 0px;">
+            <button type="button" class="btn btn-sm btn-outline-editorial add-license" title="Add another license"><i class="fa fa-plus-circle"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-editorial remove-license" title="Remove license"><i class="fa fa-minus-circle"></i></button>
+        </div>
+    </div>            
+</script>
+<!-- notes Template -->
+<script type="text/html" id="notes-template">
+<div class="form-group row">
+    <label class="col-sm-2 col-form-label">&nbsp;</label>
+    <div class="col-sm-9">
+        <textarea name="notesField" id="note" class="form-control note-field"></textarea>
+    </div>
+    <div class="col-sm-1" style="padding: 15px 0px;">
+        <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
+        <button type="button" class="btn btn-sm btn-outline-editorial remove-note" title="Remove note"><i class="fa fa-minus-circle"></i></button>
+    </div>
+</div>            
 </script>
 {% endblock main %}

@@ -252,6 +252,453 @@ function updateManifest (jsonform, name) {
     })
 }
 
+
+function serialiseTextareas (cls) {
+  var values = []
+  $(cls).each(function () {
+    var item = {}
+    if (this.value !== '') {
+      item[$(this).attr('id')] = this.value
+      values.push(item)
+    }
+  })
+  return JSON.stringify(values)
+  }
+
+function cleanup () {
+  const form = jsonifyForm($('#manifestForm'))
+  const newform = {}
+  const exclude = ['licenseName', 'licensePath', 'licenseTitle',
+                   'sourceEmail', 'sourcePath', 'sourceTitle',
+                   'contributorTitle', 'contributorOrg', 'contributorGroup', 
+                   'contributorPath', 'contributorEmail', 'contributorRole', 'notesField']
+  // Clone the form values, ommitting empty fields and exclusions
+  $.each(form, function (key, value) {
+    if (value !== '' && value !== [] && $.inArray(key, exclude) === -1) {
+      newform[key] = value
+    }
+  })
+  // Convert comma-separated values to arrays
+  const csvs = ['keywords']
+  for (const property of csvs) {
+    // Only process defined properties
+    if (typeof newform[property] !== 'undefined') {
+      newform[property] = newform[property].trim().split(/\s*,\s*/)
+    }
+  }
+  const csvs2 = ['queryterms']
+  for (const property of csvs2) {
+    // Only process defined properties
+    if (typeof newform[property] !== 'undefined') {
+      newform[property] = newform[property].trim().split(/\s*,\s*/)
+    }
+  }
+    const csvs3 = ['processes']
+  for (const property of csvs3) {
+    // Only process defined properties
+    if (typeof newform[property] !== 'undefined') {
+      newform[property] = newform[property].trim().split(/\s*,\s*/)
+    }
+  }
+    const csvs4 = ['relationships']
+  for (const property of csvs4) {
+    // Only process defined properties
+    if (typeof newform[property] !== 'undefined') {
+      newform[property] = newform[property].trim().split(/\s*,\s*/)
+    }
+  }
+
+  // Convert arrays stored as hidden input string values
+  const arrays = ['notes']
+  for (const property of arrays) {
+    newform[property] = eval(newform[property])
+    // Only process defined properties
+    if (typeof newform[property] !== 'undefined') {
+      const list = []
+      $.each(newform[property], function (key, value) {
+        $.each(value, function (k, v) {
+          list.push(v)
+        })
+      })
+      newform[property] = list
+    }
+  }
+  const objects2 = ['contributors']
+  for (var property of objects2) {
+    newform[property] = eval(newform[property])
+    // Only process defined properties
+    if (typeof newform[property] !== 'undefined') {
+      // Convert evil properties from hidden fields to a list
+      let gD = {}
+      let gL = []
+      let eP = []
+      // Get the property keys
+      $.each(newform[property], function (key, value) {
+        $.each(value, function (k, v) {
+          eP.push(k)
+        })
+      })
+      // Build object for each ID
+      $.each(eP, function (key, item) {
+        item = item.replace(/[a-zA-Z]+/, '')
+        gD[item] = {}
+      })
+      // Add the values to the good dict by ID
+      $.each(newform[property], function (i, item) {
+        let obj = newform[property][i]
+        let k = Object.keys(obj)
+        let prop = k[0]
+        let id = prop.replace(/[a-zA-Z]+/, '')
+        let val = item[prop]
+        if (prop.startsWith('contributorTitle')) {
+          prop = 'title'
+          gD[id][prop] = val
+        }
+        if (prop.startsWith('contributorGroup')) {
+          prop = 'group'
+          gD[id][prop] = val
+        }
+        if (prop.startsWith('contributorOrg')) {
+          prop = 'organization'
+          gD[id][prop] = val
+        }
+        if (prop.startsWith('contributorPath')) {
+          prop = 'path'
+          gD[id][prop] = val
+        }
+        if (prop.startsWith('contributorEmail')) {
+          prop = 'email'
+          gD[id][prop] = val
+        }
+        if (prop.startsWith('contributorRole')) {
+          prop = 'role'
+          gD[id][prop] = val
+        }
+      })
+      // Convert any contributor names to strings and add the good_dict values to the list
+      $.each(gD, function (k, v) {
+        if (gD[k].length === 1) {
+          v = gD[k]['title']
+        } else {
+          gL.push(v)
+        }
+      })
+      newform[property] = gL
+    }
+  }
+  const objects3 = ['sources']
+  for (var property of objects3) {
+    newform[property] = eval(newform[property])
+    // Only process defined properties
+    if (typeof newform[property] !== 'undefined') {
+      // Convert evil properties from hidden fields to a list
+      let goodDict = {}
+      let goodList = []
+      let evilProps = []
+      // Get the property keys
+      $.each(newform[property], function (key, value) {
+        $.each(value, function (k, v) {
+          evilProps.push(k)
+        })
+      })
+      // Build object for each ID
+      $.each(evilProps, function (key, item) {
+        item = item.replace(/[a-zA-Z]+/, '')
+        goodDict[item] = {}
+      })
+      // Add the values to the good dict by ID
+      $.each(newform[property], function (i, item) {
+        let obj = newform[property][i]
+        let k = Object.keys(obj)
+        let prop = k[0]
+        let id = prop.replace(/[a-zA-Z]+/, '')
+        let val = item[prop]
+        if (prop.startsWith('sourceEmail')) {
+          prop = 'email'
+          goodDict[id][prop] = val
+        }
+        if (prop.startsWith('sourceTitle')) {
+          prop = 'title'
+          goodDict[id][prop] = val
+        }
+        if (prop.startsWith('sourcePath')) {
+          prop = 'path'
+          goodDict[id][prop] = val
+        }
+      })
+      // Convert any source emails to strings and add the good_dict values to the list
+      $.each(goodDict, function (k, v) {
+        if (goodDict[k].length === 1) {
+          v = goodDict[k]['email']
+        } else {
+          goodList.push(v)
+        }
+      })
+      newform[property] = goodList
+    }
+  }
+  const objects = ['licenses']
+  for (var property of objects) {
+    newform[property] = eval(newform[property])
+    // Only process defined properties
+    if (typeof newform[property] !== 'undefined') {
+      // Convert evil properties from hidden fields to a list
+      let goodDict = {}
+      let goodList = []
+      let evilProps = []
+      // Get the property keys
+      $.each(newform[property], function (key, value) {
+        $.each(value, function (k, v) {
+          evilProps.push(k)
+        })
+      })
+      // Build object for each ID
+      $.each(evilProps, function (key, item) {
+        item = item.replace(/[a-zA-Z]+/, '')
+        goodDict[item] = {}
+      })
+      // Add the values to the good dict by ID
+      $.each(newform[property], function (i, item) {
+        let obj = newform[property][i]
+        let k = Object.keys(obj)
+        let prop = k[0]
+        let id = prop.replace(/[a-zA-Z]+/, '')
+        let val = item[prop]
+        if (prop.startsWith('licenseName')) {
+          prop = 'name'
+          goodDict[id][prop] = val
+        }
+        if (prop.startsWith('licenseTitle')) {
+          prop = 'title'
+          goodDict[id][prop] = val
+        }
+        if (prop.startsWith('licensePath')) {
+          prop = 'path'
+          goodDict[id][prop] = val
+        }
+      })
+      // Convert any license names to strings and add the good_dict values to the list
+      $.each(goodDict, function (k, v) {
+        if (goodDict[k].length === 1) {
+          v = goodDict[k]['name']
+        } else {
+          goodList.push(v)
+        }
+      })
+      newform[property] = goodList
+    }
+  }
+  return newform
+}
+
+  $(document).on('click', '.add-source', function () {
+    // Keep count of the number of fields in session storage
+    if ('sourceCount' in sessionStorage) {
+      var count = parseInt(sessionStorage.getItem('sourceCount')) + 1
+      sessionStorage.setItem('sourceCount', count.toString())
+    } else {
+      count = 0
+      sessionStorage.setItem('sourceCount', '0')
+    }
+    // Show the remove icon
+    $(this).next().removeClass('hidden')
+    // Clone the template
+    var $template = $('#sources-template').clone()
+    $(this).closest('.row').after($template.html())
+    $('.sourceEmail').last().attr('id', 'sourceEmail' + count).removeClass('.sourceEmail')
+    $('.sourcePath').last().attr('id', 'sourcePath' + count).removeClass('.sourcePath')
+    $('.sourceTitle').last().attr('id', 'sourceTitle' + count).removeClass('.sourceTitle')
+    // Serialise the textareas and save the string to the hidden sources field
+    var serialisedTextareas = serialiseTextareas('.source-field')
+    $('#sources').val(serialisedTextareas)
+    // console.log($('#sources').val())
+  })
+
+  $(document).on('click', '.remove-source', function () {
+    // If the field to remove is the only one, clone a new one
+    // NB. There are three sub-fields
+    if ($('.source-field').length === 3) {
+      var count = parseInt(sessionStorage.getItem('sourceCount')) + 1
+      sessionStorage.setItem('sourceCount', count.toString())
+      var $template = $('#sources-template').clone()
+      $(this).closest('.row').after($template.html())
+      $('.sourceEmail').last().attr('id', 'sourceEmail' + count).removeClass('.sourceEmail')
+      $('.sourcePath').last().attr('id', 'sourcePath' + count).removeClass('.sourcePath')
+      $('.sourceTitle').last().attr('id', 'sourceTitle' + count).removeClass('.sourceTitle')
+    }
+    // Remove the source field
+    $(this).parent().parent().remove()
+    // Display the "sources" label
+    $('.source-field').eq(0).parent().prev().text('sources')
+    // Serialise the textareas and save the string to the hidden sources field
+    var serialisedTextareas = serialiseTextareas('.source-field')
+    $('#sources').val(serialisedTextareas)
+    // console.log($('#sources').val())
+  })
+  //can probably give all
+  $(document).on('blur', '.source-field', function () {
+    // Re-serialise the text areas when the user clicks on another element
+    var serialisedTextareas = serialiseTextareas('.source-field')
+    $('#sources').val(serialisedTextareas)
+    // console.log($('#sources').val())
+  })
+
+// contributors start
+
+  $(document).on('click', '.add-contributor', function () {
+    // Keep count of the number of fields in session storage
+    if ('contributorCount' in sessionStorage) {
+      var count = parseInt(sessionStorage.getItem('contributorCount')) + 1
+      sessionStorage.setItem('contributorCount', count.toString())
+    } else {
+      count = 0
+      sessionStorage.setItem('contributorCount', '0')
+    }
+    // Show the remove icon
+    $(this).next().removeClass('hidden')
+    // Clone the template
+    var $template = $('#contributors-template').clone()
+    $(this).closest('.row').after($template.html())
+    $('.contributorTitle').last().attr('id', 'contributorTitle' + count).removeClass('.contributorTitle')
+    $('.contributorGroup').last().attr('id', 'contributorGroup' + count).removeClass('.contributorGroup')
+    $('.contributorOrg').last().attr('id', 'contributorOrg' + count).removeClass('.contributorOrg')
+    $('.contributorPath').last().attr('id', 'contributorPath' + count).removeClass('.contributorPath')
+    $('.contributorEmail').last().attr('id', 'contributorEmail' + count).removeClass('.contributorEmail')
+    $('.contributorRole').last().attr('id', 'contributorRole' + count).removeClass('.contributorRole')
+    // Serialise the textareas and save the string to the hidden contributors field
+    var serialisedTextareas = serialiseTextareas('.contributor-field')
+    $('#contributors').val(serialisedTextareas)
+    // console.log($('#contributors').val())
+  })
+
+  $(document).on('click', '.remove-contributor', function () {
+    // If the field to remove is the only one, clone a new one
+    // NB. There are three sub-fields
+    if ($('.contributor-field').length === 6) {
+      var count = parseInt(sessionStorage.getItem('contributorCount')) + 1
+      sessionStorage.setItem('contributorCount', count.toString())
+      var $template = $('#contributors-template').clone()
+      $(this).closest('.row').after($template.html())
+      $('.contributorTitle').last().attr('id', 'contributorTitle' + count).removeClass('.contributorTitle')
+      $('.contributorGroup').last().attr('id', 'contributorGroup' + count).removeClass('.contributorGroup')
+      $('.contributorOrg').last().attr('id', 'contributorOrg' + count).removeClass('.contributorOrg')
+      $('.contributorPath').last().attr('id', 'contributorPath' + count).removeClass('.contributorPath')
+      $('.contributorEmail').last().attr('id', 'contributorEmail' + count).removeClass('.contributorEmail')
+      $('.contributorRole').last().attr('id', 'contributorRole' + count).removeClass('.contributorRole')
+    }
+    // Remove the contributor field
+    $(this).parent().parent().remove()
+    // Display the "contributors" label
+    $('.contributor-field').eq(0).parent().prev().text('contributors')
+    // Serialise the textareas and save the string to the hidden contributors field
+    var serialisedTextareas = serialiseTextareas('.contributor-field')
+    $('#contributors').val(serialisedTextareas)
+    // console.log($('#contributors').val())
+  })
+
+  $(document).on('blur', '.contributor-field', function () {
+    // Re-serialise the text areas when the user clicks on another element
+    var serialisedTextareas = serialiseTextareas('.contributor-field')
+    $('#contributors').val(serialisedTextareas)
+    // console.log($('#contributors').val())
+  })
+  // End Property Cloning
+// contributors end
+
+
+  $(document).on('click', '.add-license', function () {
+    // Keep count of the number of fields in session storage
+    if ('licenseCount' in sessionStorage) {
+      var count = parseInt(sessionStorage.getItem('licenseCount')) + 1
+      sessionStorage.setItem('licenseCount', count.toString())
+    } else {
+      count = 0
+      sessionStorage.setItem('licenseCount', '0')
+    }
+    // Show the remove icon
+    $(this).next().removeClass('hidden')
+    // Clone the template
+    var $template = $('#licenses-template').clone()
+    $(this).closest('.row').after($template.html())
+    $('.licenseName').last().attr('id', 'licenseName' + count).removeClass('.licenseName')
+    $('.licensePath').last().attr('id', 'licensePath' + count).removeClass('.licensePath')
+    $('.licenseTitle').last().attr('id', 'licenseTitle' + count).removeClass('.licenseTitle')
+    // Serialise the textareas and save the string to the hidden licenses field
+    var serialisedTextareas = serialiseTextareas('.license-field')
+    $('#licenses').val(serialisedTextareas)
+    // console.log($('#licenses').val())
+  })
+
+  $(document).on('click', '.remove-license', function () {
+    // If the field to remove is the only one, clone a new one
+    // NB. There are three sub-fields
+    if ($('.license-field').length === 3) {
+      var count = parseInt(sessionStorage.getItem('licenseCount')) + 1
+      sessionStorage.setItem('licenseCount', count.toString())
+      var $template = $('#licenses-template').clone()
+      $(this).closest('.row').after($template.html())
+      $('.licenseName').last().attr('id', 'licenseName' + count).removeClass('.licenseName')
+      $('.licensePath').last().attr('id', 'licensePath' + count).removeClass('.licensePath')
+      $('.licenseTitle').last().attr('id', 'licenseTitle' + count).removeClass('.licenseTitle')
+    }
+    // Remove the license field
+    $(this).parent().parent().remove()
+    // Display the "licenses" label
+    $('.license-field').eq(0).parent().prev().text('licenses')
+    // Serialise the textareas and save the string to the hidden licenses field
+    var serialisedTextareas = serialiseTextareas('.license-field')
+    $('#licenses').val(serialisedTextareas)
+    // console.log($('#licenses').val())
+  })
+  //can probably give all
+  $(document).on('blur', '.license-field', function () {
+    // Re-serialise the text areas when the user clicks on another element
+    var serialisedTextareas = serialiseTextareas('.license-field')
+    $('#licenses').val(serialisedTextareas)
+    // console.log($('#licenses').val())
+  })
+
+
+  $(document).on('click', '.add-note', function () {
+    if ('noteCount' in sessionStorage) {
+      var count = parseInt(sessionStorage.getItem('noteCount')) + 1
+      sessionStorage.setItem('noteCount', count.toString())
+    } else {
+      count = 0
+      sessionStorage.setItem('noteCount', '0')
+    }
+    $(this).next().removeClass('hidden')
+    var $template = $('#notes-template').clone()
+    $(this).closest('.row').after($template.html())
+    $('.note-field').last().attr('id', 'note' + count)
+    var serialisedTextareas = serialiseTextareas('.note-field')
+    $('#notes').val(serialisedTextareas)
+    // console.log($('#notes').val())
+  })
+
+  $(document).on('click', '.remove-note', function () {
+    if ($('.note-field').length === 1) {
+      var count = parseInt(sessionStorage.getItem('noteCount')) + 1
+      sessionStorage.setItem('noteCount', count.toString())
+      var $template = $('#notes-template').clone()
+      $(this).closest('.row').after($template.html())
+      $('.note-field').last().attr('id', 'note' + count)
+    }
+    $(this).parent().parent().remove()
+    $('.note-field').eq(0).parent().prev().text('notes')
+    var serialisedTextareas = serialiseTextareas('.note-field')
+    $('#notes').val(serialisedTextareas)
+    // console.log($('#notes').val())
+  })
+
+  $(document).on('blur', '.note-field', function () {
+    var serialisedTextareas = serialiseTextareas('.note-field')
+    $('#notes').val(serialisedTextareas)
+    // console.log($('#notes').val())
+  })
+  // End Property Cloning
+
+
 //
 // $(document).ready() Event Handling
 //
@@ -282,7 +729,7 @@ $(document).ready(function () {
     e.preventDefault()
     $('form').hide()
     $('#previewDisplay').show()
-    var jsonform =  jsonifyForm($('#manifestForm'))
+    var jsonform =  cleanup()
     $('#manifest').html(JSON.stringify(jsonform, null, '  '))
   })
 
@@ -509,7 +956,7 @@ $(document).ready(function () {
       $('#search-form').hide()
       $('#exportSearchResults').show()
       $('#results').show()
-      $('#pagination').show()
+      $('#pagination').show()	
       $('#hideSearch').html('Show Form')
     } else {
       $('#hideSearch').html('Hide Form')
