@@ -2,7 +2,7 @@
 // General Helper Functions
 //
 
-function jsonifyForm () {
+function jsonifyForm() {
   /* Handles JSON form serialisation */
   var form = {}
   $.each($('form *').not('.datepicker').serializeArray(), function (i, field) {
@@ -15,7 +15,7 @@ function jsonifyForm () {
 // Ajax Functions
 //
 
-function createManifest (jsonform) {
+function createManifest(jsonform) {
   /* Creates a new manifest
      Input: A JSON serialisation of the form values
      Returns: A copy of the manifest and an array of errors for display */
@@ -54,14 +54,14 @@ function createManifest (jsonform) {
     })
 }
 
-function deleteManifest (name, metapath) {
+function deleteManifest(name, metapath) {
   /* Deletes a manifest
      Input: A name value
      Returns: An array of errors for display */
   $.ajax({
     method: 'POST',
     url: '/sources/delete-manifest',
-    data: JSON.stringify({'name': name, 'metapath': metapath}),
+    data: JSON.stringify({ 'name': name, 'metapath': metapath }),
     contentType: 'application/json;charset=UTF-8'
   })
     .done(function (response) {
@@ -88,7 +88,7 @@ function deleteManifest (name, metapath) {
     })
 }
 
-function exportSourceManifest () {
+function exportSourceManifest() {
   /* Exports a single source manifest from the Display page.
      Input: Values from the search form
      Returns: An array containing results and errors for display */
@@ -97,7 +97,7 @@ function exportSourceManifest () {
   $.ajax({
     method: 'POST',
     url: '/sources/export-manifest',
-    data: JSON.stringify({'name': $('#name').val()}),
+    data: JSON.stringify({ 'name': $('#name').val() }),
     contentType: 'application/json;charset=UTF-8'
   })
     .done(function (response) {
@@ -124,7 +124,7 @@ function exportSourceManifest () {
     })
 }
 
-function exportSearch (data) {
+function exportSearch(data) {
   /* Exports the results of a Sources search
      Input: Values from the search form
      Returns: An array containing results and errors for display */
@@ -158,7 +158,7 @@ function exportSearch (data) {
     })
 }
 
-function searchSources (data) {
+function searchSources(data) {
   /* Searches the Sources database
     Input: Values from the search form
     Returns: An array containing results and errors for display */
@@ -227,7 +227,7 @@ function searchSources (data) {
     })
 }
 
-function updateManifest (jsonform, name) {
+function updateManifest(jsonform, name) {
   /* Updates the displayed manifest
      Input: A JSON serialisation of the form values
      Returns: A copy of the manifest and an array of errors for display */
@@ -263,8 +263,10 @@ function updateManifest (jsonform, name) {
     })
 }
 
-function cleanup () {
+function cleanup() {
   const form = jsonifyForm()
+  var date = JSON.parse(sessionStorage.getItem('date'))
+  form['date'] = date
   const newform = {}
   const exclude = ['authorName', 'authorOrg', 'authorGroup', 'notesField']
   // Clone the form values, ommitting empty fields and exclusions
@@ -273,11 +275,6 @@ function cleanup () {
       newform[key] = value
     }
   })
-  const arrays_for_days = ['date']
-  for (const property of arrays_for_days) {
-    // Only process defined properties
-    console.log(property)
-  }
 
   // Convert comma-separated values to arrays
   const csvs = ['keywords']
@@ -422,8 +419,9 @@ $(document).ready(function () {
 
   $('#date').dateformat()
 
+
   // Handle Property Cloning
-  function serialiseTextareas (cls) {
+  function serialiseTextareas(cls) {
     var values = []
     $(cls).each(function () {
       var item = {}
@@ -432,7 +430,6 @@ $(document).ready(function () {
         values.push(item)
       }
     })
-    console.log(values)
     return JSON.stringify(values)
   }
 
@@ -550,14 +547,14 @@ $(document).ready(function () {
       bootbox.confirm({
         message: 'Are you sure you wish to update the record for <code>' + name + '</code>?',
         buttons: {
-          confirm: {label: 'Yes', className: 'btn-success'},
-          cancel: {label: 'No', className: 'btn-danger'}
+          confirm: { label: 'Yes', className: 'btn-success' },
+          cancel: { label: 'No', className: 'btn-danger' }
         },
         callback: function (result) {
           if (result === true) {
             name = $('#name').val()
             var jsonform = jsonifyForm()
-            $.extend(jsonform, {'name': name})
+            $.extend(jsonform, { 'name': name })
             updateManifest(jsonform, name)
           }
         }
@@ -573,8 +570,8 @@ $(document).ready(function () {
     bootbox.confirm({
       message: 'Are you sure you wish to delete <code>' + name + '</code>?',
       buttons: {
-        confirm: {label: 'Yes', className: 'btn-success'},
-        cancel: {label: 'No', className: 'btn-danger'}
+        confirm: { label: 'Yes', className: 'btn-success' },
+        cancel: { label: 'No', className: 'btn-danger' }
       },
       callback: function (result) {
         if (result === true) {
