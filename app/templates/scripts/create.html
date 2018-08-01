@@ -39,19 +39,57 @@
             <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
                 {% for opt in required_opts %}
                 {% if not opt.skip %}
-                <div class="form-group row">
                   {% if opt.fieldtype == 'text' %}
-                  <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-                  <div class="col-sm-10">
-                      <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.name in ['metapath'] }} {{ 'disabled' if opt.name in ['metapath'] }}>
+                  <div class="form-group row">
+                      <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                      <div class="col-sm-10">
+                          <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.name in ['metapath'] }} {{ 'disabled' if opt.name in ['metapath'] }}>
+                      </div>
                   </div>
                   {% elif opt.fieldtype == 'textarea' %}
-                  <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-                  <div class="col-sm-10">
-                    <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>   
-                  </div>
+                {% if opt.name == 'contributors' %}
+                  <input type="hidden" id="contributors" name="contributors" value="">
+                  <div class="form-group row">
+                      <label class="col-sm-2 col-form-label" for="contributorTitle0">contributors</label>
+                      <div class="col-sm-3">
+                          <input type="text" class="contributor-field" id="contributorTitle0" name="contributorTitle" placeholder="Contributor Title">
+                      </div>
+                      <div class="col-sm-3">
+                          <input type="text" class="contributor-field" id="contributorGroup0" name="contributorGroup" placeholder="Group">
+                      </div>
+                      <div class="col-sm-3">
+                          <input type="text" class="contributor-field" id="contributorOrg0" name="contributorOrg" placeholder="Organization">
+                      </div>    
+                      <div class="col-sm-1" style="padding: 5px 0px;">
+                          <button type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
+                          <button type="button" class="btn btn-sm btn-outline-editorial remove-contributor hidden" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+                      </div>
+                          <label class="col-sm-2 col-form-label" for="contributorTitle0"></label>
+                      <div class="col-sm-3">
+                          <input type="text" class="contributor-field" id="contributorPath0" name="contributorPath" placeholder="Path">
+                      </div>
+                      <div class="col-sm-3">
+                          <input type="text" class="contributor-field" id="contributorEmail0" name="contributorEmail" placeholder="Email">
+                      </div>
+                      <div class="col-sm-3">
+                          <input type="text" class="contributor-field" id="contributorRole0" name="contributorRole" placeholder="Role">
+                      </div>    
+                      <div class="col-sm-1" style="padding: 5px 0px;">
+                          <button hidden type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
+                          <button hidden type="button" class="btn btn-sm btn-outline-editorial remove-contributor hidden" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+                      </div>
+                  </div>    
+                    {% else %}
+                    <!-- Generic Textarea -->
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10">
+                            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                        </div>
+                    </div>
+                    <!-- End Generic Textarea -->
+                    {% endif %}    
                   {% endif %}
-                </div> 
                 {% endif %}
                 {% endfor %}
                 <div class="form-group row">
@@ -116,23 +154,63 @@
                 </div>
             </div>
             <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
-              {% for opt in optional_opts %}
-              {% if not opt.skip %}
-              <div class="form-group row">
+            {% for opt in optional_opts %}
+            {% if not opt.skip %}
                 {% if opt.fieldtype == 'text' %}
-                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-                <div class="col-sm-10">
-                    <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
+                <div class="form-group row">
+                    <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                    <div class="col-sm-10">
+                        <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
+                    </div>
                 </div>
                 {% elif opt.fieldtype == 'textarea' %}
-                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-                <div class="col-sm-10">
-                  <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>   
-                </div>
+                    <!-- Date Field Should this be a textarea in the template? -->
+                    <!-- might wanna change the div class=col-sm-10 to outside date -->
+                    <!-- licenses Field -->
+                    {% if opt.name == 'licenses' %}
+                    <input type="hidden" id="licenses" name="licenses" value="">
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label" for="licenseName0">licenses</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="license-field" id="licenseName0" name="licenseName" placeholder="License name">
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" class="license-field" id="licensePath0" name="licensePath" placeholder="Path">
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" class="license-field" id="licenseTitle0" name="licenseTitle" placeholder="Title">
+                        </div>    
+                        <div class="col-sm-1" style="padding: 5px 0px;">
+                            <button type="button" class="btn btn-sm btn-outline-editorial add-license" title="Add another license"><i class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove-license hidden" title="Remove license"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                    </div>     
+                    <!-- Notes Field -->
+                    {% elif opt.name == 'notes' %}
+                    <input type="hidden" id="notes" name="notes" value="">
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                        <div class="col-sm-9">
+                            <textarea name="{{ opt.name|safe }}Field" id="note0" class="form-control note-field" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                        </div>
+                        <div class="col-sm-1" style="padding: 15px 0px;">
+                            <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                    </div>            
+                    {% else %}
+                    <!-- Generic Textarea -->
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10">
+                            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                        </div>
+                    </div>
+                    <!-- End Generic Textarea -->
+                    {% endif %}
                 {% endif %}
-              </div> 
-              {% endif %}
-              {% endfor %}
+            {% endif %}
+        {% endfor %}
             </div> <!-- /tab-pane -->
         </div> <!-- /scriptForm -->
     </div> <!-- /manifestCard -->
@@ -173,6 +251,42 @@
   </div> <!-- /scriptForm -->
 </script>
 
+
+<!-- contributors Template -->
+<script type="text/html" id="contributors-template">
+    <div class="form-group row">
+        <label class="col-sm-2 col-form-label" for="contributorTitle">&nbsp;</label>
+        <div class="col-sm-3">
+            <input type="text" class="contributor-field contributorTitle" name="contributorTitle" placeholder="Contributor Title">
+        </div>
+        <div class="col-sm-3">
+            <input type="text" class="contributor-field contributorGroup" name="contributorGroup" placeholder="Group">
+        </div>
+        <div class="col-sm-3">
+            <input type="text" class="contributor-field contributorOrg" name="contributorOrg" placeholder="Organization">
+        </div>    
+        <div class="col-sm-1" style="padding: 5px 0px;">
+            <button type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-editorial remove-contributor" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+        </div>
+        <label class="col-sm-2 col-form-label" for="contributorTitle">&nbsp;</label>
+        <div class="col-sm-3">
+            <input type="text" class="contributor-field contributorPath" name="contributorPath" placeholder="Path">
+        </div>
+        <div class="col-sm-3">
+            <input type="text" class="contributor-field contributorEmail" name="contributorEmail" placeholder="Email">
+        </div>
+        <div class="col-sm-3">
+            <input type="text" class="contributor-field contributorRole" name="contributorRole" placeholder="Role">
+        </div>    
+        <div class="col-sm-1" style="padding: 5px 0px;">
+            <button hidden type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
+            <button hidden type="button" class="btn btn-sm btn-outline-editorial remove-contributor" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+        </div>
+    </div>            
+</script>     
+
+
 <!-- licenses Template -->
 <script type="text/html" id="licenses-template">
     <div class="form-group row">
@@ -192,7 +306,6 @@
         </div>
     </div>            
 </script>
-
 <!-- notes Template -->
 <script type="text/html" id="notes-template">
 <div class="form-group row">
@@ -206,5 +319,4 @@
     </div>
 </div>            
 </script>
-
 {% endblock main %}
