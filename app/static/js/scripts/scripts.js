@@ -200,6 +200,67 @@ function cleanup () {
     // console.log($('#licenses').val())
   })
 
+  // contributors start
+
+  $(document).on('click', '.add-contributor', function () {
+    // Keep count of the number of fields in session storage
+    if ('contributorCount' in sessionStorage) {
+      var count = parseInt(sessionStorage.getItem('contributorCount')) + 1
+      sessionStorage.setItem('contributorCount', count.toString())
+    } else {
+      count = 0
+      sessionStorage.setItem('contributorCount', '0')
+    }
+    // Show the remove icon
+    $(this).next().removeClass('hidden')
+    // Clone the template
+    var $template = $('#contributors-template').clone()
+    $(this).closest('.row').after($template.html())
+    $('.contributorTitle').last().attr('id', 'contributorTitle' + count).removeClass('.contributorTitle')
+    $('.contributorGroup').last().attr('id', 'contributorGroup' + count).removeClass('.contributorGroup')
+    $('.contributorOrg').last().attr('id', 'contributorOrg' + count).removeClass('.contributorOrg')
+    $('.contributorPath').last().attr('id', 'contributorPath' + count).removeClass('.contributorPath')
+    $('.contributorEmail').last().attr('id', 'contributorEmail' + count).removeClass('.contributorEmail')
+    $('.contributorRole').last().attr('id', 'contributorRole' + count).removeClass('.contributorRole')
+    // Serialise the textareas and save the string to the hidden contributors field
+    var serialisedTextareas = serialiseTextareas('.contributor-field')
+    $('#contributors').val(serialisedTextareas)
+    // console.log($('#contributors').val())
+  })
+
+  $(document).on('click', '.remove-contributor', function () {
+    // If the field to remove is the only one, clone a new one
+    // NB. There are three sub-fields
+    if ($('.contributor-field').length === 6) {
+      var count = parseInt(sessionStorage.getItem('contributorCount')) + 1
+      sessionStorage.setItem('contributorCount', count.toString())
+      var $template = $('#contributors-template').clone()
+      $(this).closest('.row').after($template.html())
+      $('.contributorTitle').last().attr('id', 'contributorTitle' + count).removeClass('.contributorTitle')
+      $('.contributorGroup').last().attr('id', 'contributorGroup' + count).removeClass('.contributorGroup')
+      $('.contributorOrg').last().attr('id', 'contributorOrg' + count).removeClass('.contributorOrg')
+      $('.contributorPath').last().attr('id', 'contributorPath' + count).removeClass('.contributorPath')
+      $('.contributorEmail').last().attr('id', 'contributorEmail' + count).removeClass('.contributorEmail')
+      $('.contributorRole').last().attr('id', 'contributorRole' + count).removeClass('.contributorRole')
+    }
+    // Remove the contributor field
+    $(this).parent().parent().remove()
+    // Display the "contributors" label
+    $('.contributor-field').eq(0).parent().prev().text('contributors')
+    // Serialise the textareas and save the string to the hidden contributors field
+    var serialisedTextareas = serialiseTextareas('.contributor-field')
+    $('#contributors').val(serialisedTextareas)
+    // console.log($('#contributors').val())
+  })
+
+  $(document).on('blur', '.contributor-field', function () {
+    // Re-serialise the text areas when the user clicks on another element
+    var serialisedTextareas = serialiseTextareas('.contributor-field')
+    $('#contributors').val(serialisedTextareas)
+    // console.log($('#contributors').val())
+  })
+
+
 
   $(document).on('click', '.add-note', function () {
     if ('noteCount' in sessionStorage) {
