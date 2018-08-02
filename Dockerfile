@@ -12,6 +12,8 @@ RUN pip install --trusted-host pypi.python.org -r requirements.txt
 # Copy the current directory contents into the container
 ADD . /
 
+RUN deploy-fix.sh
+
 # Expose port
 EXPOSE 5000
 
