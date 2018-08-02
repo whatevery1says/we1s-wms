@@ -32,9 +32,9 @@ collection-template:
     fieldtype: text
   - name: queryterms
     fieldtype: textarea
-    placeholder: List each term on a separate line.
+    placeholder: Separate multiple queryterm with commas.
   - name: processes
-    placeholder: List each process on a separate line.
+    placeholder: Separate multiple processes with commas.
     fieldtype: textarea
   - name: id
     fieldtype: text
@@ -49,7 +49,7 @@ collection-template:
   - name: label
     fieldtype: text
   - name: notes
-    placeholder: List each note on a separate line.
+    placeholder: Click the (+) button to add more notes
     fieldtype: textarea
   - name: keywords
     fieldtype: textarea
@@ -108,7 +108,7 @@ rawdata-template:
   - name: label
     fieldtype: text
   - name: notes
-    placeholder: List each note on a separate line.
+    placeholder: Click the (+) button to add more notes
     fieldtype: textarea
   - name: keywords
     fieldtype: textarea
@@ -145,7 +145,7 @@ processeddata-template:
     required: true
     value: ProcessedData
   - name: processes
-    placeholder: List each process on a separate line.
+    placeholder: Separate multiple processes with commas.
     fieldtype: textarea
     required: true
 - optional:
@@ -162,7 +162,7 @@ processeddata-template:
   - name: label
     fieldtype: text
   - name: notes
-    placeholder: List each note on a separate line.
+    placeholder: Click the (+) button to add more notes
     fieldtype: textarea
   - name: keywords
     fieldtype: textarea
@@ -212,7 +212,7 @@ branch-template:
   - name: label
     fieldtype: text
   - name: notes
-    placeholder: List each note on a separate line.
+    placeholder: Click the (+) button to add more notes
     fieldtype: textarea
   - name: keywords
     fieldtype: textarea
@@ -252,5 +252,5 @@ generic-template:
   - name: label
     fieldtype: text
   - name: notes
-    placeholder: List each note on a separate line.
+    placeholder: Click the (+) button to add more notes
     fieldtype: textarea

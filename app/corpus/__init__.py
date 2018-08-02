@@ -728,12 +728,15 @@ def upload():
 		for file in request.files.getlist('file'):
 			# Unzip .zip files
 			if file.filename.endswith('.zip'):
+				print('Processing zip file')
 				try:
 					filepath = os.path.join(session['IMPORT_DIR'], file.filename)
 					with zipfile.ZipFile(filepath) as zf:
 						zf.extractall(session['IMPORT_DIR'])
+					print('Zip file extracted to ' + session['IMPORT_DIR'])
 					# Move the files up to the main uploads folder
 					extracted_folder = os.path.splitext(file.filename)[0]
+					print('Extracted folder: ' + extracted_folder)
 					sourcepath = os.path.join(session['IMPORT_DIR'], extracted_folder)
 					for file in os.listdir(sourcepath):
 						if file.endswith('.json'):

@@ -3,9 +3,13 @@
 //
 
 // Serialise the data
-function serialiseAdvancedOptions() {
+function serialiseAdvancedOptions () {
   // Declare an options object and helper variables
-  var options = {'show_properties': [], 'sort': [], 'limit': 0}
+  var options = {
+    'show_properties': [],
+    'sort': [],
+    'limit': 0
+  }
   var rows = []
   var props = []
   var sortList = []
@@ -13,25 +17,25 @@ function serialiseAdvancedOptions() {
   // Get the limit value and make sure it's a number
   var limit = parseInt($('#limit').val())
   if (isNaN(limit)) {
-      limit = 0
+    limit = 0
   }
 
   // Gather data on all shown rows
-  $.each($('tbody > tr'), function() {
-      var show = $(this).attr('data-show')
-      if (show == 'true') {
-          var id = $(this).attr('data-id')
-          var name = $(this).attr('data-name')
-          var direction = $(this).attr('data-direction')
-          // Append to the list of shown properties
-          props.push(name)
-          // Append name and direction to the list of sort criteria
-          // Use an array that can be converted to a tuple
-          if (direction != 'none') {
-              tuplish = [name, direction]
-              sortList.push(tuplish)                        
-          }
+  $.each($('tbody > tr'), function () {
+    var show = $(this).attr('data-show')
+    if (show === 'true') {
+      var id = $(this).attr('data-id')
+      var name = $(this).attr('data-name')
+      var direction = $(this).attr('data-direction')
+      // Append to the list of shown properties
+      props.push(name)
+      // Append name and direction to the list of sort criteria
+      // Use an array that can be converted to a tuple
+      if (direction !== 'none') {
+        tuplish = [name, direction]
+        sortList.push(tuplish)
       }
+    }
   })
 
   // Update the options object
@@ -42,267 +46,270 @@ function serialiseAdvancedOptions() {
   return options
 }
 
-function sendQuery(query, advancedOptions, page = 1) {
-/* Searches the Corpus
-   Input: Values from the search form
-   Returns: An array containing results and errors for display
-   */
-  data = {
+function sendQuery (query, advancedOptions, page = 1) {
+  /* Searches the Corpus
+     Input: Values from the search form
+     Returns: An array containing results and errors for display
+     */
+  var data = {
     'query': JSON.parse(query),
     'page': page,
     'advancedOptions': JSON.parse(advancedOptions)
   }
   $.ajax({
-    method: "POST",
-    url: "/scripts/search",
+    method: 'POST',
+    url: '/scripts/search',
     data: JSON.stringify(data),
     contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
   })
-  .done(function(response) {
-    $('#results').empty()
-    response = JSON.parse(response)
-    if (response['errors'].length != 0) {
-      result = response['errors']
-      var message = ''
-      $.each(result, function (i, item) {
-        message += '<p>' + item + '</p>'
-      })
-      bootbox.alert({
-        message: message
-      })
-    } else {
-      result = response['response']
-      // Make the result into a string
-      var out = ''
-      $.each(result, function (i, item) {
-        out += '<div id="result-' + item['name'] + '">'
-        var link = '/scripts/display/' + item['name']
-        var id = 'delete-' + item['name']
-        out += '<div style="margin-bottom:8px;"><h4 style="display: inline">' + item['name'] + '</h4> '
-        out += '<a role="button" href="' + link + '" id="edit" class="btn btn-sm btn-outline-editorial" title="Edit Script" data-action="edit"><i class="fa fa-pencil"></i></a> '
-        out += '<a role="button" id="' + id + '" class="btn btn-sm btn-outline-editorial delete-btn" title="Delete Script" data-action="delete"><i class="fa fa-trash"></i></a>'
-        out += '</div>'
-        $.each(item, function (key, value) {
-          value = JSON.stringify(value)
-          out += '<code>'+ key +'</code>: ' + value + '<br>'
+    .done(function (response) {
+      hideProcessing()
+      $('#results').empty()
+      response = JSON.parse(response)
+      if (response['errors'].length !== 0) {
+        var result = response['errors']
+        var message = ''
+        $.each(result, function (i, item) {
+          message += '<p>' + item + '</p>'
         })
-        out += '<hr></div>'
-      })
-      var $pagination = $('#pagination')
-      // Get the limit value and make sure it's a number
-      var limit = parseInt($('#limit').val())
-      if (isNaN(limit)) {
-        limit = 0
-      }
-      var defaultOpts = {
-        visiblePages: 5,
-        initiateStartPageClick: false,
-        onPageClick: function (event, page) {
-          sendQuery(query, advancedOptions, page)
-            $('#scroll').click()
+        bootbox.alert({
+          message: message
+        })
+      } else {
+        result = response['response']
+        // Make the result into a string
+        var out = ''
+        $.each(result, function (i, item) {
+          out += '<div id="result-' + item['name'] + '">'
+          var link = '/scripts/display/' + item['name']
+          var id = 'delete-' + item['name']
+          out += '<div style="margin-bottom:8px;"><h4 style="display: inline">' + item['name'] + '</h4> '
+          out += '<a role="button" href="' + link + '" id="edit" class="btn btn-sm btn-outline-editorial" title="Edit Script" data-action="edit"><i class="fa fa-pencil"></i></a> '
+          out += '<a role="button" id="' + id + '" class="btn btn-sm btn-outline-editorial delete-btn" title="Delete Script" data-action="delete"><i class="fa fa-trash"></i></a>'
+          out += '</div>'
+          $.each(item, function (key, value) {
+            value = JSON.stringify(value)
+            out += '<code>' + key + '</code>: ' + value + '<br>'
+          })
+          out += '<hr></div>'
+        })
+        var $pagination = $('#pagination')
+        // Get the limit value and make sure it's a number
+        var limit = parseInt($('#limit').val())
+        if (isNaN(limit)) {
+          limit = 0
         }
-      }
-      var totalPages = parseInt(response['num_pages'])
-      var currentPage = $pagination.twbsPagination('getCurrentPage')
-      $pagination.twbsPagination('destroy')
-      $pagination.twbsPagination($.extend({}, defaultOpts, {
+        var defaultOpts = {
+          visiblePages: 5,
+          initiateStartPageClick: false,
+          onPageClick: function (event, page) {
+            sendQuery(query, advancedOptions, page)
+            $('#scroll').click()
+          }
+        }
+        var totalPages = parseInt(response['num_pages'])
+        var currentPage = $pagination.twbsPagination('getCurrentPage')
+        $pagination.twbsPagination('destroy')
+        $pagination.twbsPagination($.extend({}, defaultOpts, {
           startPage: currentPage,
           totalPages: totalPages
-      }))
-      $('#results').append(out)
-      $('#hideSearch').html('Show Form')
-      $('#exportSearchResults').show()
-      $('#search-form').hide()
-      $('#results').show()
-      $('#pagination').show()
-    }
-  })
-  .fail(function(jqXHR, textStatus, errorThrown) {
-    bootbox.alert({
-      message: '<p>Sorry, mate! You\'ve got an error!</p>',
-      callback: function () {
-          ("Error: " + textStatus + ": " + errorThrown)
+        }))
+        $('#results').append(out)
+        $('#hideSearch').html('Show Form')
+        $('#exportSearchResults').show()
+        $('#search-form').hide()
+        $('#results').show()
+        $('#pagination').show()
       }
     })
-  })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      hideProcessing()
+      bootbox.alert({
+        message: '<p>Sorry, mate! You\'ve got an error!</p>',
+        callback: function () {
+          ('Error: ' + textStatus + ': ' + errorThrown)
+        }
+      })
+    })
 }
 
 // Export Search Results Function
-function exportSearchResults(data) {
+function exportSearchResults (data) {
   /* Exports the results of a search of the Scripts database.
      Input: Values from the search form
      Returns: An array containing results and errors for display */
   $.ajax({
-      method: "POST",
-      url: "/scripts/export-search-results",
-      data: JSON.stringify(data),
-      contentType: 'application/json;charset=UTF-8',
+    method: 'POST',
+    url: '/scripts/export-search-results',
+    data: JSON.stringify(data),
+    contentType: 'application/json;charset=UTF-8',
   })
-  .done(function(response) {
-    response = JSON.parse(response)
-    if (response['errors'].length != 0) {
-      result = JSON.stringify(response['errors'])
-      bootbox.alert({
-        message: '<p>Sorry, mate! You\'ve got an error!</p><p>' + result + '</p>',
-        callback: function () {
-          ("Error: " + textStatus + ": " + errorThrown)
-        }
-      })
-    } else {
+    .done(function (response) {
+      hideProcessing()
+      response = JSON.parse(response)
+      if (response['errors'].length !== 0) {
+        var result = JSON.stringify(response['errors'])
+        bootbox.alert({
+          message: '<p>Sorry, mate! You\'ve got an error!</p><p>' + result + '</p>',
+          callback: function () {
+            ('Error: ' + textStatus + ': ' + errorThrown)
+          }
+        })
+      } else {
         window.location = '/scripts/download-export/search-results.zip'
-    }
-  })
-  .fail(function(jqXHR, textStatus, errorThrown) {
-    bootbox.alert({
-      message: '<p>Sorry, mate! You\'ve got an error!</p>',
-      callback: function () {
-        ("Error: " + textStatus + ": " + errorThrown)
       }
     })
-  })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      hideProcessing()
+      bootbox.alert({
+        message: '<p>Sorry, mate! You\'ve got an error!</p>',
+        callback: function () {
+          ('Error: ' + textStatus + ': ' + errorThrown)
+        }
+      })
+    })
 }
-
 
 //
 // $(document).ready()
 //
 
 $(document).ready(function () {
-  var schema = [
-    {
-      'id': 'contributors',
-      'label': 'contributors',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'content',
-      'label': 'content',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'created',
-      'label': 'created',
-      'type': 'date',
-      'validation': {
-        'callback': function (value, rule) {
-          var d = moment(value, 'YYYY-MM-DD', true).isValid()
-          var dt = moment(value, 'YYYY-MM-DDTHH:mm:ss', true).isValid()
-          if (d === true || dt === true) {
-            return true
-          } else {
-            return ['<code>{0}</code> is not a valid date format. Please use <code>YYYY-MM-DD</code> or <code>YYYY-MM-DDTHH:mm:ss</code>.', value]
-          }
+  var schema = [{
+    'id': 'contributors',
+    'label': 'contributors',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'content',
+    'label': 'content',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'created',
+    'label': 'created',
+    'type': 'date',
+    'validation': {
+      'callback': function (value, rule) {
+        var d = moment(value, 'YYYY-MM-DD', true).isValid()
+        var dt = moment(value, 'YYYY-MM-DDTHH:mm:ss', true).isValid()
+        if (d === true || dt === true) {
+          return true
+        } else {
+          return ['<code>{0}</code> is not a valid date format. Please use <code>YYYY-MM-DD</code> or <code>YYYY-MM-DDTHH:mm:ss</code>.', value]
         }
       }
-    },
-    {
-      'id': 'description',
-      'label': 'description',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'id',
-      'label': 'id',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': '_id',
-      'label': '_id',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'image',
-      'label': 'image',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'keywords',
-      'label': 'keywords',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'label',
-      'label': 'label',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'metapath',
-      'label': 'metapath',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'name',
-      'label': 'name',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'namespace',
-      'label': 'namespace',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'licenses',
-      'label': 'licenses',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'notes',
-      'label': 'notes',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'resources',
-      'label': 'resources',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'shortTitle',
-      'label': 'shortTitle',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'title',
-      'label': 'title',
-      'type': 'string',
-      'size': 30
-    },
-    {
-      'id': 'updated',
-      'label': 'updated',
-      'type': 'date',
-      'validation': {
-        'callback': function (value, rule) {
-          var d = moment(value, 'YYYY-MM-DD', true).isValid()
-          var dt = moment(value, 'YYYY-MM-DDTHH:mm:ss', true).isValid()
-          if (d === true || dt === true) {
-            return true
-          } else {
-            return ['<code>{0}</code> is not a valid date format. Please use <code>YYYY-MM-DD</code> or <code>YYYY-MM-DDTHH:mm:ss</code>.', value]
-          }
-        }
-      }
-    },
-    {
-      'id': 'version',
-      'label': 'version',
-      'type': 'string',
-      'size': 30
     }
+  },
+  {
+    'id': 'description',
+    'label': 'description',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'id',
+    'label': 'id',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': '_id',
+    'label': '_id',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'image',
+    'label': 'image',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'keywords',
+    'label': 'keywords',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'label',
+    'label': 'label',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'metapath',
+    'label': 'metapath',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'name',
+    'label': 'name',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'namespace',
+    'label': 'namespace',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'licenses',
+    'label': 'licenses',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'notes',
+    'label': 'notes',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'resources',
+    'label': 'resources',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'shortTitle',
+    'label': 'shortTitle',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'title',
+    'label': 'title',
+    'type': 'string',
+    'size': 30
+  },
+  {
+    'id': 'updated',
+    'label': 'updated',
+    'type': 'date',
+    'validation': {
+      'callback': function (value, rule) {
+        var d = moment(value, 'YYYY-MM-DD', true).isValid()
+        var dt = moment(value, 'YYYY-MM-DDTHH:mm:ss', true).isValid()
+        if (d === true || dt === true) {
+          return true
+        } else {
+          return ['<code>{0}</code> is not a valid date format. Please use <code>YYYY-MM-DD</code> or <code>YYYY-MM-DDTHH:mm:ss</code>.', value]
+        }
+      }
+    }
+  },
+  {
+    'id': 'version',
+    'label': 'version',
+    'type': 'string',
+    'size': 30
+  }
   ]
 
   // Query Builder options
@@ -321,7 +328,7 @@ $(document).ready(function () {
 
   // Instantiate the Query Builder
   $('#builder').queryBuilder(options)
-  if (dbQuery != '') {
+  if (dbQuery !== '') {
     $('#builder').queryBuilder('setRulesFromMongo', dbQuery)
     $('#db-query').val(JSON.stringify(dbQuery))
   }
@@ -343,11 +350,14 @@ $(document).ready(function () {
         url: '/scripts/test-query',
         data: JSON.stringify(formvals),
         contentType: 'application/json;charset=UTF-8',
+        beforeSend: showProcessing()
       })
         .done(function (response) {
+          hideProcessing()
           bootbox.alert(response)
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
+          hideProcessing()
           bootbox.alert({
             message: '<p>Sorry, mate! You\'ve got an error!</p>',
             callback: function () {
@@ -359,7 +369,7 @@ $(document).ready(function () {
   })
 
   // When the Get Query button is clicked, validate and create a querystring
-  $('#view-query, #search').click(function(){
+  $('#view-query, #search').click(function () {
     // Remove previous error messages
     $('.has-error').find('.rule-actions > .error-message').remove()
     // If the form validates, build the querystring
@@ -369,10 +379,10 @@ $(document).ready(function () {
       var outputQueryString = JSON.stringify($('#builder').queryBuilder('getMongo'))
       var outputAdvancedOptions = JSON.stringify(serialiseAdvancedOptions())
       // Perform the search or display the query
-      if ($(this).attr('id') == 'search') {
+      if ($(this).attr('id') === 'search') {
         sendQuery(querystring, advancedOptions)
       } else {
-        msg = '<p>Query:</p><pre><code>' + outputQueryString + '</code></pre>'
+        var msg = '<p>Query:</p><pre><code>' + outputQueryString + '</code></pre>'
         msg += '<p>Advanced Options:</p><pre><code>' + outputAdvancedOptions + '</code></pre>'
         bootbox.alert({
           message: msg
@@ -387,7 +397,7 @@ $(document).ready(function () {
   })
 
   // Handle the Serialise Button
-  $('#serialise').click(function() {
+  $('#serialise').click(function () {
     options = serialiseAdvancedOptions()
     // Display All Options
     console.log(JSON.stringify(options, null, 2))
@@ -395,8 +405,8 @@ $(document).ready(function () {
   })
 
   // Toggles Show/Hide Form Button
-  $('#hideSearch').click(function() {
-    if ($('#hideSearch').html() == 'Hide Form') {
+  $('#hideSearch').click(function () {
+    if ($('#hideSearch').html() === 'Hide Form') {
       $('#search-form').hide()
       $('#results').show()
       $('#pagination').show()
@@ -404,12 +414,12 @@ $(document).ready(function () {
     } else {
       $('#hideSearch').html('Hide Form')
       $('#results').hide()
-      $('#pagination').hide()      
+      $('#pagination').hide()
       $('#search-form').show()
     }
   })
 
-  /**** Advanced Options Functions ****/
+  /* Advanced Options Functions */
   // Make the table rows sortable
   $('.sorted_table').sortable({
     containerSelector: 'table',
@@ -419,19 +429,19 @@ $(document).ready(function () {
   })
 
   // Transfer the checked value to the row element
-  $('.show').change(function() {
+  $('.show').change(function () {
     var show = $(this).is(':checked')
     $(this).parent().parent().parent().attr('data-show', show)
   })
 
   // Transfer the sort value to the row element
-  $('.direction').change(function() {
+  $('.direction').change(function () {
     var direction = $(this).val()
     $(this).parent().parent().attr('data-direction', direction)
   })
 
   // Export Search Results Button
-  $('#exportSearchResults').click(function(e) {
+  $('#exportSearchResults').click(function (e) {
     e.preventDefault()
     var querystring = JSON.stringify($('#builder').queryBuilder('getMongo'), undefined, 2)
     var advancedOptions = JSON.stringify(serialiseAdvancedOptions(), undefined, 2)
@@ -444,7 +454,7 @@ $(document).ready(function () {
   })
 
   // Search Results Delete Button
-  $(document).on('click', '.delete-btn', function(e) {
+  $(document).on('click', '.delete-btn', function (e) {
     e.preventDefault()
     var id = $(this).attr('id')
     var name = id.replace(/^delete-/, '')
@@ -452,47 +462,56 @@ $(document).ready(function () {
     bootbox.confirm({
       message: 'Are you sure you wish to permanently delete <code>' + name + '</code>?',
       buttons: {
-        confirm: {label: 'Yes', className: 'btn-success'},
-        cancel: {label: 'No', className: 'btn-danger'}
+        confirm: {
+          label: 'Yes',
+          className: 'btn-success'
+        },
+        cancel: {
+          label: 'No',
+          className: 'btn-danger'
+        }
       },
       callback: function (result) {
         if (result === true) {
           var data = {}
           data['action'] = 'delete'
-          data['manifest'] = {'name': name, 'metapath': 'Scripts'}
+          data['manifest'] = {
+            'name': name,
+            'metapath': 'Scripts'
+          }
           data['query'] = JSON.stringify(data['manifest'])
           $.ajax({
             method: 'POST',
             url: '/scripts/delete-script',
             data: JSON.stringify(data),
-            contentType: 'application/json;charset=UTF-8'
+            contentType: 'application/json;charset=UTF-8',
+            beforeSend: showProcessing()
           })
-          .done(function (response) {
-            if (JSON.parse(response)['result'] == 'fail') {
-              var errors = JSON.parse(response)['errors']
-              var msg = '<p>Could not delete the script because of the following errors:</p><ul>'
-              $.each(errors, function (index, value) {
-                msg += '<li>' + value + '</li>'
-              })
-              msg += '</ul>'
-            } else {
-              bootbox.alert('<p>The script was deleted.</p>')
-              $('#result-'+name).remove()
-            }
-          })
-          .fail(function (jqXHR, textStatus, errorThrown) {
-            bootbox.alert({
-              message: '<p>The script could not be updated because of the following errors:</p>'+response,
-              callback: function () {
-                return 'Error: ' + textStatus + ': ' + errorThrown
+            .done(function (response) {
+              hideProcessing()
+              if (JSON.parse(response)['result'] === 'fail') {
+                var errors = JSON.parse(response)['errors']
+                var msg = '<p>Could not delete the script because of the following errors:</p><ul>'
+                $.each(errors, function (index, value) {
+                  msg += '<li>' + value + '</li>'
+                })
+                msg += '</ul>'
+              } else {
+                bootbox.alert('<p>The script was deleted.</p>')
+                $('#result-' + name).remove()
               }
             })
-          })
+            .fail(function (jqXHR, textStatus, errorThrown) {
+              hideProcessing()
+              bootbox.alert({
+                message: '<p>The script could not be updated because of the following errors:</p>' + response,
+                callback: function () {
+                  return 'Error: ' + textStatus + ': ' + errorThrown
+                }
+              })
+            })
         }
       }
     })
   })
-
-
 })
-

@@ -427,9 +427,11 @@ function saveProject (action) {
       method: 'POST',
       url: '/projects/save-project',
       data: data,
-      contentType: 'application/json;charset=UTF-8'
+      contentType: 'application/json;charset=UTF-8',
+      beforeSend: showProcessing()
     })
       .done(function (response) {
+        hideProcessing()
         if (JSON.parse(response)['result'] === 'fail') {
           var errors = JSON.parse(response)['errors']
           var msg = '<p>Could not save the project because of the following errors:</p><ul>'
@@ -447,6 +449,7 @@ function saveProject (action) {
         })
       })
       .fail(function (jqXHR, textStatus, errorThrown) {
+        hideProcessing()
         bootbox.alert({
           message: '<p>The project could not be updated because of the following errors:</p>'+response,
           callback: function () {
@@ -471,9 +474,11 @@ function deleteProject (name) {
     method: 'POST',
     url: '/projects/delete-project',
     data: JSON.stringify(data),
-    contentType: 'application/json;charset=UTF-8'
+    contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
   })
     .done(function (response) {
+      hideProcessing()
       if (JSON.parse(response)['result'] === 'fail') {
         var errors = JSON.parse(response)['errors']
         var msg = '<p>Could not delete the project because of the following errors:</p><ul>'
@@ -488,6 +493,7 @@ function deleteProject (name) {
       }
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
+      hideProcessing()
       bootbox.alert({
         message: '<p>The project could not be deleted because of the following errors:</p>'+response,
         callback: function () {
@@ -508,9 +514,11 @@ function exportProject () {
       method: 'POST',
       url: '/projects/export-project',
       data: data,
-      contentType: 'application/json;charset=UTF-8'
+      contentType: 'application/json;charset=UTF-8',
+      beforeSend: showProcessing()
     })
       .done(function (response) {
+        hideProcessing()
         if (JSON.parse(response)['result'] === 'fail') {
           var errors = JSON.parse(response)['errors']
           var msg = '<p>Could not save the project because of the following errors:</p><ul>'
@@ -527,6 +535,7 @@ function exportProject () {
         })
       })
       .fail(function (jqXHR, textStatus, errorThrown) {
+        hideProcessing()
         bootbox.alert({
           message: '<p>The project could not be updated because of the following errors:</p>'+response,
           callback: function () {
@@ -554,9 +563,11 @@ function launchJupyter (btnId, formvals) {
     method: 'POST',
     url: '/projects/launch-jupyter',
     data: JSON.stringify(data),
-    contentType: 'application/json;charset=UTF-8'
+    contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
   })
     .done(function (response) {
+      hideProcessing()
       console.log('Done')
       console.log(response)
       response = JSON.parse(response)
@@ -573,6 +584,7 @@ function launchJupyter (btnId, formvals) {
       }
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
+      hideProcessing()
       bootbox.alert({
         message: '<p>Sorry, mate! You\'ve got an error!</p>',
         callback: function () {

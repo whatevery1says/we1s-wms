@@ -57,8 +57,10 @@ function sendQuery (query, advancedOptions, page = 1) {
     url: '/projects/search',
     data: JSON.stringify(data),
     contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
   })
     .done(function (response) {
+      hideProcessing()
       $('#results').empty()
       response = JSON.parse(response)
       if (response['errors'].length !== 0) {
@@ -137,8 +139,10 @@ function exportSearchResults (data) {
     url: '/projects/export-search-results',
     data: JSON.stringify(data),
     contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
   })
     .done(function (response) {
+      hideProcessing()
       response = JSON.parse(response)
       if (response['errors'].length !== 0) {
         var result = JSON.stringify(response['errors'])
@@ -342,11 +346,14 @@ $(document).ready(function () {
         url: '/projects/test-query',
         data: JSON.stringify(formvals),
         contentType: 'application/json;charset=UTF-8',
+        beforeSend: showProcessing()
       })
         .done(function (response) {
+          hideProcessing()
           bootbox.alert(response)
         })
         .fail(function (jqXHR, textStatus, errorThrown) {
+          hideProcessing()
           bootbox.alert({
             message: '<p>Sorry, mate! You\'ve got an error!</p>',
             callback: function () {
@@ -465,9 +472,11 @@ $(document).ready(function () {
             method: 'POST',
             url: '/projects/delete-project',
             data: JSON.stringify(data),
-            contentType: 'application/json;charset=UTF-8'
+            contentType: 'application/json;charset=UTF-8',
+            beforeSend: showProcessing()
           })
             .done(function (response) {
+              hideProcessing()
               if (JSON.parse(response)['result'] == 'fail') {
                 var errors = JSON.parse(response)['errors']
                 var msg = '<p>Could not delete the project because of the following errors:</p><ul>'
@@ -482,6 +491,7 @@ $(document).ready(function () {
               }
             })
             .fail(function (jqXHR, textStatus, errorThrown) {
+              hideProcessing()
               bootbox.alert({
                 message: '<p>The project could not be updated because of the following errors:</p>'+response,
                 callback: function () {
