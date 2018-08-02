@@ -215,7 +215,7 @@ class Project():
 @projects.route('/')
 def index():
 	"""Projects index page."""
-	scripts = ['js/corpus/dropzone.js', 'js/projects/projects.js', 'js/projects/upload.js']
+	scripts = ['js/corpus/dropzone.js', 'js/projects/projects.js', 'js/projects/upload.js', 'js/jquery-ui.js', 'js/dateformat.js']
 	breadcrumbs = [{'link': '/corpus', 'label': 'Scripts'}]
 	return render_template('projects/index.html', scripts=scripts, breadcrumbs=breadcrumbs)
 
@@ -223,7 +223,7 @@ def index():
 @projects.route('/create', methods=['GET', 'POST'])
 def create():
 	"""Create/update project page."""
-	scripts = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery-sortable-min.js', 'js/projects/projects.js', 'js/projects/search.js']
+	scripts = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery-sortable-min.js', 'js/projects/projects.js', 'js/projects/search.js', 'js/jquery-ui.js', 'js/dateformat.js']
 	styles = ['css/query-builder.default.css']    
 	breadcrumbs = [{'link': '/projects', 'label': 'Projects'}, {'link': '/projects/create', 'label': 'Create/Update Project'}]
 	with open('app/templates/projects/template_config.yml', 'r') as stream:
@@ -393,7 +393,7 @@ def download_export(filepath):
 @projects.route('/search', methods=['GET', 'POST'])
 def search():
 	""" Experimental Page for searching Projects manifests."""
-	scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/projects/projects.js', 'js/jquery-sortable-min.js', 'js/projects/search.js']
+	scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/projects/projects.js', 'js/jquery-sortable-min.js', 'js/projects/search.js', 'js/dateformat.js', 'js/jquery-ui.js']
 	styles = ['css/query-builder.default.css']	
 	breadcrumbs = [{'link': '/projects', 'label': 'Projects'}, {'link': '/projects/search', 'label': 'Search Projects'}]
 	if request.method == 'GET':

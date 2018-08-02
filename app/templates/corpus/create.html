@@ -124,7 +124,13 @@
                           <button hidden type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
                           <button hidden type="button" class="btn btn-sm btn-outline-editorial remove-contributor hidden" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
                       </div>
-                  </div>    
+                  </div>
+                  {% elif opt.name == 'created' %}
+                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_initcollection">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10" id="{{ opt.name|safe }}_initcollection_dateformat"></div>
+                    </div>      
                     {% else %}
                     <!-- Generic Textarea -->
                     <div class="form-group row">
@@ -180,7 +186,13 @@
                             <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
                             <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
                         </div>
-                    </div>            
+                    </div>    
+                    {% elif opt.name == 'updated' %}
+                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_initcollection">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10" id="{{ opt.name|safe }}_initcollection_dateformat"></div>
+                    </div>          
                     {% else %}
                     <!-- Generic Textarea -->
                     <div class="form-group row">
@@ -274,6 +286,12 @@
                           <button hidden type="button" class="btn btn-sm btn-outline-editorial remove-contributor hidden" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
                       </div>
                   </div>    
+                  {% elif opt.name == 'created' %}
+                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_collection">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10" id="{{ opt.name|safe }}_collection_dateformat"></div>
+                    </div>  
                     {% else %}
                     <!-- Generic Textarea -->
                     <div class="form-group row">
@@ -329,7 +347,13 @@
                             <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
                             <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
                         </div>
-                    </div>            
+                    </div>        
+                    {% elif opt.name == 'updated' %}
+                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_collection">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10" id="{{ opt.name|safe }}_collection_dateformat"></div>
+                    </div>      
                     {% else %}
                     <!-- Generic Textarea -->
                     <div class="form-group row">
@@ -413,7 +437,13 @@
                     <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
                     <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
                 </div>
-            </div>            
+            </div>          
+            {% elif opt.name == 'updated' %}
+                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_rawdata">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10" id="{{ opt.name|safe }}_rawdata_dateformat"></div>
+                    </div>    
             {% else %}
             <!-- Generic Textarea -->
             <div class="form-group row">
@@ -484,7 +514,13 @@
                 <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
                 <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
             </div>
-        </div>            
+        </div>   
+        {% elif opt.name == 'accessed' or opt.name == 'updated' or opt.name == 'created' %}
+                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_processeddata">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10" id="{{ opt.name|safe }}_processeddata_dateformat"></div>
+                    </div>           
         {% else %}
         <!-- Generic Textarea -->
         <div class="form-group row">
@@ -549,7 +585,13 @@
                         <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
                         <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
                     </div>
-                </div>            
+                </div> 
+                {% elif opt.name == 'accessed' or opt.name == 'updated' or opt.name == 'created' %}
+                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_branch">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10" id="{{ opt.name|safe }}_branch_dateformat"></div>
+                    </div>             
                 {% else %}
                 <!-- Generic Textarea -->
                 <div class="form-group row">
@@ -611,7 +653,13 @@
                             <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
                             <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
                         </div>
-                    </div>            
+                    </div> 
+                    {% elif opt.name == 'accessed' or opt.name == 'updated' or opt.name == 'created' %}
+                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
+                    <div class="form-group row">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_generic">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10" id="{{ opt.name|safe }}_generic_dateformat"></div>
+                    </div>             
                     {% else %}
                     <!-- Generic Textarea -->
                     <div class="form-group row">

@@ -5,7 +5,7 @@
 function jsonifyForm () {
   /* Handles JSON form serialisation */
   var form = {}
-  $.each($('form').serializeArray(), function (i, field) {
+  $.each($('form *').not('.datepicker').serializeArray(), function (i, field) {
     form[field.name] = field.value || ''
   })
   return form
@@ -61,6 +61,12 @@ function serialiseTextareas (cls) {
 
 function cleanup () {
   const form = jsonifyForm()
+  var access = JSON.parse(sessionStorage.getItem('accessed'))
+  form['accessed'] = access
+  var update = JSON.parse(sessionStorage.getItem('updated'))
+  form['updated'] = update
+  var create = JSON.parse(sessionStorage.getItem('created'))
+  form['created'] = create
   const newform = {}
   const exclude = ['licenseName', 'licensePath', 'licenseTitle',
                    'contributorTitle', 'contributorOrg', 'contributorGroup', 
@@ -585,6 +591,10 @@ $(document).ready(function () {
     $('#previewDisplay').hide()
     $('form').show()
   })
+
+  $('#created').dateformat()
+  $('#updated').dateformat()
+  $('#accessed').dateformat()
 
   // Save Button
   $('#save').click(function (e) {

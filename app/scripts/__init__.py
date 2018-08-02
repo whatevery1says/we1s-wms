@@ -198,7 +198,7 @@ class Script():
 @scripts.route('/')
 def index():
 	"""Scripts index page."""
-	scripts = ['js/corpus/dropzone.js', 'js/scripts/scripts.js', 'js/scripts/upload.js']
+	scripts = ['js/corpus/dropzone.js', 'js/scripts/scripts.js', 'js/scripts/upload.js', 'js/dateformat.js', 'js/jquery-ui.js']
 	breadcrumbs = [{'link': '/scripts', 'label': 'Scripts'}]
 	return render_template('scripts/index.html', scripts=scripts, breadcrumbs=breadcrumbs)
 
@@ -206,7 +206,7 @@ def index():
 @scripts.route('/create', methods=['GET', 'POST'])
 def create():
 	"""Create/update script or tool page."""
-	scripts = ['js/corpus/dropzone.js', 'js/parsley.min.js', 'js/moment.min.js', 'js/scripts/scripts.js', 'js/scripts/upload.js']
+	scripts = ['js/corpus/dropzone.js', 'js/parsley.min.js', 'js/moment.min.js', 'js/scripts/scripts.js', 'js/scripts/upload.js', 'js/dateformat.js', 'js/jquery-ui.js']
 	styles = ['css/query-builder.default.css']    
 	breadcrumbs = [{'link': '/scripts', 'label': 'Scripts'}, {'link': '/scripts/create', 'label': 'Create/Update Script'}]
 	with open('app/templates/scripts/template_config.yml', 'r') as stream:
@@ -373,7 +373,7 @@ def download_export(filename):
 @scripts.route('/search', methods=['GET', 'POST'])
 def search():
 	""" Experimental Page for searching Scripts manifests."""
-	scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/scripts/scripts.js', 'js/jquery-sortable-min.js', 'js/scripts/search.js']
+	scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/scripts/scripts.js', 'js/jquery-sortable-min.js', 'js/scripts/search.js', 'js/dateformat.js', 'js/jquery-ui.js']
 	styles = ['css/query-builder.default.css']	
 	breadcrumbs = [{'link': '/scripts', 'label': 'Scripts'}, {'link': '/scripts/search', 'label': 'Search Scripts'}]
 	if request.method == 'GET':

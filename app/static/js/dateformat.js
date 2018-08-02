@@ -4,6 +4,7 @@
     var k = $(this).attr('id')
     let a = '#' + $(this).attr('id') + '_dateformat'
     let b = '#' + $(this).attr('id') + '_list'
+    let adddate = '#' + k + '_add_date'
     let p = a + ' :input'
     var jsontify = ''
     // let html = '<ol id="' + $(this).attr('id') + '_list"><li id="concatenate"><p class="datep" style="display:inline-block !important; width: 200px !important;">start date: <input id="' + $(this).attr('id') + '_ds_0" name="0" size="16" type="text" value="" class="datepicker date"></p><p class="datep" style="display:inline-block !important; width: 200px !important;">end date: <input id="' + $(this).attr('id') + '_de_0" name="0" size="16" type="text" value="" class="datepicker date "></p></li></ol><button id="add_date" type="button" class="btn btn-sm btn-outline-editorial">ADD DATE</button><button id="' + $(this).attr('id') + '_getdatevalue" type="button" class="btn btn-sm btn-outline-editorial">SUBMIT</button>'
@@ -66,7 +67,6 @@
       elem += '<a role="button" class="remove_date btn btn-sm btn-outline-editorial" title="Remove Date"><i class="fa fa-minus-circle"></i></a>'
       elem += '</div>'
       elem += '</div></li>'
-
       $(b).append(elem)
       $('.datepicker').datepicker({
         dateFormat: 'yy-mm-dd', // check change
@@ -200,13 +200,11 @@
           }
         }
       })
-
       s = s.substring(0, s.length - 2)
       jsontify = JSON.stringify(parsevalue)
       document.getElementById(k).value = s
       sessionStorage.setItem(k, jsontify)
+
     })
-
-
   } // end of plugin function
 })(jQuery)
