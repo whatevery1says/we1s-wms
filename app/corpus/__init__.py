@@ -524,7 +524,7 @@ def import_data():
 
 def listdir(path):
 	""" Replacement for os.listdir() that ignores hidden files."""
-    return glob.glob(os.path.join(path, '*'))
+	return glob.glob(os.path.join(path, '*'))
 
 def get_server_files():
 	""" Get the files available for import from the server."""
