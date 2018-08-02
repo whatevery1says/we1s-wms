@@ -1,10 +1,9 @@
-Not a real requirements.txt file: some of these may be built into Python.
-
 bs4
 flask
 jsonschema
+markdown
 pandas
 pymongo
+PyYAML
 tableschema_pandas
 tabulator
-yaml
