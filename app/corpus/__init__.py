@@ -51,7 +51,7 @@ TRASH_DIR = os.path.join(instance_path, 'trash')
 @corpus.route('/')
 def index():
 	"""Corpus index page."""
-	scripts = ['js/corpus/corpus.js']
+	scripts = ['js/corpus/corpus.js', 'js/jquery-ui.js', 'js/dateformat-corpus.js']
 	breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}]
 	return render_template('corpus/index.html', scripts=scripts, breadcrumbs=breadcrumbs)
 
@@ -59,7 +59,7 @@ def index():
 @corpus.route('/create', methods=['GET', 'POST'])
 def create():
 	"""Create manifest page."""
-	scripts = ['js/parsley.min.js', 'js/corpus/corpus.js']
+	scripts = ['js/parsley.min.js', 'js/corpus/corpus.js', 'js/jquery-ui.js', 'js/dateformat-corpus.js', 'js/moment.min.js']
 	breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/create', 'label': 'Create Collection'}]
 	with open("app/templates/corpus/template_config.yml", 'r') as stream:
 		templates = yaml.load(stream)
@@ -409,7 +409,7 @@ def download_export(filename):
 @corpus.route('/search1', methods=['GET', 'POST'])
 def search():
 	""" Page for searching Corpus manifests."""
-	scripts = ['js/parsley.min.js', 'js/jquery.twbsPagination.min.js', 'js/corpus/corpus.js']
+	scripts = ['js/parsley.min.js', 'js/jquery.twbsPagination.min.js', 'js/corpus/corpus.js','js/dateformat-corpus.js', 'js/jquery-ui.js']
 	breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/search', 'label': 'Search Collections'}]
 	if request.method == 'GET':
 		return render_template('corpus/search.html', scripts=scripts, breadcrumbs=breadcrumbs)
@@ -423,7 +423,7 @@ def search():
 @corpus.route('/search', methods=['GET', 'POST'])
 def search2():
 	""" Experimental Page for searching Corpus manifests."""
-	scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/corpus/corpus.js', 'js/jquery-sortable-min.js', 'js/corpus/search.js']
+	scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/corpus/corpus.js', 'js/jquery-sortable-min.js', 'js/corpus/search.js', 'js/dateformat-corpus.js', 'js/jquery-ui.js']
 	styles = ['css/query-builder.default.css']	
 	breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/search', 'label': 'Search Collections'}]
 	if request.method == 'GET':
