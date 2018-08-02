@@ -1,7 +1,4 @@
-FROM python:3
-
-# Install base requirements for a pandas / flask application
-RUN pip3 install pandas flask
+FROM jjuanda/numpy-pandas
 
 WORKDIR /
 
