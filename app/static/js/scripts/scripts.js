@@ -62,7 +62,9 @@ function serialiseTextareas (cls) {
 function cleanup () {
   const form = jsonifyForm()
   const newform = {}
-  const exclude = ['licenseName', 'licensePath', 'licenseTitle', 'notesField']
+  const exclude = ['licenseName', 'licensePath', 'licenseTitle',
+                   'contributorTitle', 'contributorOrg', 'contributorGroup', 
+                   'contributorPath', 'contributorEmail', 'contributorRole', 'notesField']
   // Clone the form values, ommitting empty fields and exclusions
   $.each(form, function (key, value) {
     if (value !== '' && value !== [] && $.inArray(key, exclude) === -1) {
@@ -93,7 +95,70 @@ function cleanup () {
       newform[property] = list
     }
   }
-  // Convert objects stored as hidden input string values
+  const objects2 = ['contributors']
+  for (var property of objects2) {
+    newform[property] = eval(newform[property])
+    // Only process defined properties
+    if (typeof newform[property] !== 'undefined') {
+      // Convert evil properties from hidden fields to a list
+      let gD = {}
+      let gL = []
+      let eP = []
+      // Get the property keys
+      $.each(newform[property], function (key, value) {
+        $.each(value, function (k, v) {
+          eP.push(k)
+        })
+      })
+      // Build object for each ID
+      $.each(eP, function (key, item) {
+        item = item.replace(/[a-zA-Z]+/, '')
+        gD[item] = {}
+      })
+      // Add the values to the good dict by ID
+      $.each(newform[property], function (i, item) {
+        let obj = newform[property][i]
+        let k = Object.keys(obj)
+        let prop = k[0]
+        let id = prop.replace(/[a-zA-Z]+/, '')
+        let val = item[prop]
+        if (prop.startsWith('contributorTitle')) {
+          prop = 'title'
+          gD[id][prop] = val
+        }
+        if (prop.startsWith('contributorGroup')) {
+          prop = 'group'
+          gD[id][prop] = val
+        }
+        if (prop.startsWith('contributorOrg')) {
+          prop = 'organization'
+          gD[id][prop] = val
+        }
+        if (prop.startsWith('contributorPath')) {
+          prop = 'path'
+          gD[id][prop] = val
+        }
+        if (prop.startsWith('contributorEmail')) {
+          prop = 'email'
+          gD[id][prop] = val
+        }
+        if (prop.startsWith('contributorRole')) {
+          prop = 'role'
+          gD[id][prop] = val
+        }
+      })
+      // Convert any contributor names to strings and add the good_dict values to the list
+      $.each(gD, function (k, v) {
+        if (gD[k].length === 1) {
+          v = gD[k]['title']
+        } else {
+          gL.push(v)
+        }
+      })
+      newform[property] = gL
+    }
+  }
+
   const objects = ['licenses']
   for (var property of objects) {
     newform[property] = eval(newform[property])
@@ -147,7 +212,6 @@ function cleanup () {
   }
   return newform
 }
-
 $(document).on('click', '.add-license', function () {
   // Keep count of the number of fields in session storage
   if ('licenseCount' in sessionStorage) {
