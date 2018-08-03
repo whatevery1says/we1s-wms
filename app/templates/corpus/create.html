@@ -78,16 +78,16 @@
                   {% if opt.name == 'sources' %}
                     <input type="hidden" id="sources" name="sources" value="">
                     <div class="form-group row">
-                        <label class="col-sm-2 col-form-label" for="sourceEmail0">sources</label>
+                        <label class="col-sm-2 col-form-label" for="sourceTitle0">sources</label>
                         <div class="col-sm-3">
-                            <input type="text" class="source-field" id="sourceEmail0" name="sourceEmail" placeholder="Email">
-                        </div>
+                            <input type="text" class="source-field" id="sourceTitle0" name="sourceTitle" placeholder="Title">
+                        </div>    
                         <div class="col-sm-3">
                             <input type="text" class="source-field" id="sourcePath0" name="sourcePath" placeholder="Path">
                         </div>
                         <div class="col-sm-3">
-                            <input type="text" class="source-field" id="sourceTitle0" name="sourceTitle" placeholder="Title">
-                        </div>    
+                            <input type="text" class="source-field" id="sourceEmail0" name="sourceEmail" placeholder="Email">
+                        </div>
                         <div class="col-sm-1" style="padding: 5px 0px;">
                             <button type="button" class="btn btn-sm btn-outline-editorial add-source" title="Add another source"><i class="fa fa-plus-circle"></i></button>
                             <button type="button" class="btn btn-sm btn-outline-editorial remove-source hidden" title="Remove source"><i class="fa fa-minus-circle"></i></button>
@@ -241,14 +241,14 @@
                     <div class="form-group row">
                         <label class="col-sm-2 col-form-label" for="sourceEmail0">sources</label>
                         <div class="col-sm-3">
-                            <input type="text" class="source-field" id="sourceEmail0" name="sourceEmail" placeholder="Email">
-                        </div>
+                            <input type="text" class="source-field" id="sourceTitle0" name="sourceTitle" placeholder="Title">
+                            </div>    
                         <div class="col-sm-3">
                             <input type="text" class="source-field" id="sourcePath0" name="sourcePath" placeholder="Path">
                         </div>
                         <div class="col-sm-3">
-                            <input type="text" class="source-field" id="sourceTitle0" name="sourceTitle" placeholder="Title">
-                        </div>    
+                            <input type="text" class="source-field" id="sourceEmail0" name="sourceEmail" placeholder="Email">
+                        </div>
                         <div class="col-sm-1" style="padding: 5px 0px;">
                             <button type="button" class="btn btn-sm btn-outline-editorial add-source" title="Add another source"><i class="fa fa-plus-circle"></i></button>
                             <button type="button" class="btn btn-sm btn-outline-editorial remove-source hidden" title="Remove source"><i class="fa fa-minus-circle"></i></button>
@@ -714,16 +714,16 @@
 <!-- sources Template -->
 <script type="text/html" id="sources-template">
     <div class="form-group row">
-        <label class="col-sm-2 col-form-label" for="sourceEmail">&nbsp;</label>
+        <label class="col-sm-2 col-form-label" for="sourceTitle">&nbsp;</label>
+        <div class="col-sm-3">
+            <input type="text" class="source-field sourceTitle" name="sourceTitle" placeholder="Title">
+        </div>    
         <div class="col-sm-3">
             <input type="text" class="source-field sourceEmail" name="sourceEmail" required="" placeholder="Email">
         </div>
         <div class="col-sm-3">
             <input type="text" class="source-field sourcePath" name="sourcePath" required="" placeholder="Path">
         </div>
-        <div class="col-sm-3">
-            <input type="text" class="source-field sourceTitle" name="sourceTitle" placeholder="Title">
-        </div>    
         <div class="col-sm-1" style="padding: 5px 0px;">
             <button type="button" class="btn btn-sm btn-outline-editorial add-source" title="Add another source"><i class="fa fa-plus-circle"></i></button>
             <button type="button" class="btn btn-sm btn-outline-editorial remove-source" title="Remove source"><i class="fa fa-minus-circle"></i></button>

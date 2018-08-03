@@ -228,7 +228,7 @@ def search2():
 	""" Experimental Page for searching sources manifests."""
 	scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/sources/sources.js', 'js/jquery-sortable-min.js', 'js/sources/search.js', 'js/dateformat.js', 'js/jquery-ui.js']
 	styles = ['css/query-builder.default.css']	
-	breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/search', 'label': 'Search Collections'}]
+	breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/search', 'label': 'Search Sources'}]
 	if request.method == 'GET':
 		return render_template('sources/search2.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
 	if request.method == 'POST':
