@@ -286,7 +286,7 @@ function cleanup () {
   const exclude = ['authorName', 'authorOrg', 'authorGroup', 'notesField']
   // Clone the form values, ommitting empty fields and exclusions
   $.each(form, function (key, value) {
-    if (value !== '' && value !== [] && $.inArray(key, exclude) === -1) {
+    if (value !== '' && value !== null && value !== [] && $.inArray(key, exclude) === -1) {
       newform[key] = value
     }
   })

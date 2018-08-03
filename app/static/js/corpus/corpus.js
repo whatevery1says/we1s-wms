@@ -2,10 +2,11 @@
 // General Helper Functions
 //
 
-function jsonifyForm (formObj) {
+function jsonifyForm(formObj) {
   /* Handles JSON form serialisation */
   var form = {}
-  $.each(formObj.serializeArray(), function (i, field) {
+  let getform = '#' + formObj.attr('id') + " *"
+  $.each($(getform).not('.datepicker').serializeArray(), function (i, field) {
     form[field.name] = field.value || ''
   })
   return form
@@ -15,7 +16,7 @@ function jsonifyForm (formObj) {
 // Ajax Functions
 //
 
-function createManifest (jsonform) {
+function createManifest(jsonform) {
   /* Creates a new manifest
   Input: A JSON serialisation of the form values
   Returns: A copy of the manifest and an array of errors for display */
@@ -50,14 +51,14 @@ function createManifest (jsonform) {
     })
 }
 
-function deleteManifest (name, metapath) {
+function deleteManifest(name, metapath) {
   /* Deletes a manifest
    Input: A name value
    Returns: An array of errors for display */
   $.ajax({
     method: 'POST',
     url: '/corpus/delete-manifest',
-    data: JSON.stringify({'name': name, 'metapath': metapath}),
+    data: JSON.stringify({ 'name': name, 'metapath': metapath }),
     contentType: 'application/json;charset=UTF-8',
     beforeSend: showProcessing()
   })
@@ -84,7 +85,7 @@ function deleteManifest (name, metapath) {
     })
 }
 
-function exportSearch (data) {
+function exportSearch(data) {
   /* Exports the results of a Corpus search
      Input: Values from the search form
      Returns: An array containing results and errors for display */
@@ -110,7 +111,7 @@ function exportSearch (data) {
     })
 }
 
-function searchCorpus (data) {
+function searchCorpus(data) {
   /* Searches the Corpus
      Input: Values from the search form
      Returns: An array containing results and errors for display */
@@ -144,7 +145,7 @@ function searchCorpus (data) {
           $.each(item, function (key, value) {
             value = JSON.stringify(value)
             if (key === 'content' && value.length > 200) {
-              value = value.substring(0,200) + '...'
+              value = value.substring(0, 200) + '...'
             }
             out += '<code>' + key + '</code>: ' + value + '<br>'
           })
@@ -189,7 +190,7 @@ function searchCorpus (data) {
     })
 }
 
-function sendExport (jsonform) {
+function sendExport(jsonform) {
   /* Sends the export options to the server
      Input: A serialised set of form values from the export modal
      Returns: The name of the file to download.
@@ -217,7 +218,7 @@ function sendExport (jsonform) {
     })
 }
 
-function updateManifest (jsonform, name) {
+function updateManifest(jsonform, name) {
   /* Updates the displayed manifest
      Input: A JSON serialisation of the form values
      Returns: A copy of the manifest and an array of errors for display */
@@ -251,7 +252,6 @@ function updateManifest (jsonform, name) {
       bootbox.alert(msg)
     })
 }
-
 
 function serialiseTextareas (cls) {
   var values = []
@@ -698,7 +698,6 @@ function cleanup () {
   })
   // End Property Cloning
 
-
 //
 // $(document).ready() Event Handling
 //
@@ -720,6 +719,100 @@ $(document).ready(function () {
     }
   })
 
+  function cleanup() {
+    const form = jsonifyForm($('#manifestForm'))
+    var update = JSON.parse(sessionStorage.getItem('updated'))
+    var create = JSON.parse(sessionStorage.getItem('created'))
+    console.log(create)
+    form['created'] = create
+    form['updated'] = update
+    const newform = {}
+    const exclude = ['licenseName', 'licensePath', 'licenseTitle', 'notesField']
+    // Clone the form values, ommitting empty fields and exclusions
+    $.each(form, function (key, value) {
+      if (value !== '' && value !== [] && $.inArray(key, exclude) === -1) {
+        newform[key] = value
+      }
+    })
+    // Convert comma-separated values to arrays
+    const csvs = ['keywords']
+    for (const property of csvs) {
+      // Only process defined properties
+      if (typeof newform[property] !== 'undefined') {
+        newform[property] = newform[property].trim().split(/\s*,\s*/)
+      }
+    }
+
+    // Convert arrays stored as hidden input string values
+    const arrays = ['notes']
+    for (const property of arrays) {
+      newform[property] = eval(newform[property])
+      // Only process defined properties
+      if (typeof newform[property] !== 'undefined') {
+        const list = []
+        $.each(newform[property], function (key, value) {
+          $.each(value, function (k, v) {
+            list.push(v)
+          })
+        })
+        newform[property] = list
+      }
+    }
+    // Convert objects stored as hidden input string values
+    const objects = ['licenses']
+    for (var property of objects) {
+      newform[property] = eval(newform[property])
+      // Only process defined properties
+      if (typeof newform[property] !== 'undefined') {
+        // Convert evil properties from hidden fields to a list
+        let goodDict = {}
+        let goodList = []
+        let evilProps = []
+        // Get the property keys
+        $.each(newform[property], function (key, value) {
+          $.each(value, function (k, v) {
+            evilProps.push(k)
+          })
+        })
+        // Build object for each ID
+        $.each(evilProps, function (key, item) {
+          item = item.replace(/[a-zA-Z]+/, '')
+          goodDict[item] = {}
+        })
+        // Add the values to the good dict by ID
+        $.each(newform[property], function (i, item) {
+          let obj = newform[property][i]
+          let k = Object.keys(obj)
+          let prop = k[0]
+          let id = prop.replace(/[a-zA-Z]+/, '')
+          let val = item[prop]
+          if (prop.startsWith('licenseName')) {
+            prop = 'name'
+            goodDict[id][prop] = val
+          }
+          if (prop.startsWith('licenseTitle')) {
+            prop = 'title'
+            goodDict[id][prop] = val
+          }
+          if (prop.startsWith('licensePath')) {
+            prop = 'path'
+            goodDict[id][prop] = val
+          }
+        })
+        // Convert any license names to strings and add the good_dict values to the list
+        $.each(goodDict, function (k, v) {
+          if (goodDict[k].length === 1) {
+            v = goodDict[k]['name']
+          } else {
+            goodList.push(v)
+          }
+        })
+        newform[property] = goodList
+      }
+    }
+    return newform
+  }
+
   //
   // Create and Display Page Functions
   //
@@ -729,7 +822,7 @@ $(document).ready(function () {
     e.preventDefault()
     $('form').hide()
     $('#previewDisplay').show()
-    var jsonform =  cleanup()
+    var jsonform = cleanup()
     $('#manifest').html(JSON.stringify(jsonform, null, '  '))
   })
 
@@ -756,28 +849,51 @@ $(document).ready(function () {
       createManifest(jsonform)
     }
   })
+   var counter = 0
+   if (counter === 0) {
+    dateformat_initcollection()
+    dateformat_create_initcollection()
+    counter = counter + 1
+   }
 
+  
   /* Handles the nodetype buttons for creating manifests */
   $('input[name="nodetype"]').click(function (e) {
     var val = $(this).val()
     var setting = val.toLowerCase()
     switch (true) {
-      case setting === 'collection' || setting === 'rawdata' || setting === 'processeddata':
+      case setting === 'collection' :
         var template = $('#' + setting + '-template').html()
         $('#manifestCard').html(template)
+        dateformat_update_collection()
+        dateformat_create_collection()
+        break
+      case setting === 'rawdata':
+        var template = $('#' + setting + '-template').html()
+        $('#manifestCard').html(template)
+        dateformat_rawdata()
+        break
+      case setting === 'processeddata':
+        var template = $('#' + setting + '-template').html()
+        $('#manifestCard').html(template)
+        dateformat_processeddata()
         break
       case setting === 'branch':
         template = $('#branch-template').html()
         $('#manifestCard').html(template)
+        dateformat_branch()
         break
       default:
         template = $('#generic-template').html()
         $('#manifestCard').html(template)
         $('#name').val(val)
         $('#title').val(val)
+        dateformat_generic()
     }
     $('.nav-tabs a[href="#required"]').tab('show')
   })
+
+  
 
   //
   // Display Page Functions
@@ -814,16 +930,16 @@ $(document).ready(function () {
       bootbox.confirm({
         message: 'Are you sure you wish to update the record for <code>' + name + '</code>?',
         buttons: {
-          confirm: {label: 'Yes', className: 'btn-success'},
-          cancel: {label: 'No', className: 'btn-danger'}
+          confirm: { label: 'Yes', className: 'btn-success' },
+          cancel: { label: 'No', className: 'btn-danger' }
         },
         callback: function (result) {
           if (result === true) {
             var name = $('#name').val()
             var path = $('#path').val()
-            var jsonform =  jsonifyForm($('#manifestForm'))
-            $.extend(jsonform, {'name': name})
-            $.extend(jsonform, {'path': path})
+            var jsonform = jsonifyForm($('#manifestForm'))
+            $.extend(jsonform, { 'name': name })
+            $.extend(jsonform, { 'path': path })
             updateManifest(jsonform, name)
           }
         }
@@ -839,8 +955,8 @@ $(document).ready(function () {
     bootbox.confirm({
       message: 'Are you sure you wish to delete <code>' + name + '</code>?',
       buttons: {
-        confirm: {label: 'Yes', className: 'btn-success'},
-        cancel: {label: 'No', className: 'btn-danger'}
+        confirm: { label: 'Yes', className: 'btn-success' },
+        cancel: { label: 'No', className: 'btn-danger' }
       },
       callback: function (result) {
         if (result === true) {
@@ -878,7 +994,7 @@ $(document).ready(function () {
   /* Serialises the export options and initiates the export */
   $('#doExport').click(function (e) {
     // Get an array of export options
-    var opts = {'exportoptions': []}
+    var opts = { 'exportoptions': [] }
     $('.exportchoice:checked').each(function () {
       opts['exportoptions'].push(this.value)
     })
@@ -956,7 +1072,7 @@ $(document).ready(function () {
       $('#search-form').hide()
       $('#exportSearchResults').show()
       $('#results').show()
-      $('#pagination').show()	
+      $('#pagination').show()
       $('#hideSearch').html('Show Form')
     } else {
       $('#hideSearch').html('Hide Form')

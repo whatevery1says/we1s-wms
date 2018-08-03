@@ -1,4 +1,4 @@
-import os, tabulator, itertools, requests, json, re, zipfile, shutil
+import os, tabulator, itertools, requests, json, re, zipfile, shutil, glob
 import subprocess
 import yaml
 
@@ -51,7 +51,7 @@ TRASH_DIR = os.path.join(instance_path, 'trash')
 @corpus.route('/')
 def index():
 	"""Corpus index page."""
-	scripts = ['js/corpus/corpus.js']
+	scripts = ['js/corpus/corpus.js', 'js/jquery-ui.js', 'js/dateformat-corpus.js']
 	breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}]
 	return render_template('corpus/index.html', scripts=scripts, breadcrumbs=breadcrumbs)
 
@@ -59,7 +59,7 @@ def index():
 @corpus.route('/create', methods=['GET', 'POST'])
 def create():
 	"""Create manifest page."""
-	scripts = ['js/parsley.min.js', 'js/corpus/corpus.js']
+	scripts = ['js/parsley.min.js', 'js/corpus/corpus.js', 'js/jquery-ui.js', 'js/dateformat-corpus.js', 'js/moment.min.js']
 	breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/create', 'label': 'Create Collection'}]
 	with open("app/templates/corpus/template_config.yml", 'r') as stream:
 		templates = yaml.load(stream)
@@ -409,7 +409,7 @@ def download_export(filename):
 @corpus.route('/search1', methods=['GET', 'POST'])
 def search():
 	""" Page for searching Corpus manifests."""
-	scripts = ['js/parsley.min.js', 'js/jquery.twbsPagination.min.js', 'js/corpus/corpus.js']
+	scripts = ['js/parsley.min.js', 'js/jquery.twbsPagination.min.js', 'js/corpus/corpus.js','js/dateformat-corpus.js', 'js/jquery-ui.js']
 	breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/search', 'label': 'Search Collections'}]
 	if request.method == 'GET':
 		return render_template('corpus/search.html', scripts=scripts, breadcrumbs=breadcrumbs)
@@ -423,7 +423,7 @@ def search():
 @corpus.route('/search', methods=['GET', 'POST'])
 def search2():
 	""" Experimental Page for searching Corpus manifests."""
-	scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/corpus/corpus.js', 'js/jquery-sortable-min.js', 'js/corpus/search.js']
+	scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/corpus/corpus.js', 'js/jquery-sortable-min.js', 'js/corpus/search.js', 'js/dateformat-corpus.js', 'js/jquery-ui.js']
 	styles = ['css/query-builder.default.css']	
 	breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/search', 'label': 'Search Collections'}]
 	if request.method == 'GET':
@@ -522,9 +522,13 @@ def import_data():
 	return render_template('corpus/import.html', scripts=scripts, 
 			breadcrumbs=breadcrumbs, server_files=server_files, session_token=token)
 
+def listdir(path):
+	""" Replacement for os.listdir() that ignores hidden files."""
+	return glob.glob(os.path.join(path, '*'))
+
 def get_server_files():
 	""" Get the files available for import from the server."""
-	file_list = os.listdir(IMPORT_SERVER_DIR)
+	file_list = listdir(IMPORT_SERVER_DIR)
 	# file_list = ['myfile1.json', 'myfile2.json', 'myfile3.json', 'myzipfile1.zip']
 	return file_list
 
@@ -544,7 +548,7 @@ def import_server_data():
 	if branch != '':
 		metapath = metapath  + ',' + branch
 	# If the user's selected filename is in the server import directory
-	if filename in os.listdir(IMPORT_SERVER_DIR):
+	if filename in listdir(IMPORT_SERVER_DIR):
 		# Iterate through json files in zip archive
 		if filename.endswith('.zip'):
 			with zipfile.ZipFile(os.path.join(IMPORT_SERVER_DIR, filename)) as z:
@@ -573,7 +577,7 @@ def import_server_data():
 					pass
 				# Move the file to the trash folder (ensuring it is unique)
 				source = os.path.join(IMPORT_SERVER_DIR, filename)
-				if filename in os.listdir(TRASH_DIR):
+				if filename in listdir(TRASH_DIR):
 					filename = datetime.now().strftime('%Y%m%d%H%M%S_') + filename
 				destination = os.path.join(TRASH_DIR, filename)
 				shutil.move(source, destination)
@@ -614,8 +618,8 @@ def remove_all_files():
 	# If there is a session import folder
 	if os.path.isdir(session['IMPORT_DIR']):
 		# Move each file to the trash folder (ensuring it is unique)
-		for filename in os.listdir(session['IMPORT_DIR']):
-			if filename in os.listdir(TRASH_DIR):
+		for filename in listdir(session['IMPORT_DIR']):
+			if filename in listdir(TRASH_DIR):
 				filename = datetime.now().strftime('%Y%m%d%H%M%S_') + filename
 			destination = os.path.join(TRASH_DIR, filename)
 			shutil.move(source, destination)
@@ -672,7 +676,7 @@ def save_upload():
 
 		# Now create a data manifest for each file and insert it
 		if len(errors) == 0:
-			for filename in os.listdir(session['IMPORT_DIR']):
+			for filename in listdir(session['IMPORT_DIR']):
 				print('Creating manifest for ' + filename)
 				if filename.endswith('.json'):
 					filepath = os.path.join(session['IMPORT_DIR'], filename)
@@ -738,7 +742,7 @@ def upload():
 					extracted_folder = os.path.splitext(file.filename)[0]
 					print('Extracted folder: ' + extracted_folder)
 					sourcepath = os.path.join(session['IMPORT_DIR'], extracted_folder)
-					for file in os.listdir(sourcepath):
+					for file in listdir(sourcepath):
 						if file.endswith('.json'):
 							shutil.move(os.path.join(sourcepath, file), os.path.join(session['IMPORT_DIR'], file))
 					# Remove the zip archive and empty folder

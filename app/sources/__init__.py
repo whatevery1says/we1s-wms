@@ -209,7 +209,7 @@ def download_export(filename):
 	methods.make_dir('app/temp')
 	return response
 
-
+'''
 @sources.route('/search', methods=['GET', 'POST'])
 def search():
 	""" Page for searching Sources manifests."""
@@ -220,6 +220,41 @@ def search():
 			breadcrumbs=breadcrumbs)
 	if request.method == 'POST':
 		result, num_pages, errors = methods.search_sources(request.json)
+		return json.dumps({'response': result, 'num_pages': num_pages, 'errors': errors}, default=JSON_UTIL)
+		'''
+
+@sources.route('/search', methods=['GET', 'POST'])
+def search2():
+	""" Experimental Page for searching sources manifests."""
+	scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/sources/sources.js', 'js/jquery-sortable-min.js', 'js/sources/search.js', 'js/dateformat.js', 'js/jquery-ui.js']
+	styles = ['css/query-builder.default.css']	
+	breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/search', 'label': 'Search Sources'}]
+	if request.method == 'GET':
+		return render_template('sources/search2.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
+	if request.method == 'POST':
+		query = request.json['query']
+		page = int(request.json['page'])
+		limit = int(request.json['advancedOptions']['limit'])
+		sorting = []
+		if request.json['advancedOptions']['show_properties'] != []:
+			show_properties = request.json['advancedOptions']['show_properties']
+		else:
+			show_properties = ''
+		paginated = True
+		sorting = []
+		for item in request.json['advancedOptions']['sort']:
+			if item[1] == 'ASC':
+				opt = (item[0], pymongo.ASCENDING)
+			else:
+				opt = (item[0], pymongo.DESCENDING)
+			sorting.append(opt)
+		result, num_pages, errors = methods.search_sources(query, limit, paginated, page, show_properties, sorting)
+		# Don't show the MongoDB _id unless it is in show_properties
+		if '_id' not in request.json['advancedOptions']['show_properties']:
+			for k, v in enumerate(result):
+				del result[k]['_id']
+		if result == []:
+			errors.append('No records were found matching your search criteria.')
 		return json.dumps({'response': result, 'num_pages': num_pages, 'errors': errors}, default=JSON_UTIL)
 
 
