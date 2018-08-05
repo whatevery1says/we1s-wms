@@ -11,13 +11,6 @@ import tabulator
 import subprocess
 import yaml
 
-# For various solutions to dealing with ObjectID, see
-# https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
-# If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
-from bson import BSON
-from bson import json_util
-JSON_UTIL = json_util.default
-
 from datetime import datetime
 from random import randint
 from pathlib import Path
@@ -31,14 +24,22 @@ from werkzeug.utils import secure_filename
 import pymongo
 from pymongo import MongoClient
 
+from app.corpus.helpers import methods as methods
+
+# For various solutions to dealing with ObjectID, see
+# https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
+# If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
+from bson import BSON
+from bson import json_util
+
+JSON_UTIL = json_util.default
+
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')
 db = client.we1s
 corpus_db = db.Corpus
 
 corpus = Blueprint('corpus', __name__, template_folder='corpus')
-
-from app.corpus.helpers import methods as methods
 
 # ----------------------------------------------------------------------------#
 # Constants.
