@@ -124,13 +124,13 @@ def create_manifest():
     # Handle other textarea strings
     list_props = ['sources', 'contributors', 'queryterms', 'processes', 'notes', 'keywords', 'licenses']
     prop_keys = {
-        'sources': { 'main_key': 'title', 'valid_props': ['title', 'path', 'email'] },
-        'contributors': { 'main_key': 'title', 'valid_props': ['title', 'email', 'path', 'role', 'group', 'organization'] },
-        'licenses': { 'main_key': 'name', 'valid_props': ['name', 'path', 'title'] },
-        'queryterms': { 'main_key': '', 'valid_props': [] },
-        'processes': { 'main_key': '', 'valid_props': [] },
-        'notes': { 'main_key': '', 'valid_props': [] },
-        'keywords': { 'main_key': '', 'valid_props': [] }
+        'sources': {'main_key': 'title', 'valid_props': ['title', 'path', 'email']},
+        'contributors': {'main_key': 'title', 'valid_props': ['title', 'email', 'path', 'role', 'group', 'organization']},
+        'licenses': {'main_key': 'name', 'valid_props': ['name', 'path', 'title']},
+        'queryterms': {'main_key': '', 'valid_props': []},
+        'processes': {'main_key': '', 'valid_props': []},
+        'notes': {'main_key': '', 'valid_props': []},
+        'keywords': {'main_key': '', 'valid_props': []}
     }
     for item in list_props:
         if item in manifest and manifest[item] != '':
@@ -248,13 +248,13 @@ def update_manifest():
     # Handle other textarea strings
     list_props = ['sources', 'contributors', 'queryterms', 'processes', 'notes', 'keywords', 'licenses']
     prop_keys = {
-        'sources': { 'main_key': 'title', 'valid_props': ['title', 'path', 'email'] },
-        'contributors': { 'main_key': 'title', 'valid_props': ['title', 'email', 'path', 'role', 'group', 'organization'] },
-        'licenses': { 'main_key': 'name', 'valid_props': ['name', 'path', 'title'] },
-        'queryterms': { 'main_key': '', 'valid_props': [] },
-        'processes': { 'main_key': '', 'valid_props': [] },
-        'notes': { 'main_key': '', 'valid_props': [] },
-        'keywords': { 'main_key': '', 'valid_props': [] }
+        'sources': {'main_key': 'title', 'valid_props': ['title', 'path', 'email']},
+        'contributors': {'main_key': 'title', 'valid_props': ['title', 'email', 'path', 'role', 'group', 'organization']},
+        'licenses': {'main_key': 'name', 'valid_props': ['name', 'path', 'title']},
+        'queryterms': {'main_key': '', 'valid_props': []},
+        'processes': {'main_key': '', 'valid_props': []},
+        'notes': {'main_key': '', 'valid_props': []},
+        'keywords': {'main_key': '', 'valid_props': []}
     }
     for item in list_props:
         if item in manifest and manifest[item] != '':

@@ -320,12 +320,12 @@ def save_project():
     # Handle other textarea strings
     list_props = ['contributors', 'created', 'notes', 'keywords', 'licenses', 'updated']
     prop_keys = {
-        'contributors': { 'main_key': 'title', 'valid_props': ['title', 'email', 'path', 'role', 'group', 'organization'] },
-        'licenses': { 'main_key': 'name', 'valid_props': ['name', 'path', 'title'] },
-        'created': { 'main_key': '', 'valid_props': [] },
-        'updated': { 'main_key': '', 'valid_props': [] },
-        'notes': { 'main_key': '', 'valid_props': [] },
-        'keywords': { 'main_key': '', 'valid_props': [] }
+        'contributors': {'main_key': 'title', 'valid_props': ['title', 'email', 'path', 'role', 'group', 'organization']},
+        'licenses': {'main_key': 'name', 'valid_props': ['name', 'path', 'title']},
+        'created': {'main_key': '', 'valid_props': []},
+        'updated': {'main_key': '', 'valid_props': []},
+        'notes': {'main_key': '', 'valid_props': []},
+        'keywords': {'main_key': '', 'valid_props': []}
     }
     for item in list_props:
         if item in manifest and manifest[item] != '':
