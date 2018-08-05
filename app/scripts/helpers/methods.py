@@ -412,7 +412,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
             elif re.search('^' + main + ': .+$', line):
                 opts[main_key] = re.sub('^' + main + ': ', '', line.strip())
             # There are no options, and the main_key is omitted
-            elif re.search(pattern, line) == None:
+            elif re.search(pattern, line) is None:
                 opts[main_key] = line.strip()
             all_lines.append(opts)
     if errors == []:
