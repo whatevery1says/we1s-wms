@@ -17,7 +17,7 @@ from werkzeug.utils import secure_filename
 import pymongo
 from pymongo import MongoClient
 
-# Set up the MongoDB client, configure the databases, and assign variables to the "collections" 
+# Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')
 db = client.we1s
 projects_db = db.Projects
@@ -47,17 +47,17 @@ def index():
     breadcrumbs = [{'link': '/tasks', 'label': 'Manage Tasks'}]
     tasks = [{
             'task_name': 'A collection',
-            'task_id': '123', 
+            'task_id': '123',
             'task_result': 'QUEUED',
             'task_status': 3
         },
         {
             'task_name': 'Another collection',
-            'task_id': '456', 
+            'task_id': '456',
             'task_result': 'QUEUED',
             'task_status': 3
         }]
-    return render_template('tasks/index.html', scripts=scripts, styles=styles, 
+    return render_template('tasks/index.html', scripts=scripts, styles=styles,
             breadcrumbs=breadcrumbs, tasks=tasks)
 
 

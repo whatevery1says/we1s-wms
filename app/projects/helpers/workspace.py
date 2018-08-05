@@ -33,7 +33,7 @@ def make_project_folder(project_dir, workspace_dir):
 
 
 def project_exists(name, location, WORKSPACE_PROJECTS):
-        """Check if the project is in the database 
+        """Check if the project is in the database
         or on the server if a url to a datapackage.json
         file is supplied.
         """
@@ -50,7 +50,7 @@ def project_exists(name, location, WORKSPACE_PROJECTS):
             else:
                 return False
 
-        
+
 def fetch_datapackage(manifest, zip_path, project_dir, workspace_projects, workspace_dir):
     """Fetch a project datapackage from the database."""
     # Get the manifest with content from the database
@@ -175,7 +175,7 @@ class Datapackage():
 class Notebook():
     """Models a Jupyter notebook."""
 
-    def __init__(self, manifest, container, notebook_start, WORKSPACE_PROJECTS, WORKSPACE_TEMPLATES):            
+    def __init__(self, manifest, container, notebook_start, WORKSPACE_PROJECTS, WORKSPACE_TEMPLATES):
         """Writes a new Jupyter notebook based on a template
         in the project directory."""
         # Configurable
@@ -233,7 +233,7 @@ class Notebook():
                     cell['source'] = [d.get_text()]
                     cell['execution_count'] = None
                     cell['cell_type'] = 'code'
-                    dictionary['cells'].append(cell)        
+                    dictionary['cells'].append(cell)
                 # markdown cell
                 elif d.name == 'markdown':
                     cell = {}

@@ -9,7 +9,7 @@ from tableschema_pandas import Storage
 import pymongo
 from pymongo import MongoClient
 
-# Set up the MongoDB client, configure the databases, and assign variables to the "collections" 
+# Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')
 db = client.we1s
 corpus_db = db.Corpus
@@ -30,9 +30,9 @@ def allowed_file(filename):
 
 
 def check_date_format(dates):
-    """Ensures that a date is correctly formatted 
+    """Ensures that a date is correctly formatted
     and that start dates precede end dates.
-    
+
     Takes a list of dates and returns a list of dates
     and a list of errors.
     """
@@ -64,7 +64,7 @@ def check_date_format(dates):
 
 
 def get_page(pages, page):
-    """Takes a list of paginated results form `paginate()` and 
+    """Takes a list of paginated results form `paginate()` and
     returns a single page from the list.
     """
     try:
@@ -74,7 +74,7 @@ def get_page(pages, page):
 
 
 def make_dir(folder):
-    """Checks for the existence of directory at the specified file 
+    """Checks for the existence of directory at the specified file
     path and creates one if it does not exist.
     """
     folder = folder.replace('\\', '/')
@@ -97,13 +97,13 @@ def NestedDictValues(d):
 
 
 def paginate(iterable, page_size):
-    """Returns a generator with a list sliced into pages by the designated size. If 
-    the generator is converted to a list called `pages`, and individual page can 
+    """Returns a generator with a list sliced into pages by the designated size. If
+    the generator is converted to a list called `pages`, and individual page can
     be called with `pages[0]`, `pages[1]`, etc.
     """
     while True:
         i1, i2 = itertools.tee(iterable)
-        iterable, page = (itertools.islice(i1, page_size, None), 
+        iterable, page = (itertools.islice(i1, page_size, None),
             list(itertools.islice(i2, page_size)))
         if len(page) == 0:
             break
@@ -167,8 +167,8 @@ def process_dates(dates):
     return new_dates
 
 
-def reshape_query_props(temp_query, temp_show_properties):   
-    """Converts the user input from the search form to 
+def reshape_query_props(temp_query, temp_show_properties):
+    """Converts the user input from the search form to
     a dict of properties.
 
     Takes strings for the query and show properties fields.
@@ -219,7 +219,7 @@ def zipfolder(source_dir, output_filename):
     Takes file paths for both the source directory
     and the output file.
 
-    Note that the output filename should not have the 
+    Note that the output filename should not have the
     .zip extension; it is added here.
     """
     temp_folder = os.path.join('app', current_app.config['TEMP_FOLDER'])
@@ -376,9 +376,9 @@ def update_record(manifest):
 
 
 def textarea2dict(fieldname, textarea, main_key, valid_props):
-    """Converts a textarea string to a dict containing a list of 
-    properties for each line. Multiple properties should be 
-    formatted as comma-separated key: value pairs. The key must be 
+    """Converts a textarea string to a dict containing a list of
+    properties for each line. Multiple properties should be
+    formatted as comma-separated key: value pairs. The key must be
     separated from the value by a space, and the main key should come
     first. If ": " occurs in the value, the entire value can be put in
     quotes. Where there is only one value, the key can be omitted, and
@@ -398,7 +398,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
         # Parse options
         else:
             opts = {}
-            # Match main_key without our without quotation marks 
+            # Match main_key without our without quotation marks
             main = main_key + '|[\'\"]' + main_key + '[\'\"]'
             pattern = ', (' +'[a-z]+: ' + ')' # Assumes no camel case in the property name
             # There are options. Parse them.
@@ -412,7 +412,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
             elif re.search('^' + main + ': .+$', line):
                 opts[main_key] = re.sub('^' + main + ': ', '', line.strip())
             # There are no options, and the main_key is omitted
-            elif re.search(pattern, line) == None: 
+            elif re.search(pattern, line) == None:
                 opts[main_key] = line.strip()
             all_lines.append(opts)
     if errors == []:

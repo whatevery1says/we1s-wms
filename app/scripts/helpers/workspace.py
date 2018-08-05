@@ -16,7 +16,7 @@ class Datapackage():
     """Models a project datapackage object."""
 
     def __init__(self, manifest, projects_dir):
-            
+
         """Initialize the object."""
         self.projects_dir = projects_dir
         self.errors = []
@@ -76,7 +76,7 @@ class Datapackage():
 
 
         def project_exists(name, location):
-            """Check if the project is in the database 
+            """Check if the project is in the database
             or on the server if a url to a datapackage.json
             file is supplied.
             """
@@ -89,8 +89,8 @@ class Datapackage():
             else:
                 r = requests.get(location)
                 return r.status_code == requests.codes.ok
- 
-            
+
+
         def fetch_datapackage(manifest, zip_path, projects_dir, workspace_dir):
             """Fetch a project datapackage from the database."""
             try:
@@ -155,7 +155,7 @@ class Notebook():
     """Models a Jupyter notebook."""
 
     def __init__(self, manifest, projects_dir):
-            
+
         """Writes a new Jupyter notebook based on a template
         in the project directory."""
         # Configurable
@@ -193,7 +193,7 @@ class Notebook():
                     cell['source'] = [d.get_text()]
                     cell['execution_count'] = None
                     cell['cell_type'] = 'code'
-                    dictionary['cells'].append(cell)        
+                    dictionary['cells'].append(cell)
                 # markdown cell
                 elif d.name == 'markdown':
                     cell = {}

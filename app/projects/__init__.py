@@ -19,7 +19,7 @@ from werkzeug.utils import secure_filename
 import pymongo
 from pymongo import MongoClient
 
-# Set up the MongoDB client, configure the databases, and assign variables to the "collections" 
+# Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')
 db = client.we1s
 projects_db = db.Projects
@@ -92,7 +92,7 @@ class Project():
             empty_tempfolder(key)
             return {'result': 'success', 'errors': errors}
         except:
-            msg = """An unknown error occurred when trying to 
+            msg = """An unknown error occurred when trying to
             insert the project into the database."""
             return {'result': 'fail', 'errors': [msg]}
 
@@ -106,7 +106,7 @@ class Project():
                 if k not in ['name', '_id', 'content']:
                     updated_manifest[k] = v
             try:
-                projects_db.update_one({'_id': ObjectId(saved_project['_id'])}, 
+                projects_db.update_one({'_id': ObjectId(saved_project['_id'])},
                             {'$set': updated_manifest}, upsert=False)
                 return {'result': 'success', 'errors': []}
             except pymongo.errors.PyMongoError as e:
@@ -121,7 +121,7 @@ class Project():
             self.manifest['content'] = content
             _id = self.manifest.pop('_id')
             try:
-                projects_db.update_one({'_id': ObjectId(saved_project['_id'])}, 
+                projects_db.update_one({'_id': ObjectId(saved_project['_id'])},
                             {'$set': self.manifest}, upsert=False)
                 empty_tempfolder(key)
                 return {'result': 'success', 'errors': []}
@@ -135,7 +135,7 @@ class Project():
 
     def make_datapackage(self):
         """Create a project folder containing a data package, then
-        make a zip archive of the folder. Returns a binary of the 
+        make a zip archive of the folder. Returns a binary of the
         zip archive, a list of errors, and the key to the location
         of the archive in the temp folder."""
         errors = []
@@ -176,7 +176,7 @@ class Project():
                 # Make sure every metapath is a directory
                 path = Path(project_dir) / item['metapath'].replace(',', '/')
                 Path(path).mkdir(parents=True, exist_ok=True)
-                
+
                 # Write a file for every manifest -- only handles json
                 if 'content' in item:
                     filename = item['name'] + '.json'
@@ -198,7 +198,7 @@ class Project():
         Takes file paths for both the source directory
         and the output file.
 
-        Note that the output filename should not have the 
+        Note that the output filename should not have the
         .zip extension; it is added here.
         """
         output_filepath = os.path.join(temp_folder, output_filename + '.zip')
@@ -227,7 +227,7 @@ def index():
 def create():
     """Create/update project page."""
     scripts = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery-sortable-min.js', 'js/projects/projects.js', 'js/projects/search.js', 'js/jquery-ui.js', 'js/dateformat.js']
-    styles = ['css/query-builder.default.css']    
+    styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/projects', 'label': 'Projects'}, {'link': '/projects/create', 'label': 'Create/Update Project'}]
     with open('app/templates/projects/template_config.yml', 'r') as stream:
         templates = yaml.load(stream)
@@ -238,7 +238,7 @@ def create():
 def display(name):
     """Display project page."""
     scripts = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery-sortable-min.js', 'js/projects/projects.js', 'js/projects/search.js']
-    styles = ['css/query-builder.default.css']    
+    styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/projects', 'label': 'Projects'}, {'link': '/projects/create', 'label': 'Display Project'}]
     errors = []
     manifest = {}
@@ -267,18 +267,18 @@ def display(name):
 
 @projects.route('/test-query', methods=['GET', 'POST'])
 def test_query():
-    """Tests whether the project query returns results 
+    """Tests whether the project query returns results
     from the Corpus database."""
     query = json.loads(request.json['db-query'])
     result = corpus_db.find(query)
     num_results = len(list(result))
     if num_results > 0:
-        response = """Your query successfully found records in the Corpus database. 
-        If you wish to view the results, please use the 
+        response = """Your query successfully found records in the Corpus database.
+        If you wish to view the results, please use the
         <a href="/corpus/search">Corpus search</a> function."""
     else:
-        response = """Your query did not return any records in the Corpus database. 
-        Try the <a href="/corpus/search">Corpus search</a> function to obtain a 
+        response = """Your query did not return any records in the Corpus database.
+        Try the <a href="/corpus/search">Corpus search</a> function to obtain a
         more accurate query."""
     if len(list(corpus_db.find())) == 0:
         response = 'The Corpus database is empty.'
@@ -398,7 +398,7 @@ def download_export(filepath):
 def search():
     """ Experimental Page for searching Projects manifests."""
     scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/projects/projects.js', 'js/jquery-sortable-min.js', 'js/projects/search.js', 'js/dateformat.js', 'js/jquery-ui.js']
-    styles = ['css/query-builder.default.css']    
+    styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/projects', 'label': 'Projects'}, {'link': '/projects/search', 'label': 'Search Projects'}]
     if request.method == 'GET':
         return render_template('projects/search.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
@@ -511,8 +511,8 @@ def import_project():
 
 @projects.route('/launch-jupyter', methods=['GET', 'POST'])
 def launch_jupyter():
-    """ Creates a project folder on the server containing a 
-    project datapackage, along with any workspace templates. 
+    """ Creates a project folder on the server containing a
+    project datapackage, along with any workspace templates.
     If successful, the Jupyter notebook is lost; otherwise,
     an error report is returned to the front end."""
     errors = []
@@ -522,7 +522,7 @@ def launch_jupyter():
     # Notebook to launch
     notebook_start = notebook_type + '/start'
     # Path to notebook
-    path = manifest['name'] + '/Workspace/' + notebook_start + '.ipynb' 
+    path = manifest['name'] + '/Workspace/' + notebook_start + '.ipynb'
     # Fetch or create a datapackage based on the info received
     datapackage = workspace.Datapackage(manifest, WORKSPACE_PROJECTS)
     errors += datapackage.errors
@@ -597,7 +597,7 @@ def search_projects(query, limit, paginated, page, show_properties, sorting):
 
 
 def get_page(pages, page):
-    """Takes a list of paginated results form `paginate()` and 
+    """Takes a list of paginated results form `paginate()` and
     returns a single page from the list.
     """
     try:
@@ -607,13 +607,13 @@ def get_page(pages, page):
 
 
 def paginate(iterable, page_size):
-    """Returns a generator with a list sliced into pages by the designated size. If 
-    the generator is converted to a list called `pages`, and individual page can 
+    """Returns a generator with a list sliced into pages by the designated size. If
+    the generator is converted to a list called `pages`, and individual page can
     be called with `pages[0]`, `pages[1]`, etc.
     """
     while True:
         i1, i2 = itertools.tee(iterable)
-        iterable, page = (itertools.islice(i1, page_size, None), 
+        iterable, page = (itertools.islice(i1, page_size, None),
             list(itertools.islice(i2, page_size)))
         if len(page) == 0:
             break
@@ -625,7 +625,7 @@ def zipfolder(source_dir, output_filename):
 
     Duplicates method in Project class.
 
-    Note that the output filename should not have the 
+    Note that the output filename should not have the
     .zip extension; it is added here.
     """
     temp_folder = os.path.join('app', current_app.config['TEMP_FOLDER'])
@@ -639,7 +639,7 @@ def zipfolder(source_dir, output_filename):
 
 
 def manifest_from_datapackage(zipfilepath):
-    """Generates a project manifest from a zipped datapackage. The zip file is 
+    """Generates a project manifest from a zipped datapackage. The zip file is
     embedded in the `content` property, so the project manifest is read for
     insertion in the database."""
     # Get the datapackage.json file
@@ -650,7 +650,7 @@ def manifest_from_datapackage(zipfilepath):
             metapath = list(set([os.path.split(x)[0] for x in z.namelist() if '/' in x and x.startswith('Corpus')]))
             with z.open('datapackage.json') as f:
                 # Read the datapackage file
-                datapackage = json.loads(f.read())            
+                datapackage = json.loads(f.read())
         # Build a manifest from the datapackage info
         manifest ['name'] = datapackage['name']
         manifest ['metapath'] = 'Projects'
@@ -677,9 +677,9 @@ def manifest_from_datapackage(zipfilepath):
 
 
 def textarea2dict(fieldname, textarea, main_key, valid_props):
-    """Converts a textarea string to a dict containing a list of 
-    properties for each line. Multiple properties should be 
-    formatted as comma-separated key: value pairs. The key must be 
+    """Converts a textarea string to a dict containing a list of
+    properties for each line. Multiple properties should be
+    formatted as comma-separated key: value pairs. The key must be
     separated from the value by a space, and the main key should come
     first. If ": " occurs in the value, the entire value can be put in
     quotes. Where there is only one value, the key can be omitted, and
@@ -699,7 +699,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
         # Parse options
         else:
             opts = {}
-            # Match main_key without our without quotation marks 
+            # Match main_key without our without quotation marks
             main = main_key + '|[\'\"]' + main_key + '[\'\"]'
             pattern = ', (' +'[a-z]+: ' + ')' # Assumes no camel case in the property name
             # There are options. Parse them.
@@ -713,7 +713,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
             elif re.search('^' + main + ': .+$', line):
                 opts[main_key] = re.sub('^' + main + ': ', '', line.strip())
             # There are no options, and the main_key is omitted
-            elif re.search(pattern, line) == None: 
+            elif re.search(pattern, line) == None:
                 opts[main_key] = line.strip()
             all_lines.append(opts)
     if errors == []:

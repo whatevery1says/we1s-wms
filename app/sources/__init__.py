@@ -18,7 +18,7 @@ from werkzeug.utils import secure_filename
 import pymongo
 from pymongo import MongoClient
 
-# Set up the MongoDB client, configure the databases, and assign variables to the "collections" 
+# Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')
 db = client.we1s
 sources_db = db.Sources
@@ -46,8 +46,8 @@ country_list = ['AF', 'AX', 'AL', 'DZ', 'AS', 'AD', 'AO', 'AI', 'AQ', 'AG', 'AR'
 def index():
     """Sources index page."""
     scripts = [
-    # 'js/jQuery-File-Upload-9.20.0/js/vendor/jquery.ui.widget.js', 
-    # 'js/jQuery-File-Upload-9.20.0/js/jquery.iframe-transport.js', 
+    # 'js/jQuery-File-Upload-9.20.0/js/vendor/jquery.ui.widget.js',
+    # 'js/jQuery-File-Upload-9.20.0/js/jquery.iframe-transport.js',
     # 'js/jQuery-File-Upload-9.20.0/js/jquery.fileupload.js',
     'js/corpus/dropzone.js',
     'js/sources/sources.js',
@@ -66,7 +66,7 @@ def create():
     scripts = ['js/parsley.min.js', 'js/sources/sources.js', 'js/dateformat.js', 'js/jquery-ui.js', 'js/moment.min.js']
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/create', 'label': 'Create Publication'}]
     with open("app/templates/sources/template_config.yml", 'r') as stream:
-        templates = yaml.load(stream)    
+        templates = yaml.load(stream)
     return render_template('sources/create.html', lang_list=lang_list, country_list=country_list, scripts=scripts, breadcrumbs=breadcrumbs, templates=templates)
 
 
@@ -132,9 +132,9 @@ def create_manifest():
         validation_errors = methods.create_record(properties)
         errors = errors + validation_errors
     else:
-        msg = '''A valid manifest could not be created with the 
-        data supplied. Please check your entries against the 
-        <a href="/schema" target="_blank">manifest schema</a>.''' 
+        msg = '''A valid manifest could not be created with the
+        data supplied. Please check your entries against the
+        <a href="/schema" target="_blank">manifest schema</a>.'''
         errors.append(msg)
 
     # Need to insert into the database
@@ -168,7 +168,7 @@ def display(name):
     """ Page for displaying Source manifests."""
     scripts = ['js/parsley.min.js', 'js/sources/sources.js']
     with open("app/templates/sources/template_config.yml", 'r') as stream:
-        templates = yaml.load(stream)    
+        templates = yaml.load(stream)
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/display', 'label': 'Display Publication'}]
     errors = []
     manifest = {}
@@ -190,7 +190,7 @@ def display(name):
                 manifest[key] = str(value)
     except:
         errors.append('Unknown Error: The manifest does not exist or could not be loaded.')
-    return render_template('sources/display.html', lang_list=lang_list, 
+    return render_template('sources/display.html', lang_list=lang_list,
         country_list=country_list, scripts=scripts, breadcrumbs=breadcrumbs,
         manifest=manifest, errors=errors, templates=templates)
 
@@ -230,7 +230,7 @@ def search():
 def search2():
     """ Experimental Page for searching sources manifests."""
     scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/sources/sources.js', 'js/jquery-sortable-min.js', 'js/sources/search.js', 'js/dateformat.js', 'js/jquery-ui.js']
-    styles = ['css/query-builder.default.css']    
+    styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/search', 'label': 'Search Sources'}]
     if request.method == 'GET':
         return render_template('sources/search2.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
@@ -325,9 +325,9 @@ def update_manifest():
         validation_errors = methods.update_record(properties)
         errors = errors + validation_errors
     else:
-        msg = '''A valid manifest could not be created with the 
-        data supplied. Please check your entries against the 
-        <a href="/schema" target="_blank">manifest schema</a>.''' 
+        msg = '''A valid manifest could not be created with the
+        data supplied. Please check your entries against the
+        <a href="/schema" target="_blank">manifest schema</a>.'''
         errors.append(msg)
 
     # Need to insert into the database

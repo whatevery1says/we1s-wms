@@ -22,7 +22,7 @@ from werkzeug.utils import secure_filename
 import pymongo
 from pymongo import MongoClient
 
-# Set up the MongoDB client, configure the databases, and assign variables to the "collections" 
+# Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')
 db = client.we1s
 corpus_db = db.Corpus
@@ -136,9 +136,9 @@ def create_manifest():
         database_errors = methods.create_record(manifest)
         errors = errors + database_errors
     else:
-        msg = '''A valid manifest could not be created with the 
-        data supplied. Please check your entries against the 
-        <a href="/schema" target="_blank">manifest schema</a>.''' 
+        msg = '''A valid manifest could not be created with the
+        data supplied. Please check your entries against the
+        <a href="/schema" target="_blank">manifest schema</a>.'''
         errors.append(msg)
 
     manifest = json.dumps(manifest, indent=2, sort_keys=False, default=JSON_UTIL)
@@ -267,9 +267,9 @@ def update_manifest():
         database_errors = methods.update_record(manifest)
         errors = errors + database_errors
     else:
-        msg = '''A valid manifest could not be created with the 
-        data supplied. Please check your entries against the 
-        <a href="/schema" target="_blank">manifest schema</a>.''' 
+        msg = '''A valid manifest could not be created with the
+        data supplied. Please check your entries against the
+        <a href="/schema" target="_blank">manifest schema</a>.'''
         errors.append(msg)
 
     manifest = json.dumps(manifest, indent=2, sort_keys=False)
@@ -286,7 +286,7 @@ def update_manifest():
 
 @corpus.route('/send-export', methods=['GET', 'POST'])
 def send_export():
-    """ Ajax route to process user export options and write 
+    """ Ajax route to process user export options and write
     the export files to the temp folder.
     """
     data = request.json
@@ -426,7 +426,7 @@ def search():
 def search2():
     """ Experimental Page for searching Corpus manifests."""
     scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/corpus/corpus.js', 'js/jquery-sortable-min.js', 'js/corpus/search.js', 'js/dateformat-corpus.js', 'js/jquery-ui.js']
-    styles = ['css/query-builder.default.css']    
+    styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/search', 'label': 'Search Collections'}]
     if request.method == 'GET':
         return render_template('corpus/search2.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
@@ -510,7 +510,7 @@ def import_data():
     """ Page for importing manifests."""
     scripts = [
     'js/corpus/dropzone.js',
-    'js/parsley.min.js', 
+    'js/parsley.min.js',
     'js/corpus/corpus.js',
     'js/corpus/upload.js'
     ]
@@ -524,7 +524,7 @@ def import_data():
     if result != 'error':
         server_files = result
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/import', 'label': 'Import Collection Data'}]
-    return render_template('corpus/import.html', scripts=scripts, 
+    return render_template('corpus/import.html', scripts=scripts,
             breadcrumbs=breadcrumbs, server_files=server_files, session_token=token)
 
 
@@ -641,7 +641,7 @@ def remove_all_files():
 
 @corpus.route('/save-upload', methods=['GET', 'POST'])
 def save_upload():
-    """ Ajax route to create a manifest for each uploaded file  
+    """ Ajax route to create a manifest for each uploaded file
     and insert it in the database.
     """
     if request.method == 'POST':
@@ -771,8 +771,8 @@ def upload():
                 except:
                     errors.append('<p>Unknown Error: Could not save the file <code>' + filename + '</code>.</p>')
             else:
-                errors.append('<p>The file <code>' + file.filename + '</code> has an invalid file type.</p>')                    
-        if errors == []:            
+                errors.append('<p>The file <code>' + file.filename + '</code> has an invalid file type.</p>')
+        if errors == []:
             response = {'response': 'File(s) saved successfully.'}
         else:
             response = {'errors': errors}
