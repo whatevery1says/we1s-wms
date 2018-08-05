@@ -94,8 +94,8 @@ def schema():
     # carried over from GitHub.
     return render_template('schema.html', html=html, breadcrumbs=breadcrumbs)
 
-# Error handlers.
 
+# Error handlers.
 
 @app.errorhandler(500)
 def internal_error(error):
@@ -105,6 +105,7 @@ def internal_error(error):
 @app.errorhandler(404)
 def not_found_error(error):
     return render_template('errors/404.html'), 404
+
 
 # ----------------------------------------------------------------------------#
 # Launch.

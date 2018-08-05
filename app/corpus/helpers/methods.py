@@ -524,7 +524,7 @@ def textarea2datelist(textarea):
                 except:
                     d = {'error': 'The start date "' + start['text'] + '" must precede the end date "' + end['text'] + '".'}
                 else:
-                      d['range']['start'] = start
+                    d['range']['start'] = start
             else:
                 d = testformat(item)
             all_lines.append(d)
