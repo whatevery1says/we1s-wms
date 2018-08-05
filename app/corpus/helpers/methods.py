@@ -428,7 +428,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
             pattern = ', (' +'[a-z]+: ' + ')' # Assumes no camel case in the property name
             # There are options. Parse them.
             if re.search(pattern, line):
-                line = re.sub(pattern, '\n\\1', line) # Could be improved to handle more variations
+                line = re.sub(pattern, '\n\\1', line)  # Could be improved to handle more variations
                 opts = yaml.load(line.strip())
                 for k, v in opts.items():
                     if valid_props != [] and k not in valid_props:
@@ -508,7 +508,7 @@ def textarea2datelist(textarea):
         line = line.replace(', ', ',')
         dates = line.split(',')
         for item in dates:
-            if re.search(' - ', item): # Check for ' -'
+            if re.search(' - ', item):  # Check for ' -'
                 d = {'range': {'start': ''}}
                 range = item.split(' - ')
                 start = testformat(range[0])
@@ -563,7 +563,7 @@ def serialize_datelist(flattened_datelist):
             else:
                 dates.append(start)
         else:
-            dates.append(str(item)) # error dict is cast as a string
+            dates.append(str(item))  # error dict is cast as a string
     return '\n'.join(dates)
 
 

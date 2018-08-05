@@ -30,7 +30,7 @@ from .tasks import tasks
 app = Flask(__name__, instance_relative_config=True)
 
 # Configurations that use app
-# application = app # our hosting requires application in passenger_wsgi
+# application = app  # our hosting requires application in passenger_wsgi
 
 app.register_blueprint(sources, url_prefix='/sources')
 app.register_blueprint(corpus, url_prefix='/corpus')

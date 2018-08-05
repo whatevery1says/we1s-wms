@@ -89,7 +89,7 @@ class UploadHandler(CORSHandler):
             '/' + urllib.quote(info['name'].encode('utf-8'), '')
         try:
             memcache.set(key, data, time=EXPIRATION_TIME)
-        except: #Failed to add to memcache
+        except:  #Failed to add to memcache
             return (None, None)
         thumbnail_key = None
         if IMAGE_TYPES.match(info['type']):
@@ -106,7 +106,7 @@ class UploadHandler(CORSHandler):
                     thumbnail_data,
                     time=EXPIRATION_TIME
                 )
-            except: #Failed to resize Image or add to memcache
+            except:  #Failed to resize Image or add to memcache
                 thumbnail_key = None
         return (key, thumbnail_key)
 
