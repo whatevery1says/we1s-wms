@@ -351,9 +351,9 @@ def export_script():
     script = Script(manifest, query, action)
     content, errors = script.make_datapackage()
     if len(errors) == 0:
-        response = {'result': 'success', 'errors' : []}
+        response = {'result': 'success', 'errors': []}
     else:
-        response = {'result': 'fail', 'errors' : errors}
+        response = {'result': 'fail', 'errors': errors}
         empty_tempfolder()
     # Return a success/fail flag and a list of errors to the browser
     return json.dumps(response)
@@ -779,7 +779,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
     if errors == []:
         d = {fieldname: all_lines}
     else:
-        d = {'errors' : errors}
+        d = {'errors': errors}
     return d
 
 

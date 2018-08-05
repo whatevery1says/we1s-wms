@@ -369,9 +369,9 @@ def export_project():
     project = Project(manifest, query, action)
     content, errors, key = project.make_datapackage()
     if len(errors) == 0:
-        response = {'result': 'success', 'key': key, 'errors' : []}
+        response = {'result': 'success', 'key': key, 'errors': []}
     else:
-        response = {'result': 'fail', 'errors' : errors}
+        response = {'result': 'fail', 'errors': errors}
         empty_tempfolder(key)
     # Return a success/fail flag and a list of errors to the browser
     return json.dumps(response)
@@ -719,7 +719,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
     if errors == []:
         d = {fieldname: all_lines}
     else:
-        d = {'errors' : errors}
+        d = {'errors': errors}
     return d
 
 

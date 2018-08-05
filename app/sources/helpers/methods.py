@@ -430,7 +430,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
     if errors == []:
         d = {fieldname: all_lines}
     else:
-        d = {'errors' : errors}
+        d = {'errors': errors}
     return d
 
 import re
