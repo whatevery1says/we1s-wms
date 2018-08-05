@@ -279,7 +279,7 @@ def search_collections(values):
     errors = []
     if len(list(corpus_db.find())) > 0:
         query = values['query']
-        if values['regex'] == True:
+        if values['regex'] is True:
             query = {}
             for k, v in query_properties.items():
                 REGEX = re.compile(v)
@@ -295,7 +295,7 @@ def search_collections(values):
         # Double the result for testing
         # result = result + result + result + result + result
         # result = result + result + result + result + result
-        if paginated == True:
+        if paginated is True:
             pages = list(paginate(result, page_size=page_size))
             num_pages = len(pages)
             page = get_page(pages, int(values['page']))
@@ -338,7 +338,7 @@ def search_corpus(query, limit, paginated, page, show_properties, sorting):
             # Double the result for testing
             # result = result + result + result + result + result
             # result = result + result + result + result + result
-            if paginated == True:
+            if paginated is True:
                 pages = list(paginate(result, page_size=page_size))
                 num_pages = len(pages)
                 page = get_page(pages, page)

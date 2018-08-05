@@ -230,7 +230,7 @@ def create_record(manifest):
     Takes a manifest dict and returns a list of errors if any.
     """
     errors = []
-    if validate_manifest(manifest) == True:
+    if validate_manifest(manifest) is True:
         try:
             assert manifest['name'] not in sources_db.distinct('name')
             sources_db.insert_one(manifest)
@@ -326,7 +326,7 @@ def import_manifests(source_files):
         properties['name'] = key
         properties['namespace'] = 'we1sv2.0'
         properties['metapath'] = 'Sources'
-        if validate_manifest(properties) == True:
+        if validate_manifest(properties) is True:
             manifests.append(properties)
         else:
             error_list.append('Could not produce a valid manifest for <code>' + key + '</code>.')
@@ -347,7 +347,7 @@ def search_sources(values):
     errors = []
     if len(list(sources_db.find())) > 0:
         query_properties, show_properties = reshape_query_props(values['query'], values['properties'])
-        if values['regex'] == True:
+        if values['regex'] is True:
             query = {}
             for k, v in query_properties.items():
                 REGEX = re.compile(v)
@@ -374,7 +374,7 @@ def update_record(manifest):
     Takes a manifest dict and returns a list of errors if any.
     """
     errors = []
-    if validate_manifest(manifest) == True:
+    if validate_manifest(manifest) is True:
         name = manifest.pop('name')
         metapath = manifest['metapath']
         _id = manifest.pop('_id')

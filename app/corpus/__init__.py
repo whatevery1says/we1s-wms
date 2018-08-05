@@ -132,7 +132,7 @@ def create_manifest():
     if 'OCR' in manifest.keys() and manifest['OCR'] == "on":
         manifest['OCR'] = True
     # Validate the resulting manifest
-    if methods.validate_manifest(manifest, nodetype) == True:
+    if methods.validate_manifest(manifest, nodetype) is True:
         database_errors = methods.create_record(manifest)
         errors = errors + database_errors
     else:
@@ -263,7 +263,7 @@ def update_manifest():
         manifest['OCR'] = True
 
     # Validate the resulting manifest
-    if methods.validate_manifest(manifest, nodetype) == True:
+    if methods.validate_manifest(manifest, nodetype) is True:
         database_errors = methods.update_record(manifest)
         errors = errors + database_errors
     else:

@@ -642,7 +642,7 @@ def search_scripts(query, limit, paginated, page, show_properties, sorting):
             # Double the result for testing
             # result = result + result + result + result + result
             # result = result + result + result + result + result
-            if paginated == True:
+            if paginated is True:
                 pages = list(paginate(result, page_size=page_size))
                 num_pages = len(pages)
                 page = get_page(pages, page)

@@ -128,7 +128,7 @@ def create_manifest():
                 properties[key] = ls
         elif value != '' and value != ['']:
             properties[key] = value
-    if methods.validate_manifest(properties) == True:
+    if methods.validate_manifest(properties) is True:
         validation_errors = methods.create_record(properties)
         errors = errors + validation_errors
     else:
@@ -321,7 +321,7 @@ def update_manifest():
                 properties[key] = ls
         elif value != '' and value != ['']:
             properties[key] = value
-    if methods.validate_manifest(properties) == True:
+    if methods.validate_manifest(properties) is True:
         validation_errors = methods.update_record(properties)
         errors = errors + validation_errors
     else:
