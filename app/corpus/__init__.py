@@ -32,7 +32,6 @@ corpus = Blueprint('corpus', __name__, template_folder='corpus')
 from app.corpus.helpers import methods as methods
 
 # ----------------------------------------------------------------------------#
-
 # Constants.
 # ----------------------------------------------------------------------------#
 
@@ -47,7 +46,6 @@ IMPORT_SERVER_DIR = os.path.join(instance_path, 'fake_server_dir')
 TRASH_DIR = os.path.join(instance_path, 'trash')
 
 # ----------------------------------------------------------------------------#
-
 # Controllers.
 # ----------------------------------------------------------------------------#
 
