@@ -42,8 +42,8 @@ ALLOWED_EXTENSIONS = ['zip']
 @tasks.route('/')
 def index():
     """Tasks index page."""
-    scripts = ['js/tasks/tasks.js'] # E.g. ['js/tasks/tasks.js']
-    styles = [] # E.g. ['css/tasks/tasks.css']
+    scripts = ['js/tasks/tasks.js']  # E.g. ['js/tasks/tasks.js']
+    styles = []  # E.g. ['css/tasks/tasks.css']
     breadcrumbs = [{'link': '/tasks', 'label': 'Manage Tasks'}]
     tasks = [{
             'task_name': 'A collection',

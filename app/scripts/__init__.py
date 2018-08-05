@@ -273,7 +273,7 @@ def save_script():
     Returns a dict containing a result (success or fail) and a list
     of errors."""
     query = request.json['query']
-    action = request.json['action'] # insert or update
+    action = request.json['action']  # insert or update
     data = request.json['manifest']
     manifest = {}
     # Get rid of empty values
@@ -346,7 +346,7 @@ def export_script():
     print(request.json)
     manifest = request.json['manifest']
     query = request.json['query']
-    action = request.json['action'] # export
+    action = request.json['action']  # export
     # Instantiate a script object and make a data pacakge
     script = Script(manifest, query, action)
     content, errors = script.make_datapackage()

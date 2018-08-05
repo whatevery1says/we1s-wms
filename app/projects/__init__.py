@@ -291,7 +291,7 @@ def save_project():
     Returns a dict containing a result (success or fail) and a list
     of errors."""
     query = request.json['query']
-    action = request.json['action'] # insert or update
+    action = request.json['action']  # insert or update
     data = request.json['manifest']
     manifest = {}
     # Get rid of empty values
@@ -364,7 +364,7 @@ def export_project():
     of errors."""
     manifest = request.json['manifest']
     query = request.json['query']
-    action = request.json['action'] # export
+    action = request.json['action']  # export
     # Instantiate a project object and make a data pacakge
     project = Project(manifest, query, action)
     content, errors, key = project.make_datapackage()
