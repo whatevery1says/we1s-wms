@@ -12,18 +12,18 @@ from datetime import datetime
 from pathlib import Path
 from jsonschema import validate, FormatChecker
 
-# For various solutions to dealing with ObjectID, see
-# https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
-# If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
-from bson import BSON, Binary, json_util
-JSON_UTIL = json_util.default
-
 from jsonschema import validate, FormatChecker
 from flask import Blueprint, render_template, request, url_for, current_app, send_file
 from werkzeug.utils import secure_filename
 
 import pymongo
 from pymongo import MongoClient
+
+# For various solutions to dealing with ObjectID, see
+# https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
+# If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
+from bson import BSON, Binary, json_util
+JSON_UTIL = json_util.default
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')
