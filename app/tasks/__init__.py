@@ -54,30 +54,30 @@ def index():
     styles = []  # E.g. ['css/tasks/tasks.css']
     breadcrumbs = [{'link': '/tasks', 'label': 'Manage Tasks'}]
     tasks = [{
-            'task_name': 'A collection',
-            'task_id': '123',
-            'task_result': 'QUEUED',
-            'task_status': 3
-        },
-        {
-            'task_name': 'Another collection',
-            'task_id': '456',
-            'task_result': 'QUEUED',
-            'task_status': 3
-        }]
+             'task_name': 'A collection',
+             'task_id': '123',
+             'task_result': 'QUEUED',
+             'task_status': 3
+             },
+             {
+             'task_name': 'Another collection',
+             'task_id': '456',
+             'task_result': 'QUEUED',
+             'task_status': 3
+             }]
     return render_template('tasks/index.html', scripts=scripts, styles=styles,
-            breadcrumbs=breadcrumbs, tasks=tasks)
+                           breadcrumbs=breadcrumbs, tasks=tasks)
 
 
 @tasks.route('/api/status/<id>', methods=['GET', 'POST'])
 def api_status(id):
     """ For testing. """
     response = json.dumps({
-            'success': True,
-            'id': '123',
-            'status': 1,
-            'result': 'STARTED'
-        })
+                          'success': True,
+                          'id': '123',
+                          'status': 1,
+                          'result': 'STARTED'
+                          })
     return response
 
 

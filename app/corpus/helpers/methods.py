@@ -37,7 +37,7 @@ def allowed_file(filename):
     Returns a Boolean.
     """
     return '.' in filename and \
-            filename.rsplit('.', 1)[1] in current_app.config['ALLOWED_EXTENSIONS']
+        filename.rsplit('.', 1)[1] in current_app.config['ALLOWED_EXTENSIONS']
 
 
 def check_date_format(dates):
@@ -115,7 +115,7 @@ def paginate(iterable, page_size):
     while True:
         i1, i2 = itertools.tee(iterable)
         iterable, page = (itertools.islice(i1, page_size, None),
-            list(itertools.islice(i2, page_size)))
+                          list(itertools.islice(i2, page_size)))
         if len(page) == 0:
             break
         yield page
