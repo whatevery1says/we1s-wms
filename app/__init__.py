@@ -1,9 +1,18 @@
+"""Flask app init.py
+"""
+
 # ----------------------------------------------------------------------------#
 # Imports
 # ----------------------------------------------------------------------------#
 
+import json
+import os
+import re
+import urllib
+
+import markdown
+
 from flask import Flask, render_template, request
-import os, json, re, urllib, markdown
 
 from .sources import sources
 from .corpus import corpus
