@@ -1,3 +1,5 @@
+"""config.py: Flask site configuration file"""
+
 UPLOAD_FOLDER = 'uploads'
 # ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'md', 'docx', 'jpg', 'xlsx'}
 ALLOWED_EXTENSIONS = {'csv', 'tsv', 'xls', 'xlsx'}
@@ -19,8 +21,9 @@ CSRF_SESSION_KEY = "secret"
 # Secret key for signing cookies
 SECRET_KEY = "secret"
 
-## Localisation
-class BaseConfig(object):
-	SUPPORTED_LANGUAGES = {'en': 'English', 'fr': 'Francais'}
-	BABEL_DEFAULT_LOCALE = 'en'
-	BABEL_DEFAULT_TIMEZONE = 'UTC'
+
+class BaseConfig:
+    """Base configuration: localisation (language and timezone options)"""
+    SUPPORTED_LANGUAGES = {'en': 'English', 'fr': 'Francais'}
+    BABEL_DEFAULT_LOCALE = 'en'
+    BABEL_DEFAULT_TIMEZONE = 'UTC'
