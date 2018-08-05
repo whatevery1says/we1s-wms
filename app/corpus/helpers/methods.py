@@ -1,7 +1,19 @@
-import os, tabulator, itertools, requests, json, re, zipfile, shutil
+"""methods.py"""
+
+import os
+import itertools
+import json
+import re
+import requests
+import shutil
+import zipfile
+
 from datetime import datetime
 from jsonschema import validate, FormatChecker
+
+import tabulator
 from tabulator import Stream
+
 import pandas as pd
 from tableschema_pandas import Storage
 
