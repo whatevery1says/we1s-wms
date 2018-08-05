@@ -12,6 +12,7 @@ db = client.we1s
 projects_db = db.Projects
 corpus_db = db.Corpus
 
+
 def clean(manifest):
     """Remove empty form values and form builder parameters."""
     data = {}
@@ -29,6 +30,7 @@ def make_project_folder(project_dir, workspace_dir):
         return []
     else:
         return ['<p>A project with this name already exists on the server.</p>']
+
 
 def project_exists(name, location, WORKSPACE_PROJECTS):
         """Check if the project is in the database 

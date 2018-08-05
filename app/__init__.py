@@ -48,9 +48,11 @@ app.config.from_pyfile('config.py')
 # Controllers.
 # ----------------------------------------------------------------------------#
 
+
 @app.route('/todo')
 def todo():
     return render_template('todo.html')
+
 
 @app.route('/thought-experiments/<name>')
 def thought_experiments(name):
@@ -60,14 +62,17 @@ def thought_experiments(name):
     html = markdown.markdown(md, ['markdown.extensions.extra'])
     return render_template('thought_experiments.html', html=html)
 
+
 @app.route('/')
 def home():
     return render_template('index.html')
+
 
 @app.route('/guide')
 def guide():
     breadcrumbs = [{'link': '/guide', 'label': 'Guide'}]
     return render_template('guide.html', breadcrumbs=breadcrumbs)
+
 
 def add_links(doc):
     """ Helper for /schema """
@@ -76,6 +81,7 @@ def add_links(doc):
     for p in pats:
         doc = re.sub(p, '\g<1><a id="user-content-\g<2>" class="anchor" aria-hidden="true" href="#\g<2>"></a>\g<2>\g<3>', doc)
     return doc
+
 
 @app.route('/schema')
 def schema():
@@ -91,9 +97,11 @@ def schema():
 
 # Error handlers.
 
+
 @app.errorhandler(500)
 def internal_error(error):
     return render_template('errors/500.html'), 500
+
 
 @app.errorhandler(404)
 def not_found_error(error):

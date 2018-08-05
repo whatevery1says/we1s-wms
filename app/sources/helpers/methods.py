@@ -440,6 +440,7 @@ import re
 import dateutil.parser
 from datetime import datetime
 
+
 def testformat(s):
     """Parses date and returns a dict with the date string, format,
     and an error message if the date cannot be parsed.

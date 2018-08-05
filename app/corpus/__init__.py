@@ -458,6 +458,7 @@ def search2():
             errors.append('No records were found matching your search criteria.')
         return json.dumps({'response': result, 'num_pages': num_pages, 'errors': errors}, default=JSON_UTIL)
 
+
 @corpus.route('/export-search', methods=['GET', 'POST'])
 def export_search():
     """ Ajax route for exporting search results."""
@@ -493,6 +494,7 @@ def export_search():
             methods.zipfolder('app/temp', 'search_results')
         return json.dumps({'filename': filename, 'errors': errors}, default=JSON_UTIL)
 
+
 @corpus.route('/delete-manifest', methods=['GET', 'POST'])
 def delete_manifest():
     """ Ajax route for deleting manifests."""
@@ -503,6 +505,7 @@ def delete_manifest():
     if msg != 'success':
         errors.append(msg)
     return json.dumps({'errors': errors})
+
 
 @corpus.route('/import', methods=['GET', 'POST'])
 def import_data():
@@ -526,9 +529,11 @@ def import_data():
     return render_template('corpus/import.html', scripts=scripts, 
             breadcrumbs=breadcrumbs, server_files=server_files, session_token=token)
 
+
 def listdir(path):
     """ Replacement for os.listdir() that ignores hidden files."""
     return glob.glob(os.path.join(path, '*'))
+
 
 def get_server_files():
     """ Get the files available for import from the server."""
@@ -594,6 +599,7 @@ def import_server_data():
     else:
         return json.dumps({'result': 'success', 'errors': []})
 
+
 @corpus.route('/refresh-server-imports', methods=['GET', 'POST'])
 def refresh_server_imports():
     file_list = get_server_files()
@@ -612,6 +618,7 @@ def remove_file():
             destination = os.path.join(session['TRASH_DIR'], request.json['filename'])
             os.rename(source, destination)
         return json.dumps({'response': 'success'})
+
 
 @corpus.route('/remove-all-files', methods=['GET', 'POST'])
 def remove_all_files():
@@ -632,6 +639,7 @@ def remove_all_files():
         return json.dumps({'response': 'success'})
     else:
         return json.dumps({'response': 'session is empty'})
+
 
 @corpus.route('/save-upload', methods=['GET', 'POST'])
 def save_upload():
@@ -722,6 +730,7 @@ def save_upload():
         else:
             return json.dumps({'errors': errors})
 
+
 @corpus.route('/upload/', methods=['GET', 'POST'])
 def upload():
     """Ajax route saves each file uploaded by the import function
@@ -770,6 +779,7 @@ def upload():
         else:
             response = {'errors': errors}
         return json.dumps(response)
+
 
 @corpus.route('/clear/<metapath>')
 def clear(metapath):

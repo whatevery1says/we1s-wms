@@ -376,6 +376,7 @@ def download_export(filename):
     empty_tempfolder()
     return response
 
+
 @scripts.route('/search', methods=['GET', 'POST'])
 def search():
     """ Experimental Page for searching Scripts manifests."""
@@ -627,6 +628,7 @@ def empty_tempfolder():
     shutil.rmtree(temp_folder)
     temp_folder.mkdir(parents=True, exist_ok=True)
 
+
 def search_scripts(query, limit, paginated, page, show_properties, sorting):
     """Uses the query generated in /search and returns the search results.
     """
@@ -698,6 +700,7 @@ def zipfolder(source_dir, output_filename):
         for file in files:
             fn = os.path.join(base, file)
             zipobj.write(fn, fn[rootlen:])
+
 
 def manifest_from_datapackage(zipfilepath):
     """Generates a script manifest from a zipped datapackage. The zip file is 
@@ -783,6 +786,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
         d = {'errors' : errors}
     return d
 
+
 def dict2textarea(props):
     """Converts a dict to a line-delimited string suitable for
     returning to the UI as the value of a textarea.
@@ -803,6 +807,7 @@ def dict2textarea(props):
 import re
 import dateutil.parser
 from datetime import datetime
+
 
 def testformat(s):
     """Parses date and returns a dict with the date string, format,
