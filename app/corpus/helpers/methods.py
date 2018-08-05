@@ -21,6 +21,11 @@ import pymongo
 from pymongo import MongoClient
 from pymongo.collation import Collation
 
+import re
+import dateutil.parser
+from datetime import datetime
+
+
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')
 db = client.we1s
@@ -463,10 +468,6 @@ def dict2textarea(props):
                 line += k + ': ' + str(v).strip(': ') + ', '
             lines += line.strip(', ') + '\n'
     return lines.strip('\n')
-
-import re
-import dateutil.parser
-from datetime import datetime
 
 
 def testformat(s):
