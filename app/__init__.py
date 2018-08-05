@@ -41,15 +41,15 @@ app.config.from_pyfile('config.py')
 
 @app.route('/todo')
 def todo():
-	return render_template('todo.html')
+    return render_template('todo.html')
 
 @app.route('/thought-experiments/<name>')
 def thought_experiments(name):
-	filename = os.path.join('app/static/markdown', name + '.md')
-	with open(filename, 'r') as f:
-		md = f.read()	
-	html = markdown.markdown(md, ['markdown.extensions.extra'])
-	return render_template('thought_experiments.html', html=html)
+    filename = os.path.join('app/static/markdown', name + '.md')
+    with open(filename, 'r') as f:
+        md = f.read()
+    html = markdown.markdown(md, ['markdown.extensions.extra'])
+    return render_template('thought_experiments.html', html=html)
 
 @app.route('/')
 def home():
@@ -57,28 +57,28 @@ def home():
 
 @app.route('/guide')
 def guide():
-	breadcrumbs = [{'link': '/guide', 'label': 'Guide'}]
-	return render_template('guide.html', breadcrumbs=breadcrumbs)
+    breadcrumbs = [{'link': '/guide', 'label': 'Guide'}]
+    return render_template('guide.html', breadcrumbs=breadcrumbs)
 
 def add_links(doc):
-	""" Helper for /schema """
-	import re
-	pats = ['(<h1>)(.+?)(</h1>)', '(<h2>)(.+?)(</h2>)', '(<h3>)(.+?)(</h3>)', '(<h4>)(.+?)(</h4>)', '(<h5>)(.+?)(</h5>)']
-	for p in pats:
-		doc = re.sub(p, '\g<1><a id="user-content-\g<2>" class="anchor" aria-hidden="true" href="#\g<2>"></a>\g<2>\g<3>', doc)
-	return doc
+    """ Helper for /schema """
+    import re
+    pats = ['(<h1>)(.+?)(</h1>)', '(<h2>)(.+?)(</h2>)', '(<h3>)(.+?)(</h3>)', '(<h4>)(.+?)(</h4>)', '(<h5>)(.+?)(</h5>)']
+    for p in pats:
+        doc = re.sub(p, '\g<1><a id="user-content-\g<2>" class="anchor" aria-hidden="true" href="#\g<2>"></a>\g<2>\g<3>', doc)
+    return doc
 
 @app.route('/schema')
 def schema():
-	breadcrumbs = [{'link': '/schema', 'label': 'Manifest Schema Documentation'}]
-	f = urllib.request.urlopen('https://github.com/whatevery1says/manifest/raw/master/we1s-manifest-schema-2.0.md')
-	md = f.read().decode('utf-8')	
-	html = markdown.markdown(md, ['markdown.extensions.extra'])
-	html = html.replace('<h1>WhatEvery1Says Schema</h1>', '')
-	html = add_links(html)
-	# Need to inject internal links in contents and elsewhere, as they are not 
-	# carried over from GitHub.
-	return render_template('schema.html', html=html, breadcrumbs=breadcrumbs)
+    breadcrumbs = [{'link': '/schema', 'label': 'Manifest Schema Documentation'}]
+    f = urllib.request.urlopen('https://github.com/whatevery1says/manifest/raw/master/we1s-manifest-schema-2.0.md')
+    md = f.read().decode('utf-8')
+    html = markdown.markdown(md, ['markdown.extensions.extra'])
+    html = html.replace('<h1>WhatEvery1Says Schema</h1>', '')
+    html = add_links(html)
+    # Need to inject internal links in contents and elsewhere, as they are not
+    # carried over from GitHub.
+    return render_template('schema.html', html=html, breadcrumbs=breadcrumbs)
 
 # Error handlers.
 

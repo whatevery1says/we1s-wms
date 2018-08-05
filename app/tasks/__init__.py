@@ -43,44 +43,44 @@ ALLOWED_EXTENSIONS = ['zip']
 
 @tasks.route('/')
 def index():
-	"""Tasks index page."""
-	scripts = ['js/tasks/tasks.js'] # E.g. ['js/tasks/tasks.js']
-	styles = [] # E.g. ['css/tasks/tasks.css']
-	breadcrumbs = [{'link': '/tasks', 'label': 'Manage Tasks'}]
-	tasks = [{
-			'task_name': 'A collection',
-			'task_id': '123', 
-			'task_result': 'QUEUED',
-			'task_status': 3
-		},
-		{
-			'task_name': 'Another collection',
-			'task_id': '456', 
-			'task_result': 'QUEUED',
-			'task_status': 3
-		}]
-	return render_template('tasks/index.html', scripts=scripts, styles=styles, 
-			breadcrumbs=breadcrumbs, tasks=tasks)
+    """Tasks index page."""
+    scripts = ['js/tasks/tasks.js'] # E.g. ['js/tasks/tasks.js']
+    styles = [] # E.g. ['css/tasks/tasks.css']
+    breadcrumbs = [{'link': '/tasks', 'label': 'Manage Tasks'}]
+    tasks = [{
+            'task_name': 'A collection',
+            'task_id': '123', 
+            'task_result': 'QUEUED',
+            'task_status': 3
+        },
+        {
+            'task_name': 'Another collection',
+            'task_id': '456', 
+            'task_result': 'QUEUED',
+            'task_status': 3
+        }]
+    return render_template('tasks/index.html', scripts=scripts, styles=styles, 
+            breadcrumbs=breadcrumbs, tasks=tasks)
 
 
 @tasks.route('/api/status/<id>', methods=['GET', 'POST'])
 def api_status(id):
-	""" For testing. """
-	response = json.dumps({
-			'success': True,
-			'id': '123',
-			'status': 1,
-			'result': 'STARTED'
-		})
-	return response
+    """ For testing. """
+    response = json.dumps({
+            'success': True,
+            'id': '123',
+            'status': 1,
+            'result': 'STARTED'
+        })
+    return response
 
 
 @tasks.route('/api/enqueue', methods=['GET', 'POST'])
 def api_enqueue():
-	""" For testing. """
-	response = json.dumps({
-		'success': True,
-		'id': '789',
-		'status': 3,
-		'result': 'QUEUED'})
-	return response
+    """ For testing. """
+    response = json.dumps({
+        'success': True,
+        'id': '789',
+        'status': 3,
+        'result': 'QUEUED'})
+    return response
