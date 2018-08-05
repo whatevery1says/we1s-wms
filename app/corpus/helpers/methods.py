@@ -1,8 +1,8 @@
 """methods.py"""
 
-import os
 import itertools
 import json
+import os
 import re
 import requests
 import shutil

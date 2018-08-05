@@ -1,4 +1,12 @@
-import os, tabulator, itertools, requests, json, re, zipfile, shutil
+import itertools
+import json
+import os
+import re
+import requests
+import shutil
+import zipfile
+
+import tabulator
 import subprocess
 from datetime import datetime
 from pathlib import Path
