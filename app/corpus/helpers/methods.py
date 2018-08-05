@@ -84,7 +84,7 @@ def get_page(pages, page):
     returns a single page from the list.
     """
     try:
-        return pages[page-1]
+        return pages[page - 1]
     except:
         print('The requested page does not exist.')
 
@@ -430,7 +430,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
             opts = {}
             # Match main_key without our without quotation marks
             main = main_key + '|[\'\"]' + main_key + '[\'\"]'
-            pattern = ', (' +'[a-z]+: ' + ')' # Assumes no camel case in the property name
+            pattern = ', (' + '[a-z]+: ' + ')'  # Assumes no camel case in the property name
             # There are options. Parse them.
             if re.search(pattern, line):
                 line = re.sub(pattern, '\n\\1', line)  # Could be improved to handle more variations
