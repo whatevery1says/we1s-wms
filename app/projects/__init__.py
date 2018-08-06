@@ -6,6 +6,9 @@ import requests
 import shutil
 import zipfile
 
+import dateutil.parser
+from datetime import datetime
+
 import tabulator
 import uuid
 import yaml
@@ -747,10 +750,6 @@ def dict2textarea(props):
                 line += k + ': ' + str(v).strip(': ') + ', '
             lines += line.strip(', ') + '\n'
     return lines.strip('\n')
-
-import re
-import dateutil.parser
-from datetime import datetime
 
 
 def testformat(s):
