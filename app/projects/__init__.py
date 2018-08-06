@@ -119,7 +119,7 @@ class Project():
                     updated_manifest[k] = v
             try:
                 projects_db.update_one({'_id': ObjectId(saved_project['_id'])},
-                            {'$set': updated_manifest}, upsert=False)
+                                       {'$set': updated_manifest}, upsert=False)
                 return {'result': 'success', 'errors': []}
             except pymongo.errors.PyMongoError as e:
                 print(e.__dict__.keys())
@@ -134,7 +134,7 @@ class Project():
             _id = self.manifest.pop('_id')
             try:
                 projects_db.update_one({'_id': ObjectId(saved_project['_id'])},
-                            {'$set': self.manifest}, upsert=False)
+                                       {'$set': self.manifest}, upsert=False)
                 empty_tempfolder(key)
                 return {'result': 'success', 'errors': []}
             except pymongo.errors.PyMongoError as e:
@@ -143,7 +143,6 @@ class Project():
                 msg = 'Unknown Fluff: The record for <code>name</code> <strong>' + self.name + '</strong> could not be updated.'
                 errors.append(msg)
                 return {'result': 'fail', 'errors': errors}
-
 
     def make_datapackage(self):
         """Create a project folder containing a data package, then
@@ -202,7 +201,6 @@ class Project():
             with open(project_zip, 'rb') as f:
                 content = f.read()
             return content, errors, key
-
 
     def zipfolder(self, source_dir, temp_folder, output_filename):
         """Creates a zip archive of a source directory.
@@ -273,8 +271,8 @@ def display(name):
     else:
         errors.append('Unknown Error: The project does not exist or could not be loaded.')
     return render_template('projects/display.html', scripts=scripts,
-        breadcrumbs=breadcrumbs, manifest=manifest, errors=errors,
-        templates=templates, styles=styles)
+                           breadcrumbs=breadcrumbs, manifest=manifest,
+                           errors=errors, templates=templates, styles=styles)
 
 
 @projects.route('/test-query', methods=['GET', 'POST'])
@@ -664,12 +662,12 @@ def manifest_from_datapackage(zipfilepath):
                 # Read the datapackage file
                 datapackage = json.loads(f.read())
         # Build a manifest from the datapackage info
-        manifest ['name'] = datapackage['name']
-        manifest ['metapath'] = 'Projects'
+        manifest['name'] = datapackage['name']
+        manifest['metapath'] = 'Projects'
         manifest['namespace'] = 'we1sv2.0'
-        manifest ['title'] = datapackage['title']
-        manifest ['contributors'] = datapackage['contributors']
-        manifest ['created'] = datapackage['created']
+        manifest['title'] = datapackage['title']
+        manifest['contributors'] = datapackage['contributors']
+        manifest['created'] = datapackage['created']
         # If the datapackage has a db-query, copy it
         if 'db-query' in datapackage.keys():
             manifest['db-query'] = datapackage['db-query']
