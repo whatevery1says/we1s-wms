@@ -332,7 +332,7 @@ def search_corpus(query, limit, paginated, page, show_properties, sorting):
     if is_path == False:
         query.get(key).append({'path': ',Corpus,'})
     print(query.get(key))
-    is_corpus_path = next((item for item in query.get(key) if item.get('path') != None and item.get('path').startswith(',Corpus,')), False)
+    is_corpus_path = next((item for item in query.get(key) if item.get('path') is not None and item.get('path').startswith(',Corpus,')), False)
     # False if the path is not in the Corpus; return an error
     if is_corpus_path == False:
         errors.append('Please supply a valid path within the Corpus.')

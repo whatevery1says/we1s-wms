@@ -172,7 +172,7 @@ def display(name):
     manifest = {}
     try:
         result = corpus_db.find_one({'name': name})
-        assert result != None
+        assert result is not None
         for key, value in result.items():
             if isinstance(value, list):
                 textarea = methods.dict2textarea(value)
@@ -305,7 +305,7 @@ def send_export():
         query = {'name': data['name'], 'metapath': data['metapath']}
         try:
             result = corpus_db.find_one(query)
-            assert result != None
+            assert result is not None
             manifest = {}
             for key, value in result.items():
                 if value != '' and value != []:
@@ -334,7 +334,7 @@ def send_export():
         methods.make_dir('app/temp/Corpus/' + collection)
         # result = corpus_db.find_one({'metapath': metapath, 'name': collection})
         result = corpus_db.find_one({'metapath': metapath})
-        # assert result != None
+        # assert result is not None
         manifest = {}
         for key, value in result.items():
             if value != '' and value != []:

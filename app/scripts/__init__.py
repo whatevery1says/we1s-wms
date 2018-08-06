@@ -239,7 +239,7 @@ def display(name):
         templates = yaml.load(stream)
     try:
         result = scripts_db.find({'name': name})
-        assert result != None
+        assert result is not None
         manifest = list(result)[0]
         del manifest['content']
         for key, value in manifest.items():

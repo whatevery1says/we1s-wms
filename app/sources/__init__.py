@@ -174,7 +174,7 @@ def display(name):
     manifest = {}
     try:
         result = sources_db.find_one({'name': name})
-        assert result != None
+        assert result is not None
         for key, value in result.items():
             if isinstance(value, list):
                 manifest[key] = []

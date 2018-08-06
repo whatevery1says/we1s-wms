@@ -89,7 +89,7 @@ class Project():
     def exists(self):
         """Test whether the project already exists in the database."""
         test = projects_db.find_one({'name': self.name})
-        if test != None:
+        if test is not None:
             return True
         else:
             return False
@@ -258,7 +258,7 @@ def display(name):
     with open('app/templates/projects/template_config.yml', 'r') as stream:
         templates = yaml.load(stream)
     manifest = projects_db.find_one({'name': name})
-    if manifest != None:
+    if manifest is not None:
         try:
             del manifest['content']
             for key, value in manifest.items():
