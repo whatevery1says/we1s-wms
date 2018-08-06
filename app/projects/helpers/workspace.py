@@ -205,10 +205,10 @@ class Notebook():
         caches_dir = os.path.join(self.workspace_dir, 'caches')
         Path(caches_dir).mkdir(parents=True, exist_ok=True)
         # Create a scripts directory and copy the templates
-        scripts_template_dir = os.path.join(self.template_dir, 'scripts')
+        scripts_template_dir = os.path.join(self.templates_dir, 'scripts')
         scripts_dir = os.path.join(self.workspace_dir, 'scripts')
         Path(scripts_dir).mkdir(parents=True, exist_ok=True)
-        shutil.copystatcopytree(scripts_template_dir, scripts_dir, ignore=ignore_patterns('.ipynb_checkpoints', '__pycache__'))
+        shutil.copytree(scripts_template_dir, scripts_dir, ignore=ignore_patterns('.ipynb_checkpoints', '__pycache__'))
         dictionary = {}
         try:
             # Retrieve a text file with the notebook cells
