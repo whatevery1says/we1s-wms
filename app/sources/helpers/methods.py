@@ -141,41 +141,41 @@ def process_dates(dates):
             contains_precise.append('precise')
         else:
             contains_precise.append('normal')
-        # Handle a mix of normal and precise dates
-        if 'normal' in contains_precise and 'precise' in contains_precise:
-            d['normal'] = []
-            d['precise'] = []
-            for item in date:
-                if ',' in item:
-                    start, end = item.replace(' ', '').split(',')
-                    if len(start) > 10 or len(end) > 10:
-                        d['precise'].append({'start': start, 'end': end})
-                    else:
-                        d['normal'].append({'start': start, 'end': end})
-                else:
-                    if len(item) > 10:
-                        d['precise'].append(item)
-                    else:
-                        d['normal'].append(item)
-                    new_dates.append(d)
-        # Handle only precise dates
-        elif 'precise' in contains_precise:
-            d['precise'] = []
-            for item in dates:
-                if ',' in item:
-                    start, end = item.replace(' ', '').split(',')
+    # Handle a mix of normal and precise dates
+    if 'normal' in contains_precise and 'precise' in contains_precise:
+        d['normal'] = []
+        d['precise'] = []
+        for item in dates:
+            if ',' in item:
+                start, end = item.replace(' ', '').split(',')
+                if len(start) > 10 or len(end) > 10:
                     d['precise'].append({'start': start, 'end': end})
                 else:
+                    d['normal'].append({'start': start, 'end': end})
+            else:
+                if len(item) > 10:
                     d['precise'].append(item)
-            new_dates.append(d)
-        # Handle only normal dates
-        else:
-            for item in dates:
-                if ',' in item:
-                    start, end = item.replace(' ', '').split(',')
-                    new_dates.append({'start': start, 'end': end})
                 else:
-                    new_dates.append(item)
+                    d['normal'].append(item)
+                new_dates.append(d)
+    # Handle only precise dates
+    elif 'precise' in contains_precise:
+        d['precise'] = []
+        for item in dates:
+            if ',' in item:
+                start, end = item.replace(' ', '').split(',')
+                d['precise'].append({'start': start, 'end': end})
+            else:
+                d['precise'].append(item)
+        new_dates.append(d)
+    # Handle only normal dates
+    else:
+        for item in dates:
+            if ',' in item:
+                start, end = item.replace(' ', '').split(',')
+                new_dates.append({'start': start, 'end': end})
+            else:
+                new_dates.append(item)
     return new_dates
 
 
