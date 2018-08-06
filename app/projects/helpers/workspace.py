@@ -33,22 +33,22 @@ def make_project_folder(project_dir, workspace_dir):
 
 
 def project_exists(name, location, WORKSPACE_PROJECTS):
-        """Check if the project is in the database
-        or on the server if a url to a datapackage.json
-        file is supplied.
-        """
-        if location == 'database':
-            result = list(projects_db.find({'name': name}))
-            if len(result) > 0:
-                return True
-            else:
-                return False
+    """Check if the project is in the database
+    or on the server if a url to a datapackage.json
+    file is supplied.
+    """
+    if location == 'database':
+        result = list(projects_db.find({'name': name}))
+        if len(result) > 0:
+            return True
         else:
-            dirlist = [item for item in os.listdir(WORKSPACE_PROJECTS) if os.path.isdir(os.path.join(WORKSPACE_PROJECTS, item))]
-            if name not in dirlist:
-                return True
-            else:
-                return False
+            return False
+    else:
+        dirlist = [item for item in os.listdir(WORKSPACE_PROJECTS) if os.path.isdir(os.path.join(WORKSPACE_PROJECTS, item))]
+        if name not in dirlist:
+            return True
+        else:
+            return False
 
 
 def fetch_datapackage(manifest, zip_path, project_dir, workspace_projects, workspace_dir):
