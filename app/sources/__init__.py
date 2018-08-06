@@ -110,16 +110,16 @@ def create_manifest():
             # Add the values to the good dict by ID
             for item in value:
                 k = item.keys()
-                property = list(k)[0]
-                id = re.sub('[a-zA-Z]+', '', property)
-                val = item[property]
-                if property.startswith('authorName'):
-                    property = 'name'
-                if property.startswith('authorGroup'):
-                    property = 'group'
-                if property.startswith('authorOrg'):
-                    property = 'organization'
-                good_dict[id][property] = val
+                m_property = list(k)[0]
+                m_id = re.sub('[a-zA-Z]+', '', m_property)
+                val = item[m_property]
+                if m_property.startswith('authorName'):
+                    m_property = 'name'
+                if m_property.startswith('authorGroup'):
+                    m_property = 'group'
+                if m_property.startswith('authorOrg'):
+                    m_property = 'organization'
+                good_dict[m_id][m_property] = val
             # Convert any author names to strings and add the good_dict values to the list
             for k, v in good_dict.items():
                 if len(good_dict[k]) == 1:

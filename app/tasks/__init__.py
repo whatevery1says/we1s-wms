@@ -69,7 +69,7 @@ def index():
 
 
 @tasks.route('/api/status/<id>', methods=['GET', 'POST'])
-def api_status(id):
+def api_status(job_id):
     """ For testing. """
     response = json.dumps({
                           'success': True,

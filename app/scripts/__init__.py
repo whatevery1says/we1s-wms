@@ -847,9 +847,9 @@ def textarea2datelist(textarea):
         for item in dates:
             if re.search(' - ', item):  # Check for ' -'
                 d = {'range': {'start': ''}}
-                range = item.split(' - ')
-                start = testformat(range[0])
-                end = testformat(range[1])
+                date_range = item.split(' - ')
+                start = testformat(date_range[0])
+                end = testformat(date_range[1])
                 # Make sure start date precedes end date
                 try:
                     if end['text'] == '':

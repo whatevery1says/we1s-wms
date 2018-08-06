@@ -53,22 +53,22 @@ def check_date_format(dates):
     log = []
     for item in dates:
         if ',' in item:
-            range = item.replace(' ', '').split(',')
+            date_range = item.replace(' ', '').split(',')
             try:
-                assert range[1] > range[0]
-                log = log + range
+                assert date_range[1] > date_range[0]
+                log = log + date_range
             except:
-                msg = 'Your end date <code>' + range[1] + '</code> must be after your start date <code>' + range[0] + '</code>.'
+                msg = 'Your end date <code>' + date_range[1] + '</code> must be after your start date <code>' + date_range[0] + '</code>.'
                 errors.append(msg)
         else:
             log.append(item)
     for item in log:
         if len(item) > 10:
-            format = '%Y-%m-%dT%H:%M:%S'
+            date_format = '%Y-%m-%dT%H:%M:%S'
         else:
-            format = '%Y-%m-%d'
+            date_format = '%Y-%m-%d'
         try:
-            item != datetime.strptime(item, format).strftime(format)
+            item != datetime.strptime(item, date_format).strftime(date_format)
         except:
             msg = 'The date value <code>' + item + '</code> is in an incorrect format. Use <code>YYYY-MM-DD</code> or <code>YYYY-MM-DDTHH:MM:SS</code>.'
             errors.append(msg)
@@ -485,9 +485,9 @@ def textarea2datelist(textarea):
         for item in dates:
             if re.search(' - ', item):  # Check for ' -'
                 d = {'range': {'start': ''}}
-                range = item.split(' - ')
-                start = testformat(range[0])
-                end = testformat(range[1])
+                date_range = item.split(' - ')
+                start = testformat(date_range[0])
+                end = testformat(date_range[1])
                 # Make sure start date precedes end date
                 try:
                     if end['text'] == '':
