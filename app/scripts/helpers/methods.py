@@ -10,9 +10,10 @@ import dateutil.parser
 from datetime import datetime
 
 import tabulator
+from tabulator import Stream
+
 from flask import current_app
 from jsonschema import validate, FormatChecker
-from tabulator import Stream
 import pandas as pd
 from tableschema_pandas import Storage
 
