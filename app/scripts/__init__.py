@@ -250,8 +250,8 @@ def display(name):
     except:
         errors.append('Unknown Error: The script or tool does not exist or could not be loaded.')
     return render_template('scripts/display.html', scripts=scripts,
-        breadcrumbs=breadcrumbs, manifest=manifest, errors=errors,
-        templates=templates, styles=styles)
+                           breadcrumbs=breadcrumbs, manifest=manifest,
+                           errors=errors, templates=templates, styles=styles)
 
 
 @scripts.route('/test-query', methods=['GET', 'POST'])
