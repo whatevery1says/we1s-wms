@@ -13,14 +13,12 @@ import tabulator
 import uuid
 import yaml
 import subprocess
-from datetime import datetime
 from pathlib import Path
 from jsonschema import validate, FormatChecker
 
 # from app.projects.helpers import methods as methods
 from app.projects.helpers import workspace as workspace
 
-from jsonschema import validate, FormatChecker
 from flask import Blueprint, render_template, request, url_for, current_app, send_file
 from werkzeug.utils import secure_filename
 
@@ -697,7 +695,6 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
     supplied in valid_props. If any property is invalid the function
     returns a dict with only the error key and a list of errors.
     """
-    import yaml
     lines = textarea.split('\n')
     all_lines = []
     errors = []

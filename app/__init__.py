@@ -75,7 +75,6 @@ def guide():
 
 def add_links(doc):
     """ Helper for /schema """
-    import re
     pats = ['(<h1>)(.+?)(</h1>)', '(<h2>)(.+?)(</h2>)', '(<h3>)(.+?)(</h3>)', '(<h4>)(.+?)(</h4>)', '(<h5>)(.+?)(</h5>)']
     for p in pats:
         doc = re.sub(p, r'\g<1><a id="user-content-\g<2>" class="anchor" aria-hidden="true" href="#\g<2>"></a>\g<2>\g<3>', doc)

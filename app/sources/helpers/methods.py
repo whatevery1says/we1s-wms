@@ -13,7 +13,6 @@ import tabulator
 from flask import current_app
 from bson import BSON
 from bson import json_util
-from datetime import datetime
 from jsonschema import validate, FormatChecker
 from tabulator import Stream
 import pandas as pd

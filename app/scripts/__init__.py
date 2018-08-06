@@ -12,7 +12,6 @@ from datetime import datetime
 import tabulator
 import yaml
 import subprocess
-from datetime import datetime
 from pathlib import Path
 
 from jsonschema import validate, FormatChecker
@@ -754,7 +753,6 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
     supplied in valid_props. If any property is invalid the function
     returns a dict with only the error key and a list of errors.
     """
-    import yaml
     lines = textarea.split('\n')
     all_lines = []
     errors = []

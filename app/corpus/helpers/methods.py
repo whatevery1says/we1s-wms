@@ -1,5 +1,6 @@
 """methods.py"""
 
+import dateutil.parser
 import itertools
 import json
 import os
@@ -20,10 +21,6 @@ from tableschema_pandas import Storage
 import pymongo
 from pymongo import MongoClient
 from pymongo.collation import Collation
-
-import re
-import dateutil.parser
-from datetime import datetime
 
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"

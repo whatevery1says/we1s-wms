@@ -10,7 +10,6 @@ import dateutil.parser
 from datetime import datetime
 
 import tabulator
-from datetime import datetime
 from flask import current_app
 from jsonschema import validate, FormatChecker
 from tabulator import Stream
