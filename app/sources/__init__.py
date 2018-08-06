@@ -382,7 +382,6 @@ def upload():
             }
             data.append(f)
             return json.dumps(data, default=JSON_UTIL)
-    pass
 
 
 @sources.route('/clear')
