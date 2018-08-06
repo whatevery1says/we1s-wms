@@ -24,7 +24,7 @@ from werkzeug.utils import secure_filename
 import pymongo
 from pymongo import MongoClient
 
-from app.corpus.helpers import methods as methods
+from app.corpus.helpers import methods
 
 # For various solutions to dealing with ObjectID, see
 # https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable

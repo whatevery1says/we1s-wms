@@ -17,7 +17,7 @@ from pathlib import Path
 from jsonschema import validate, FormatChecker
 
 # from app.projects.helpers import methods as methods
-from app.projects.helpers import workspace as workspace
+from app.projects.helpers import workspace
 
 from flask import Blueprint, render_template, request, url_for, current_app, send_file
 from werkzeug.utils import secure_filename
