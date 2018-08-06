@@ -1,5 +1,26 @@
-import os, tabulator, itertools, requests, json, re, shutil
+import itertools
+import json
+import os
+import re
+import requests
+import shutil
 import yaml
+
+import tabulator
+
+# from datetime import datetime
+from jsonschema import validate, FormatChecker
+# from tabulator import Stream
+# import pandas as pd
+# from tableschema_pandas import Storage
+from flask import Blueprint, make_response, render_template, request, url_for, current_app
+from werkzeug.utils import secure_filename
+
+import pymongo
+from pymongo import MongoClient
+
+from app.sources.helpers import methods as methods
+
 # For various solutions to dealing with ObjectID, see
 # https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
 # If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
@@ -7,25 +28,12 @@ from bson import BSON
 from bson import json_util
 JSON_UTIL = json_util.default
 
-# from datetime import datetime
-from jsonschema import validate, FormatChecker
-# from tabulator import Stream
-# import pandas as pd
-# from tableschema_pandas import Storage
-from flask import Blueprint, render_template, request, url_for, current_app
-from werkzeug.utils import secure_filename
-
-import pymongo
-from pymongo import MongoClient
-
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')
 db = client.we1s
 sources_db = db.Sources
 
 sources = Blueprint('sources', __name__, template_folder='sources')
-
-from app.sources.helpers import methods as methods
 
 # ----------------------------------------------------------------------------#
 # Constants.
@@ -46,15 +54,14 @@ country_list = ['AF', 'AX', 'AL', 'DZ', 'AS', 'AD', 'AO', 'AI', 'AQ', 'AG', 'AR'
 def index():
     """Sources index page."""
     scripts = [
-    # 'js/jQuery-File-Upload-9.20.0/js/vendor/jquery.ui.widget.js',
-    # 'js/jQuery-File-Upload-9.20.0/js/jquery.iframe-transport.js',
-    # 'js/jQuery-File-Upload-9.20.0/js/jquery.fileupload.js',
-    'js/corpus/dropzone.js',
-    'js/sources/sources.js',
-    'js/sources/upload.js',
-    'js/dateformat.js',
-    'js/jquery-ui.js'
-    ]
+        # 'js/jQuery-File-Upload-9.20.0/js/vendor/jquery.ui.widget.js',
+        # 'js/jQuery-File-Upload-9.20.0/js/jquery.iframe-transport.js',
+        # 'js/jQuery-File-Upload-9.20.0/js/jquery.fileupload.js',
+        'js/corpus/dropzone.js',
+        'js/sources/sources.js',
+        'js/sources/upload.js',
+        'js/dateformat.js',
+        'js/jquery-ui.js']
     styles = []
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}]
     return render_template('sources/index.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
@@ -81,7 +88,7 @@ def create_manifest():
             dates = [x.strip() for x in ls]
             new_dates, error_list = methods.check_date_format(dates)
             errors = errors + error_list
-            if new_dates  != []:
+            if new_dates != []:
                 properties[key] = new_dates
         elif key == 'notes':
             value = json.loads(value)
@@ -123,7 +130,7 @@ def create_manifest():
             properties[key] = [x.strip() for x in value.split(',')]
         elif isinstance(value, list):
             ls = value.splitlines()
-            ls =  [x.strip() for x in ls]
+            ls = [x.strip() for x in ls]
             if ls != []:
                 properties[key] = ls
         elif value != '' and value != ['']:
@@ -180,8 +187,8 @@ def display(name):
                 manifest[key] = []
                 for element in value:
                     if isinstance(element, dict):
-                        l = list(methods.NestedDictValues(element))
-                        s = ', '.join(l)
+                        list_ = list(methods.NestedDictValues(element))
+                        s = ', '.join(list_)
                         manifest[key].append(s)
                     else:
                         manifest[key].append(element)
@@ -191,14 +198,14 @@ def display(name):
     except:
         errors.append('Unknown Error: The manifest does not exist or could not be loaded.')
     return render_template('sources/display.html', lang_list=lang_list,
-        country_list=country_list, scripts=scripts, breadcrumbs=breadcrumbs,
-        manifest=manifest, errors=errors, templates=templates)
+                           country_list=country_list, scripts=scripts,
+                           breadcrumbs=breadcrumbs, manifest=manifest,
+                           errors=errors, templates=templates)
 
 
 @sources.route('/download-export/<filename>', methods=['GET', 'POST'])
 def download_export(filename):
     """ Ajax route to trigger download and empty the temp folder."""
-    from flask import make_response
     filepath = os.path.join('app/temp', filename)
     # Can't get Firefox to save the file extension by any means
     with open(filepath, 'rb') as f:
@@ -210,6 +217,7 @@ def download_export(filename):
     shutil.rmtree('app/temp')
     methods.make_dir('app/temp')
     return response
+
 
 '''
 @sources.route('/search', methods=['GET', 'POST'])
@@ -312,11 +320,11 @@ def update_manifest():
             dates = [x.strip() for x in ls]
             new_dates, error_list = methods.check_date_format(dates)
             errors = errors + error_list
-            if new_dates  != []:
+            if new_dates != []:
                 properties[key] = new_dates
         elif isinstance(value, list):
             ls = value.splitlines()
-            ls =  [x.strip() for x in ls]
+            ls = [x.strip() for x in ls]
             if ls != []:
                 properties[key] = ls
         elif value != '' and value != ['']:
