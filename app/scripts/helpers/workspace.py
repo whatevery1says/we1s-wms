@@ -75,7 +75,7 @@ class Datapackage():
         def make_project_folder(project_dir, workspace_dir):
             """Make project folder if it does not exist."""
             r = requests.get(project_dir + '/datapackagage.json')
-            if r.status_code == requests.codes.ok:
+            if r.status_code == requests.codes.ok:  #pylint: disable=no-member
                 workspace_path = Path(project_dir) / workspace_dir
                 Path(workspace_path).mkdir(parents=True, exist_ok=True)
                 return []
@@ -95,7 +95,7 @@ class Datapackage():
                     return False
             else:
                 r = requests.get(location)
-                return r.status_code == requests.codes.ok
+                return r.status_code == requests.codes.ok  #pylint: disable=no-member
 
         def fetch_datapackage(manifest, zip_path, projects_dir, workspace_dir):
             """Fetch a project datapackage from the database."""
