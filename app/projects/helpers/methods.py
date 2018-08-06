@@ -37,7 +37,7 @@ def allowed_file(filename):
     Returns a Boolean.
     """
     return '.' in filename and \
-            filename.rsplit('.', 1)[1] in current_app.config['ALLOWED_EXTENSIONS']
+        filename.rsplit('.', 1)[1] in current_app.config['ALLOWED_EXTENSIONS']
 
 
 def check_date_format(dates):
@@ -79,7 +79,7 @@ def get_page(pages, page):
     returns a single page from the list.
     """
     try:
-        return pages[page-1]
+        return pages[page - 1]
     except:
         print('The requested page does not exist.')
 
@@ -115,7 +115,7 @@ def paginate(iterable, page_size):
     while True:
         i1, i2 = itertools.tee(iterable)
         iterable, page = (itertools.islice(i1, page_size, None),
-            list(itertools.islice(i2, page_size)))
+                          list(itertools.islice(i2, page_size)))
         if len(page) == 0:
             break
         yield page
@@ -411,7 +411,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
             opts = {}
             # Match main_key without our without quotation marks
             main = main_key + '|[\'\"]' + main_key + '[\'\"]'
-            pattern = ', (' +'[a-z]+: ' + ')' # Assumes no camel case in the property name
+            pattern = ', (' + '[a-z]+: ' + ')'  # Assumes no camel case in the property name
             # There are options. Parse them.
             if re.search(pattern, line):
                 line = re.sub(pattern, '\n\\1', line)  # Could be improved to handle more variations
@@ -506,7 +506,7 @@ def textarea2datelist(textarea):
                 except:
                     d = {'error': 'The start date "' + start['text'] + '" must precede the end date "' + end['text'] + '".'}
                 else:
-                      d['range']['start'] = start
+                    d['range']['start'] = start
             else:
                 d = testformat(item)
             all_lines.append(d)
