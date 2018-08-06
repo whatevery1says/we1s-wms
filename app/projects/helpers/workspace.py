@@ -47,7 +47,7 @@ def project_exists(name, location, WORKSPACE_PROJECTS):
     """
     if location == 'database':
         result = list(projects_db.find({'name': name}))
-        if len(result) > 0:
+        if result:
             return True
         return False
     else:
@@ -86,7 +86,7 @@ def fetch_datapackage(manifest, zip_path, project_dir, workspace_projects, works
 def validate_corpus_query(query):
     """Make sure the Corpus query returns results."""
     result = list(corpus_db.find(query))
-    if len(result) > 0:
+    if result:
         return True
     return False
 
@@ -169,7 +169,7 @@ class Datapackage():
             if validate_corpus_query(json.loads(self.manifest['db-query'])):
                 result = make_datapackage(self.manifest, self.project_dir, self.workspace_dir, self.manifest['db-query'])
                 # If there are any errors, delete the container folder
-                if len(result) > 0:
+                if result:
                     print('Erasing folder.')
                     # shutil.rmtree(self.container)
                 self.errors += result

@@ -116,7 +116,7 @@ def paginate(iterable, page_size):
         i1, i2 = itertools.tee(iterable)
         iterable, page = (itertools.islice(i1, page_size, None),
                           list(itertools.islice(i2, page_size)))
-        if len(page) == 0:
+        if not page:
             break
         yield page
 
@@ -288,7 +288,7 @@ def search_collections(values):
         paginated = True
     page_size = 10
     errors = []
-    if len(list(corpus_db.find())) > 0:
+    if list(corpus_db.find()):
         query = values['query']
         if values['regex'] is True:
             query = {}
@@ -337,7 +337,7 @@ def search_corpus(query, limit, paginated, page, show_properties, sorting):
     if is_corpus_path == False:
         errors.append('Please supply a valid path within the Corpus.')
     """
-    if len(list(corpus_db.find())) > 0:
+    if list(corpus_db.find()):
         result = corpus_db.find(
             query,
             limit=limit,
@@ -552,7 +552,7 @@ def serialize_datelist(flattened_datelist):
 def list_collections(page_size=10, page=1):
     """Prints a list of all publications.
     """
-    if len(list(corpus_db.find())) > 0:
+    if list(corpus_db.find()):
         result = list(collections.find())
         pages = list(paginate(result, page_size=page_size))
         page = get_page(pages, page)

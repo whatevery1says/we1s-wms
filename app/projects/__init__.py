@@ -180,7 +180,7 @@ class Project():
 
         # Query the database
         result = list(corpus_db.find(self.query))
-        if len(result) == 0:
+        if not result:
             errors.append('No records were found matching your search criteria.')
         else:
             for item in result:
@@ -290,7 +290,7 @@ def test_query():
         response = """Your query did not return any records in the Corpus database.
         Try the <a href="/corpus/search">Corpus search</a> function to obtain a
         more accurate query."""
-    if len(list(corpus_db.find())) == 0:
+    if not list(corpus_db.find()):
         response = 'The Corpus database is empty.'
     return response
 
@@ -378,7 +378,7 @@ def export_project():
     # Instantiate a project object and make a data pacakge
     project = Project(manifest, query, action)
     content, errors, key = project.make_datapackage()
-    if len(errors) == 0:
+    if not errors:
         response = {'result': 'success', 'key': key, 'errors': []}
     else:
         response = {'result': 'fail', 'errors': errors}
@@ -456,7 +456,7 @@ def export_search_results():
                 opt = (item[0], pymongo.DESCENDING)
             sorting.append(opt)
         result, num_pages, errors = search_projects(query, limit, paginated, page, show_properties, sorting)
-        if len(result) == 0:
+        if not result:
             errors.append('No records were found matching your search criteria.')
         else:
             key = generate_key()
@@ -506,7 +506,7 @@ def import_project():
         try:
             test = {'name': manifest['name'], 'metapath': 'Projects'}
             result = projects_db.find(test)
-            assert len(list(result)) > 0
+            assert list(result)
             projects_db.insert_one(manifest)
         except:
             errors.append('The database already contains a project with the same name.')
@@ -537,7 +537,7 @@ def launch_jupyter():
     datapackage = workspace.Datapackage(manifest, WORKSPACE_PROJECTS)
     errors += datapackage.errors
     # If the datapackage has no errors, create the notebook
-    if len(errors) == 0:
+    if not errors:
         notebook = workspace.Notebook(datapackage.manifest, datapackage.container, notebook_start, WORKSPACE_PROJECTS, WORKSPACE_TEMPLATES)
         errors += notebook.errors
     # If the notebook has no errors, launch it
@@ -548,7 +548,7 @@ def launch_jupyter():
             errors.append('<p>Could not launch the Jupyter notebook.</p>')
     # If the process has accumulated errors on the way, send the
     # error messages to the front end.
-    if len(errors) > 0:
+    if errors:
         return json.dumps({'result': 'fail', 'errors': errors})
     else:
         return json.dumps({'result': 'success', 'errors': []})
@@ -580,7 +580,7 @@ def search_projects(query, limit, paginated, page, show_properties, sorting):
     """
     page_size = 10
     errors = []
-    if len(list(projects_db.find())) > 0:
+    if list(projects_db.find()):
         result = projects_db.find(
             query,
             limit=limit,
@@ -625,7 +625,7 @@ def paginate(iterable, page_size):
         i1, i2 = itertools.tee(iterable)
         iterable, page = (itertools.islice(i1, page_size, None),
                           list(itertools.islice(i2, page_size)))
-        if len(page) == 0:
+        if not page:
             break
         yield page
 

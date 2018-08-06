@@ -89,7 +89,7 @@ class Datapackage():
             """
             if location == 'database':
                 result = list(projects_db.find({'name': name}))
-                if len(result) > 0:
+                if result:
                     return True
                 else:
                     return False
@@ -118,7 +118,7 @@ class Datapackage():
         def validate_corpus_query(query):
             """Make sure the Corpus query returns results."""
             result = list(corpus_db.find(query))
-            if len(result) > 0:
+            if result:
                 return True
             return False
 

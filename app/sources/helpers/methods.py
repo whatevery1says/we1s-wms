@@ -116,7 +116,7 @@ def paginate(iterable, page_size):
         i1, i2 = itertools.tee(iterable)
         iterable, page = (itertools.islice(i1, page_size, None),
                           list(itertools.islice(i2, page_size)))
-        if len(page) == 0:
+        if not page:
             break
         yield page
 
@@ -356,7 +356,7 @@ def search_sources(values):
     """
     page_size = 10
     errors = []
-    if len(list(sources_db.find())) > 0:
+    if list(sources_db.find()):
         query_properties, show_properties = reshape_query_props(values['query'], values['properties'])
         if values['regex'] is True:
             query = {}
@@ -545,7 +545,7 @@ def list_sources(page_size=10, page=1):
     """
     Prints a list of all sources.
     """
-    if len(list(sources.find())) > 0:
+    if list(sources.find()):
         result = list(sources.find())
         pages = list(paginate(result, page_size=page_size))
         page = get_page(pages, page)

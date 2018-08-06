@@ -152,7 +152,7 @@ def create_manifest():
         errors.append(msg)
 
     manifest = json.dumps(manifest, indent=2, sort_keys=False, default=JSON_UTIL)
-    if len(errors) > 0:
+    if errors:
         error_str = '<ul>'
         for item in errors:
             error_str += '<li>' + item + '</li>'
@@ -284,7 +284,7 @@ def update_manifest():
         errors.append(msg)
 
     manifest = json.dumps(manifest, indent=2, sort_keys=False)
-    if len(errors) > 0:
+    if errors:
         error_str = '<ul>'
         for item in errors:
             error_str += '<li>' + item + '</li>'
@@ -500,7 +500,7 @@ def export_search():
                 opt = (item[0], pymongo.DESCENDING)
             sorting.append(opt)
         result, num_pages, errors = methods.search_corpus(query, limit, paginated, page, show_properties, sorting)
-        if len(result) == 0:
+        if not result:
             errors.append('No records were found matching your search criteria.')
         # Need to write the results to temp folder
         for item in result:
@@ -613,7 +613,7 @@ def import_server_data():
                 errors.append('<p>The file could not be read or the manifest could not be inserted in the database.</p>')
     else:
         errors.append('The filename could not be found on the server.')
-    if len(errors) > 0:
+    if errors:
         return json.dumps({'result': 'fail', 'errors': errors})
     else:
         return json.dumps({'result': 'success', 'errors': []})
@@ -686,7 +686,7 @@ def save_upload():
         except:
             errors.append('The specified collection does not exist in the database. Check your entry or <a href="/corpus/create">create a collection</a> before importing data.')
 
-        if len(errors) == 0:
+        if not errors:
             # Set the name and path for the new manifest
             node_metadata = {}
             if request.json['branch'] != '':
@@ -697,16 +697,16 @@ def save_upload():
                 node_metadata['metapath'] = collection
 
         # If the specified metapath does not exist, create it
-        if len(errors) == 0:
+        if not errors:
             parent = list(corpus_db.find({'name': node_metadata['name'], 'metapath': node_metadata['metapath']}))
-            if len(parent) == 0:
+            if not parent:
                 try:
                     corpus_db.insert_one(node_metadata)
                 except:
                     errors.append('<p>The specified metapath does not exist and could not be created.</p>')
 
         # Now create a data manifest for each file and insert it
-        if len(errors) == 0:
+        if not errors:
             for filename in listdir(session['IMPORT_DIR']):
                 print('Creating manifest for ' + filename)
                 if filename.endswith('.json'):
@@ -744,7 +744,7 @@ def save_upload():
         token = datetime.now().strftime('%Y%m%d_') + str(randint(0, 99))
         session['IMPORT_DIR'] = os.path.join(TEMP_DIR, token).replace('\\', '/')
 
-        if len(errors) == 0:
+        if not errors:
             return json.dumps({'result': 'success', 'session_token': 'token'})
         else:
             return json.dumps({'errors': errors})

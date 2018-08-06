@@ -76,7 +76,7 @@ class Script():
     def exists(self):
         """Test whether the script or tool already exists in the database."""
         test = scripts_db.find({'metapath': 'Scripts', 'name': self.name})
-        if len(list(test)) > 0:
+        if list(test):
             return True
         return False
 
@@ -159,7 +159,7 @@ class Script():
 
         # Query the database
         result = list(corpus_db.find(self.query))
-        if len(result) == 0:
+        if not result:
             errors.append('No records were found matching your search criteria.')
         else:
             for item in result:
@@ -269,7 +269,7 @@ def test_query():
         response = """Your query did not return any records in the Corpus database.
         Try the <a href="/corpus/search">Corpus search</a> function to obtain a
         more accurate query."""
-    if len(list(corpus_db.find())) == 0:
+    if not list(corpus_db.find()):
         response = 'The Corpus database is empty.'
     return response
 
@@ -357,7 +357,7 @@ def export_script():
     # Instantiate a script object and make a data pacakge
     script = Script(manifest, query, action)
     content, errors = script.make_datapackage()
-    if len(errors) == 0:
+    if not errors:
         response = {'result': 'success', 'errors': []}
     else:
         response = {'result': 'fail', 'errors': errors}
@@ -433,7 +433,7 @@ def export_search_results():
                 opt = (item[0], pymongo.DESCENDING)
             sorting.append(opt)
         result, num_pages, errors = search_scripts(query, limit, paginated, page, show_properties, sorting)
-        if len(result) == 0:
+        if not result:
             errors.append('No records were found matching your search criteria.')
         # Need to write the results to temp folder
         for item in result:
@@ -477,7 +477,7 @@ def import_script():
         try:
             test = {'name': manifest['name'], 'metapath': 'Scripts'}
             result = scripts_db.find(test)
-            assert len(list(result)) > 0
+            assert list(result)
             scripts_db.insert_one(manifest)
         except:
             errors.append('The database already contains a script or tool with the same name.')
@@ -510,10 +510,10 @@ def make_new_datapackage(script_dir, data):
     errors = []
     try:
         result = list(corpus_db.find(data['db_query']))
-        assert len(result) > 0
+        assert result
     except:
         errors.append('<p>Could not find any Corpus data. Please test your query.</p>')
-    if len(result) > 0:
+    if result:
         try:
             # Remove empty form values and form builder parameters
             manifest = {}
@@ -563,7 +563,7 @@ def launch_jupyter():
     datapackage = workspace.Datapackage(manifest, scripts_dir)
     errors += datapackage.errors
     # If the datapackage has no errors, create the notebook
-    if len(errors) == 0:
+    if not errors:
         notebook = workspace.Notebook(datapackage.manifest, scripts_dir)
         errors += notebook.errors
     # If the notebook has no errors, launch it
@@ -573,7 +573,7 @@ def launch_jupyter():
             errors.append('<p>Could not launch the Jupyter notebook.</p>')
     # If the process has accumulated errors on the way, send the
     # error messages to the front end.
-    if len(errors) > 0:
+    if errors:
         return json.dumps({'result': 'fail', 'errors': errors})
     else:
         return json.dumps({'result': 'success', 'errors': []})
@@ -597,7 +597,7 @@ def launch_jupyter_old():
     # Check if the script or tool is in the database
     result = list(scripts_db.find({'name': script_name}))
     # If the script is saved to the database
-    if len(result) > 0:
+    if result:
         try:
             load_saved_datapackage(result, zip_filepath, scripts_dir, workspace_dir)
         except:
@@ -637,7 +637,7 @@ def search_scripts(query, limit, paginated, page, show_properties, sorting):
     """
     page_size = 10
     errors = []
-    if len(list(scripts_db.find())) > 0:
+    if list(scripts_db.find()):
         result = scripts_db.find(
             query,
             limit=limit,
@@ -682,7 +682,7 @@ def paginate(iterable, page_size):
         i1, i2 = itertools.tee(iterable)
         iterable, page = (itertools.islice(i1, page_size, None),
                           list(itertools.islice(i2, page_size)))
-        if len(page) == 0:
+        if not page:
             break
         yield page
 

@@ -147,7 +147,7 @@ def create_manifest():
     # Need to insert into the database
     manifest = json.dumps(properties, indent=2, sort_keys=False, default=JSON_UTIL)
 
-    if len(errors) > 0:
+    if errors:
         error_str = '<ul>'
         for item in errors:
             error_str += '<li>' + item + '</li>'
@@ -275,7 +275,7 @@ def export_manifest():
     if request.method == 'POST':
         errors = []
         result = sources_db.find_one(request.json)
-        if len(result) == 0:
+        if not result:
             filename = ''
             errors.append('No records were found matching your search criteria.')
         # Need to write the results to temp folder
@@ -293,7 +293,7 @@ def export_search():
     """ Ajax route for exporting search results."""
     if request.method == 'POST':
         result, num_pages, errors = methods.search_sources(request.json)
-        if len(result) == 0:
+        if not result:
             errors.append('No records were found matching your search criteria.')
         # Need to write the results to temp folder
         methods.make_dir('app/temp')
@@ -340,7 +340,7 @@ def update_manifest():
 
     # Need to insert into the database
     manifest = json.dumps(properties, indent=2, sort_keys=False)
-    if len(errors) > 0:
+    if errors:
         error_str = '<ul>'
         for item in errors:
             error_str += '<li>' + item + '</li>'
