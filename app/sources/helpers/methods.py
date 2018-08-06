@@ -6,6 +6,9 @@ import requests
 import shutil
 import zipfile
 
+import dateutil.parser
+from datetime import datetime
+
 import tabulator
 from flask import current_app
 from bson import BSON
@@ -309,12 +312,12 @@ def import_manifests(source_files):
         filepath = os.path.join(path, item)
         with tabulator.Stream(filepath, **options) as stream:
             try:
-                stream.headers == ['name', 'metapath', 'namespace',
-                        'title', 'id', '_id', 'description', 'version',
-                        'shortTitle', 'label', 'notes', 'keywords',
-                        'image', 'publisher', 'webpage', 'authors',
-                        'date', 'edition', 'contentType', 'country',
-                        'language', 'citation']
+                stream.headers == ['name', 'metapath', 'namespace', 'title',
+                                   'id', '_id', 'description', 'version',
+                                   'shortTitle', 'label', 'notes', 'keywords',
+                                   'image', 'publisher', 'webpage', 'authors',
+                                   'date', 'edition', 'contentType', 'country',
+                                   'language', 'citation']
             except:
                 col_order = 'name, metapath, namespace, title, id, _id, description, version, shortTitle, label, notes, keywords, image, publisher, webpage, authors, date, edition, contentType, country, language, citation'
                 error_list.append('Error: The table headings in ' + item + ' do not match the Sources schema. Please use the headings ' + col_order + ' in that order.')
@@ -440,10 +443,6 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
     else:
         d = {'errors': errors}
     return d
-
-import re
-import dateutil.parser
-from datetime import datetime
 
 
 def testformat(s):
