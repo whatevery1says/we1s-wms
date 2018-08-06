@@ -369,8 +369,7 @@ def search_sources(values):
         result = list(sources_db.find(
             query,
             limit=int(values['limit']),
-            projection=show_properties)
-        )
+            projection=show_properties))
         pages = list(paginate(result, page_size=page_size))
         num_pages = len(pages)
         page = get_page(pages, int(values['page']))

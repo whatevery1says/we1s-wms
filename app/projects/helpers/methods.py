@@ -301,8 +301,7 @@ def search_collections(values):
         result = list(corpus_db.find(
             query,
             limit=limit,
-            projection=show_properties)
-        )
+            projection=show_properties))
         # Double the result for testing
         # result = result + result + result + result + result
         # result = result + result + result + result + result
