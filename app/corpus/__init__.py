@@ -202,8 +202,9 @@ def display(name):
         templates = yaml.load('')
         errors.append('Unknown Error: The manifest does not exist or could not be loaded.')
     return render_template('corpus/display.html', scripts=scripts,
-        breadcrumbs=breadcrumbs, manifest=manifest, errors=errors,
-        nodetype=nodetype, templates=templates)
+                           breadcrumbs=breadcrumbs, manifest=manifest,
+                           errors=errors, nodetype=nodetype,
+                           templates=templates)
 
 
 @corpus.route('/update-manifest', methods=['GET', 'POST'])
@@ -221,7 +222,7 @@ def update_manifest():
     else:
         data['nodetype'] = 'branch'
         data['metapath'] = 'Corpus,' + data['metapath']
-    data['metapath'] =  data['metapath'].replace('Corpus,Corpus,', 'Corpus,').strip(',')
+    data['metapath'] = data['metapath'].replace('Corpus,Corpus,', 'Corpus,').strip(',')
     # Remove empty values
     manifest = {}
     for key, value in data.items():
@@ -421,7 +422,11 @@ def download_export(filename):
 @corpus.route('/search1', methods=['GET', 'POST'])
 def search():
     """ Page for searching Corpus manifests."""
-    scripts = ['js/parsley.min.js', 'js/jquery.twbsPagination.min.js', 'js/corpus/corpus.js','js/dateformat-corpus.js', 'js/jquery-ui.js']
+    scripts = ['js/parsley.min.js',
+               'js/jquery.twbsPagination.min.js',
+               'js/corpus/corpus.js',
+               'js/dateformat-corpus.js',
+               'js/jquery-ui.js']
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/search', 'label': 'Search Collections'}]
     if request.method == 'GET':
         return render_template('corpus/search.html', scripts=scripts, breadcrumbs=breadcrumbs)
@@ -435,7 +440,14 @@ def search():
 @corpus.route('/search', methods=['GET', 'POST'])
 def search2():
     """ Experimental Page for searching Corpus manifests."""
-    scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/corpus/corpus.js', 'js/jquery-sortable-min.js', 'js/corpus/search.js', 'js/dateformat-corpus.js', 'js/jquery-ui.js']
+    scripts = ['js/query-builder.standalone.js',
+               'js/moment.min.js',
+               'js/jquery.twbsPagination.min.js',
+               'js/corpus/corpus.js',
+               'js/jquery-sortable-min.js',
+               'js/corpus/search.js',
+               'js/dateformat-corpus.js',
+               'js/jquery-ui.js']
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/search', 'label': 'Search Collections'}]
     if request.method == 'GET':
@@ -518,12 +530,10 @@ def delete_manifest():
 @corpus.route('/import', methods=['GET', 'POST'])
 def import_data():
     """ Page for importing manifests."""
-    scripts = [
-    'js/corpus/dropzone.js',
-    'js/parsley.min.js',
-    'js/corpus/corpus.js',
-    'js/corpus/upload.js'
-    ]
+    scripts = ['js/corpus/dropzone.js',
+               'js/parsley.min.js',
+               'js/corpus/corpus.js',
+               'js/corpus/upload.js']
     # Start an import session on page load
     token = datetime.now().strftime('%Y%m%d_') + str(randint(0, 99))
     session['IMPORT_DIR'] = os.path.join(TEMP_DIR, token).replace('\\', '/')
@@ -535,7 +545,8 @@ def import_data():
         server_files = result
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/import', 'label': 'Import Collection Data'}]
     return render_template('corpus/import.html', scripts=scripts,
-            breadcrumbs=breadcrumbs, server_files=server_files, session_token=token)
+                           breadcrumbs=breadcrumbs, server_files=server_files,
+                           session_token=token)
 
 
 def listdir(path):
@@ -563,7 +574,7 @@ def import_server_data():
     else:
         metapath = collection + ',' + category
     if branch != '':
-        metapath = metapath  + ',' + branch
+        metapath = metapath + ',' + branch
     # If the user's selected filename is in the server import directory
     if filename in listdir(IMPORT_SERVER_DIR):
         # Iterate through json files in zip archive
@@ -802,7 +813,7 @@ def clear(metapath):
             response = 'All records in Corpus database were deleted.'
         else:
             metapath = re.compile('^' + metapath)
-            corpus_db.delete_many({'metapath':{'$regex': metapath}})
+            corpus_db.delete_many({'metapath': {'$regex': metapath}})
             response = 'Delete all records under ' + metapath + '.'
     except:
         response = 'There was an error. No records were deleted.'
