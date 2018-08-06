@@ -52,7 +52,7 @@ def index():
     scripts = ['js/tasks/tasks.js']  # E.g. ['js/tasks/tasks.js']
     styles = []  # E.g. ['css/tasks/tasks.css']
     breadcrumbs = [{'link': '/tasks', 'label': 'Manage Tasks'}]
-    tasks = [{
+    task_list = [{
              'task_name': 'A collection',
              'task_id': '123',
              'task_result': 'QUEUED',
@@ -65,7 +65,7 @@ def index():
              'task_status': 3
              }]
     return render_template('tasks/index.html', scripts=scripts, styles=styles,
-                           breadcrumbs=breadcrumbs, tasks=tasks)
+                           breadcrumbs=breadcrumbs, tasks=task_list)
 
 
 @tasks.route('/api/status/<id>', methods=['GET', 'POST'])

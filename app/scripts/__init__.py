@@ -207,26 +207,26 @@ class Script():
 @scripts.route('/')
 def index():
     """Scripts index page."""
-    scripts = ['js/corpus/dropzone.js', 'js/scripts/scripts.js', 'js/scripts/upload.js', 'js/dateformat.js', 'js/jquery-ui.js']
+    script_list = ['js/corpus/dropzone.js', 'js/scripts/scripts.js', 'js/scripts/upload.js', 'js/dateformat.js', 'js/jquery-ui.js']
     breadcrumbs = [{'link': '/scripts', 'label': 'Scripts'}]
-    return render_template('scripts/index.html', scripts=scripts, breadcrumbs=breadcrumbs)
+    return render_template('scripts/index.html', scripts=script_list, breadcrumbs=breadcrumbs)
 
 
 @scripts.route('/create', methods=['GET', 'POST'])
 def create():
     """Create/update script or tool page."""
-    scripts = ['js/corpus/dropzone.js', 'js/parsley.min.js', 'js/moment.min.js', 'js/scripts/scripts.js', 'js/scripts/upload.js', 'js/dateformat.js', 'js/jquery-ui.js']
+    script_list = ['js/corpus/dropzone.js', 'js/parsley.min.js', 'js/moment.min.js', 'js/scripts/scripts.js', 'js/scripts/upload.js', 'js/dateformat.js', 'js/jquery-ui.js']
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/scripts', 'label': 'Scripts'}, {'link': '/scripts/create', 'label': 'Create/Update Script'}]
     with open('app/templates/scripts/template_config.yml', 'r') as stream:
         templates = yaml.load(stream)
-    return render_template('scripts/create.html', scripts=scripts, styles=styles, templates=templates, breadcrumbs=breadcrumbs)
+    return render_template('scripts/create.html', scripts=script_list, styles=styles, templates=templates, breadcrumbs=breadcrumbs)
 
 
 @scripts.route('/display/<name>', methods=['GET', 'POST'])
 def display(name):
     """Display script or tool page."""
-    scripts = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery-sortable-min.js', 'js/scripts/scripts.js', 'js/scripts/search.js']
+    script_list = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery-sortable-min.js', 'js/scripts/scripts.js', 'js/scripts/search.js']
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/scripts', 'label': 'Scripts'}, {'link': '/scripts/create', 'label': 'Display Script'}]
     errors = []
@@ -248,7 +248,7 @@ def display(name):
         manifest['metapath'] = 'Scripts'
     except:
         errors.append('Unknown Error: The script or tool does not exist or could not be loaded.')
-    return render_template('scripts/display.html', scripts=scripts,
+    return render_template('scripts/display.html', scripts=script_list,
                            breadcrumbs=breadcrumbs, manifest=manifest,
                            errors=errors, templates=templates, styles=styles)
 
@@ -383,11 +383,11 @@ def download_export(filename):
 @scripts.route('/search', methods=['GET', 'POST'])
 def search():
     """ Experimental Page for searching Scripts manifests."""
-    scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/scripts/scripts.js', 'js/jquery-sortable-min.js', 'js/scripts/search.js', 'js/dateformat.js', 'js/jquery-ui.js']
+    script_list = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/scripts/scripts.js', 'js/jquery-sortable-min.js', 'js/scripts/search.js', 'js/dateformat.js', 'js/jquery-ui.js']
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/scripts', 'label': 'Scripts'}, {'link': '/scripts/search', 'label': 'Search Scripts'}]
     if request.method == 'GET':
-        return render_template('scripts/search.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
+        return render_template('scripts/search.html', scripts=script_list, styles=styles, breadcrumbs=breadcrumbs)
     if request.method == 'POST':
         query = request.json['query']
         page = int(request.json['page'])

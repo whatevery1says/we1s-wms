@@ -774,9 +774,9 @@ def upload():
                     extracted_folder = os.path.splitext(file.filename)[0]
                     print('Extracted folder: ' + extracted_folder)
                     sourcepath = os.path.join(session['IMPORT_DIR'], extracted_folder)
-                    for file in listdir(sourcepath):
-                        if file.endswith('.json'):
-                            shutil.move(os.path.join(sourcepath, file), os.path.join(session['IMPORT_DIR'], file))
+                    for extracted_file in listdir(sourcepath):
+                        if extracted_file.endswith('.json'):
+                            shutil.move(os.path.join(sourcepath, extracted_file), os.path.join(session['IMPORT_DIR'], extracted_file))
                     # Remove the zip archive and empty folder
                     os.remove(filepath)
                     os.rmdir(sourcepath)
