@@ -1,16 +1,25 @@
-import os, requests, json, re, zipfile, shutil
-import subprocess
 import datetime
+import json
+import os
+import re
+import requests
+import shutil
+import subprocess
+import zipfile
+
 from pathlib import Path
+
 from bs4 import BeautifulSoup
-from bson import BSON, Binary, json_util
-JSON_UTIL = json_util.default
 import pymongo
 from pymongo import MongoClient
+from bson import BSON, Binary, json_util
+JSON_UTIL = json_util.default
+
 client = MongoClient('mongodb://mongo:27017')
 db = client.we1s
 projects_db = db.Projects
 corpus_db = db.Corpus
+
 
 class Datapackage():
     """Models a project datapackage object."""
