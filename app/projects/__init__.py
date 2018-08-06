@@ -91,8 +91,7 @@ class Project():
         test = projects_db.find_one({'name': self.name})
         if test is not None:
             return True
-        else:
-            return False
+        return False
 
     def insert(self):
         """Insert a project in the database."""

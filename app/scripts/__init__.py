@@ -78,8 +78,7 @@ class Script():
         test = scripts_db.find({'metapath': 'Scripts', 'name': self.name})
         if len(list(test)) > 0:
             return True
-        else:
-            return False
+        return False
 
     def insert(self):
         """Insert a script or tool in the database."""

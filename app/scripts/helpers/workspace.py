@@ -115,8 +115,7 @@ class Datapackage():
             result = list(corpus_db.find(query))
             if len(result) > 0:
                 return True
-            else:
-                return False
+            return False
 
 
         def make_datapackage(manifest, project_dir, query):

@@ -41,14 +41,12 @@ def project_exists(name, location, WORKSPACE_PROJECTS):
         result = list(projects_db.find({'name': name}))
         if len(result) > 0:
             return True
-        else:
-            return False
+        return False
     else:
         dirlist = [item for item in os.listdir(WORKSPACE_PROJECTS) if os.path.isdir(os.path.join(WORKSPACE_PROJECTS, item))]
         if name not in dirlist:
             return True
-        else:
-            return False
+        return False
 
 
 def fetch_datapackage(manifest, zip_path, project_dir, workspace_projects, workspace_dir):
@@ -82,8 +80,7 @@ def validate_corpus_query(query):
     result = list(corpus_db.find(query))
     if len(result) > 0:
         return True
-    else:
-        return False
+    return False
 
 
 def make_datapackage(manifest, project_dir, workspace_dir, query):
