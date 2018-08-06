@@ -14,7 +14,6 @@ import yaml
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from jsonschema import validate, FormatChecker
 
 from jsonschema import validate, FormatChecker
 from flask import Blueprint, render_template, request, url_for, current_app, send_file
