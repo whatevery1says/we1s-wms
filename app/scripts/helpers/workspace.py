@@ -63,7 +63,6 @@ class Datapackage():
             else:
                 self.errors.append('<p>Could not find any Corpus data. Please test your query.</p>')
 
-
         # Internal methods
         def clean(manifest):
             """Remove empty form values and form builder parameters."""
@@ -83,7 +82,6 @@ class Datapackage():
             else:
                 return ['<p>A project with this name already exists on the server.</p>']
 
-
         def project_exists(name, location):
             """Check if the project is in the database
             or on the server if a url to a datapackage.json
@@ -98,7 +96,6 @@ class Datapackage():
             else:
                 r = requests.get(location)
                 return r.status_code == requests.codes.ok
-
 
         def fetch_datapackage(manifest, zip_path, projects_dir, workspace_dir):
             """Fetch a project datapackage from the database."""
@@ -118,14 +115,12 @@ class Datapackage():
             except:
                 return ['<p>Could not extract the project datapackage.</p>']
 
-
         def validate_corpus_query(query):
             """Make sure the Corpus query returns results."""
             result = list(corpus_db.find(query))
             if len(result) > 0:
                 return True
             return False
-
 
         def make_datapackage(manifest, project_dir, query):
             """Create a new datapackage from a Corpus query."""
@@ -158,6 +153,7 @@ class Datapackage():
             except:
                 errors.append('<p>Could not write the data to the project directory.</p>')
                 return errors
+
 
 class Notebook():
     """Models a Jupyter notebook."""
@@ -215,4 +211,3 @@ class Notebook():
             open(self.output, 'w').write(json.dumps(dictionary))
         except:
             self.errors.append(['<p>Could not write the initial notebook to the project folder.</p>'])
-

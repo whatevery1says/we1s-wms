@@ -132,7 +132,7 @@ class Datapackage():
     """Models a project datapackage object."""
 
     def __init__(self, manifest, WORKSPACE_PROJECTS):
-        container_prefix =datetime.now().strftime('%Y%m%d_%H%M_')
+        container_prefix = datetime.now().strftime('%Y%m%d_%H%M_')
 
         """Initialize the object."""
         self.workspace_projects = WORKSPACE_PROJECTS
