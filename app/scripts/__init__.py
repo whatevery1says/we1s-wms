@@ -106,7 +106,7 @@ class Script():
                     updated_manifest[k] = v
             try:
                 scripts_db.update_one({'name': self.name}, {
-                                '$set': updated_manifest}, upsert=False)
+                    '$set': updated_manifest}, upsert=False)
                 return {'result': 'success', 'errors': []}
             except pymongo.errors.PyMongoError as e:
                 print(e.__dict__.keys())
@@ -127,7 +127,6 @@ class Script():
                 msg = 'Unknown Error: The record for <code>name</code> <strong>' + self.name + '</strong> could not be updated.'
                 errors.append(msg)
                 return {'result': 'fail', 'errors': errors}
-
 
     def make_datapackage(self):
         """Create a script or tool folder containing a data pacakage, then
@@ -182,7 +181,6 @@ class Script():
             with open(script_zip, 'rb') as f:
                 content = f.read()
             return content, errors
-
 
     def zipfolder(self, source_dir, output_filename):
         """Creates a zip archive of a source directory.
@@ -722,12 +720,12 @@ def manifest_from_datapackage(zipfilepath):
                 # Read the datapackage file
                 datapackage = json.loads(f.read())
         # Build a manifest from the datapackage info
-        manifest ['name'] = datapackage['name']
-        manifest ['metapath'] = 'Scripts'
+        manifest['name'] = datapackage['name']
+        manifest['metapath'] = 'Scripts'
         manifest['namespace'] = 'we1sv2.0'
-        manifest ['title'] = datapackage['title']
-        manifest ['contributors'] = datapackage['contributors']
-        manifest ['created'] = datapackage['created']
+        manifest['title'] = datapackage['title']
+        manifest['contributors'] = datapackage['contributors']
+        manifest['created'] = datapackage['created']
         # If the datapackage has a db-query, copy it
         if 'db-query' in datapackage.keys():
             manifest['db-query'] = datapackage['db-query']
