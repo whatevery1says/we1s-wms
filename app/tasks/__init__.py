@@ -68,7 +68,7 @@ def index():
 
 @tasks.route('/api/status/<id>', methods=['GET', 'POST'])
 def api_status(job_id):
-    """ For testing. """
+    """For testing."""
     response = json.dumps({'success': True,
                            'id': '123',
                            'status': 1,
@@ -78,7 +78,7 @@ def api_status(job_id):
 
 @tasks.route('/api/enqueue', methods=['GET', 'POST'])
 def api_enqueue():
-    """ For testing. """
+    """For testing."""
     response = json.dumps({
         'success': True,
         'id': '789',
