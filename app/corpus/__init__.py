@@ -804,7 +804,7 @@ def upload():
 @corpus.route('/clear/<metapath>')
 def clear(metapath):
     """Go to this page to quickly empty the database of all records along the designated metapath.
-    
+
     Use the metapath 'all' for delete all records in the database. Disable this for production.
     """
     try:

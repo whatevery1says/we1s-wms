@@ -44,7 +44,7 @@ def make_project_folder(project_dir, workspace_dir):
 
 def project_exists(name, location, WORKSPACE_PROJECTS):
     """Check if the project exists.
-    
+
     Checks the database and the server (if a url to a
     datapackage.json file is supplied).
     """

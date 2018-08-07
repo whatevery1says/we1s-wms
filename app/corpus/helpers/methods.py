@@ -104,7 +104,7 @@ def NestedDictValues(d):
 
 def paginate(iterable, page_size):
     """Return a generator with a list sliced into pages by the designated size.
-    
+
     If the generator is converted to a list called `pages`, and individual page can
     be called with `pages[0]`, `pages[1]`, etc.
     """
@@ -454,7 +454,7 @@ def dict2textarea(props):
 
 def testformat(s):
     """Parse date and return a dict.
-    
+
     The dict has the date string, format, and an error message if the date cannot be parsed.
     """
     error = ''
@@ -515,7 +515,7 @@ def textarea2datelist(textarea):
 
 def flatten_datelist(all_lines):
     """Flatten the output of textarea2datelist().
-    
+
     Removes 'text' and 'format' properties and replaces their container dicts with a simple date string.
     """
     flattened = []
@@ -534,7 +534,7 @@ def flatten_datelist(all_lines):
 
 def serialize_datelist(flattened_datelist):
     """Convert the output of flatten_datelist() to a line-delimited string.
-    
+
     The string is suitable for returning to the UI as the value of a textarea.
     """
     dates = []

@@ -364,7 +364,7 @@ def update_manifest():
 @sources.route('/upload', methods=['GET', 'POST'])
 def upload():
     """Save each file uploaded by the import function to the uploads folder.
-    
+
     Currently supports only one file.
     """
     if request.method == 'POST':
