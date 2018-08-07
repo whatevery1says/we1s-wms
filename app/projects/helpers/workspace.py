@@ -1,3 +1,5 @@
+"""Projects workspace.py."""
+
 import json
 import os
 import re
@@ -41,9 +43,10 @@ def make_project_folder(project_dir, workspace_dir):
 
 
 def project_exists(name, location, WORKSPACE_PROJECTS):
-    """Check if the project is in the database
-    or on the server if a url to a datapackage.json
-    file is supplied.
+    """Check if the project exists.
+    
+    Checks the database and the server (if a url to a
+    datapackage.json file is supplied).
     """
     if location == 'database':
         result = list(projects_db.find({'name': name}))
@@ -132,9 +135,8 @@ class Datapackage():
     """Models a project datapackage object."""
 
     def __init__(self, manifest, WORKSPACE_PROJECTS):
+        """Initialize the Datapackage object."""
         container_prefix = datetime.now().strftime('%Y%m%d_%H%M_')
-
-        """Initialize the object."""
         self.workspace_projects = WORKSPACE_PROJECTS
         self.errors = []
         self.manifest = clean(manifest)
@@ -181,8 +183,7 @@ class Notebook():
     """Models a Jupyter notebook."""
 
     def __init__(self, manifest, container, notebook_start, WORKSPACE_PROJECTS, WORKSPACE_TEMPLATES):
-        """Writes a new Jupyter notebook based on a template
-        in the project directory."""
+        """Write a new Jupyter notebook based on a template in the project directory."""
         # Configurable
         self.errors = []
         self.manifest = manifest
@@ -208,7 +209,7 @@ class Notebook():
         scripts_template_dir = os.path.join(self.templates_dir, 'scripts')
         scripts_dir = os.path.join(self.workspace_dir, 'scripts')
         Path(scripts_dir).mkdir(parents=True, exist_ok=True)
-        shutil.copytree(scripts_template_dir, scripts_dir, ignore=ignore_patterns('.ipynb_checkpoints', '__pycache__'))
+        shutil.copytree(scripts_template_dir, scripts_dir, ignore=shutil.ignore_patterns('.ipynb_checkpoints', '__pycache__'))
         dictionary = {}
         try:
             # Retrieve a text file with the notebook cells
