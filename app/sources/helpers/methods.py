@@ -1,3 +1,5 @@
+"""Sources methods.py."""
+
 import itertools
 import json
 import os
@@ -34,7 +36,7 @@ sources_db = db.Sources
 
 
 def allowed_file(filename):
-    """Tests whether a filename contains an allowed extension.
+    """Test whether a filename contains an allowed extension.
 
     Returns a Boolean.
     """
@@ -43,8 +45,7 @@ def allowed_file(filename):
 
 
 def check_date_format(dates):
-    """Ensures that a date is correctly formatted
-    and that start dates precede end dates.
+    """Ensure that a date is correctly formatted and that start dates precede end dates.
 
     Takes a list of dates and returns a list of dates
     and a list of errors.
@@ -77,8 +78,7 @@ def check_date_format(dates):
 
 
 def get_page(pages, page):
-    """Takes a list of paginated results form `paginate()` and returns a single page from the list.
-    """
+    """Take a list of paginated results form `paginate()` and returns a single page from the list."""
     try:
         return pages[page - 1]
     except:
@@ -86,8 +86,9 @@ def get_page(pages, page):
 
 
 def make_dir(folder):
-    """Checks for the existence of directory at the specified file
-    path and creates one if it does not exist.
+    """Check for the existence of directory at the specified file path.
+    
+    Creates the directory if it does not exist.
     """
     folder = folder.replace('\\', '/')
     if not os.path.exists(folder):
@@ -95,8 +96,9 @@ def make_dir(folder):
 
 
 def NestedDictValues(d):
-    """ Yields all values in a multilevel dict. Returns a generator
-    from which can be cast as a list.
+    """Yield all values in a multilevel dict.
+    
+    Returns a generator from which can be cast as a list.
     """
     for v in d.values():
         if isinstance(v, list):
@@ -109,8 +111,9 @@ def NestedDictValues(d):
 
 
 def paginate(iterable, page_size):
-    """Returns a generator with a list sliced into pages by the designated size. If
-    the generator is converted to a list called `pages`, and individual page can
+    """Return a generator with a list sliced into pages by the designated size.
+    
+    If the generator is converted to a list called `pages`, and individual page can
     be called with `pages[0]`, `pages[1]`, etc.
     """
     while True:
@@ -123,9 +126,7 @@ def paginate(iterable, page_size):
 
 
 def process_dates(dates):
-    """Transforms a string from an HTML textarea into an
-    array that validates against the WE1S schema.
-    """
+    """Transform a string from an HTML textarea into a schema-valid array."""
     new_dates = []
     d = {}
     # Determine if the dates are a mix of normal and precise dates
@@ -180,8 +181,7 @@ def process_dates(dates):
 
 
 def reshape_query_props(temp_query, temp_show_properties):
-    """Converts the user input from the search form to
-    a dict of properties.
+    """Convert the user input from the search form to a dict.
 
     Takes strings for the query and show properties fields.
     Returns dicts of keywords and values for both.
@@ -200,7 +200,7 @@ def reshape_query_props(temp_query, temp_show_properties):
 
 
 def validate_manifest(manifest):
-    """Validates a manifest against the WE1S schema on GitHub.
+    """Validate a manifest against the WE1S schema on GitHub.
 
     Takes a manifest dict and returns a Boolean.
     """
@@ -214,7 +214,7 @@ def validate_manifest(manifest):
 
 
 def zipfolder(source_dir, output_filename):
-    """Creates a zip archive of a source directory.
+    """Create a zip archive of a source directory.
 
     Takes file paths for both the source directory
     and the output file.
@@ -225,7 +225,7 @@ def zipfolder(source_dir, output_filename):
     # Output filename should be passed to this function without the .zip extension
     zipobj = zipfile.ZipFile(output_filename + '.zip', 'w', zipfile.ZIP_DEFLATED)
     rootlen = len(source_dir) + 1
-    for base, dirs, files in os.walk(source_dir):
+    for base, _, files in os.walk(source_dir):
         for file in files:
             fn = os.path.join(base, file)
             zipobj.write(fn, fn[rootlen:])
@@ -237,7 +237,7 @@ def zipfolder(source_dir, output_filename):
 
 
 def create_record(manifest):
-    """ Creates a new manifest record in the database.
+    """Create a new manifest record in the database.
 
     Takes a manifest dict and returns a list of errors if any.
     """
@@ -255,8 +255,7 @@ def create_record(manifest):
 
 
 def delete_source(name, metapath):
-    """
-    Deletes a source manifest based on name.
+    """Delete a source manifest based on name.
 
     Returns 'success' or an error message string.
     """
@@ -268,9 +267,9 @@ def delete_source(name, metapath):
 
 
 def import_manifests(source_files):
-    """
-    Loops through the source files and streams them into a dataframe, then converts
-    the dataframe to a list of manifest dicts.
+    """Loop through the source files and stream them into a dataframe.
+    
+    The dataframe is converted to a list of manifest dicts.
     """
     # Set up the storage functions for pandas dataframes
     storage = Storage()
@@ -350,16 +349,16 @@ def import_manifests(source_files):
     return manifests, error_list
 
 
-def search_sources(values):
-    """Queries the database from the search form.
+def search_sources(options):
+    """Query the database from the search form.
 
     Takes a list of values from the form and returns the search results.
     """
     page_size = 10
     errors = []
     if list(sources_db.find()):
-        query_properties, show_properties = reshape_query_props(values['query'], values['properties'])
-        if values['regex'] is True:
+        query_properties, show_properties = reshape_query_props(options['query'], options['show_properties'])
+        if options['regex'] is True:
             query = {}
             for k, v in query_properties.items():
                 REGEX = re.compile(v)
@@ -368,19 +367,19 @@ def search_sources(values):
             query = query_properties
         result = list(sources_db.find(
             query,
-            limit=int(values['limit']),
+            limit=int(options['limit']),
             projection=show_properties))
         pages = list(paginate(result, page_size=page_size))
         num_pages = len(pages)
-        page = get_page(pages, int(values['page']))
-        return result, num_pages, errors
+        page = get_page(pages, int(options['page']))
+        return result, page, num_pages, errors
     else:
         errors.append('The Sources database is empty.')
         return [], 1, errors
 
 
 def update_record(manifest):
-    """ Updates a manifest record in the database.
+    """Update a manifest record in the database.
 
     Takes a manifest dict and returns a list of errors if any.
     """
@@ -405,15 +404,14 @@ def update_record(manifest):
 
 
 def textarea2dict(fieldname, textarea, main_key, valid_props):
-    """Converts a textarea string to a dict containing a list of
-    properties for each line. Multiple properties should be
-    formatted as key: value pairs. The key must be separated
-    from the value by a space. If ": " occurs in the value,
-    the entire value can be put in quotes. Where there is only
-    one value, the key can be omitted, and it will be supplied
-    from main_key. A list of valid properties is supplied in
-    valid_props. If any property is invalid the function
-    returns a dict with only the error key and a list of errors.
+    """Convert a textarea string to a dict containing a list of properties for each line.
+
+    Multiple properties should be formatted as key: value pairs. The key must be separated
+    from the value by a space. If ": " occurs in the value, the entire value can be put 
+    in quotes. Where there is only one value, the key can be omitted, and it will be 
+    supplied from main_key. A list of valid properties is supplied in valid_props.
+    If any property is invalid the function returns a dict with only the error key and
+    a list of errors.
     """
     import yaml
     lines = textarea.split('\n')
@@ -434,7 +432,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
         else:
             line = re.sub(pattern, '\n\\1', line)  # Could be improved to handle more variations
             opts = yaml.load(line.strip())
-            for k, v in opts.items():
+            for k, _ in opts.items():
                 if k not in valid_props:
                     errors.append('The ' + fieldname + ' field is incorrectly formatted or ' + k + ' is not a valid property for the field.')
         all_lines.append(opts)
@@ -446,8 +444,10 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
 
 
 def testformat(s):
-    """Parses date and returns a dict with the date string, format,
-    and an error message if the date cannot be parsed.
+    """Parse a date and returns a dict.
+    
+    The dict contains the date string, format, and an error message
+    if the date cannot be parsed.
     """
     error = ''
     try:
@@ -473,9 +473,7 @@ def testformat(s):
 
 
 def textarea2datelist(textarea):
-    """Converts a textarea string into a list of date dicts.
-    """
-
+    """Convert a textarea string into a list of date dicts."""
     lines = textarea.replace('-\n', '- \n').split('\n')
     all_lines = []
     for line in lines:
@@ -506,8 +504,10 @@ def textarea2datelist(textarea):
 
 
 def flatten_datelist(all_lines):
-    """Flattens the output of textarea2datelist() by removing 'text' and 'format' properties
-    and replacing their container dicts with a simple date string.
+    """Flatten the output of textarea2datelist().
+    
+    Removes 'text' and 'format' properties and replaces their 
+    container dicts with a simple date string.
     """
     flattened = []
     for line in all_lines:
@@ -524,8 +524,9 @@ def flatten_datelist(all_lines):
 
 
 def serialize_datelist(flattened_datelist):
-    """Converts the output of flatten_datelist() to a line-delimited string suitable for
-    returning to the UI as the value of a textarea.
+    """Convert the output of flatten_datelist() to a line-delimited string.
+    
+    The string is suitable for returning to the UI as the value of a textarea.
     """
     dates = []
     for item in flattened_datelist:
@@ -542,11 +543,9 @@ def serialize_datelist(flattened_datelist):
 
 
 def list_sources(page_size=10, page=1):
-    """
-    Prints a list of all sources.
-    """
-    if list(sources.find()):
-        result = list(sources.find())
+    """Print a list of all sources."""
+    if list(sources_db.find()):
+        result = list(sources_db.find())
         pages = list(paginate(result, page_size=page_size))
         page = get_page(pages, page)
     else:
