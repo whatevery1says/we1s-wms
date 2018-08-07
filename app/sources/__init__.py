@@ -267,8 +267,7 @@ def search2():
             'paginated': paginated,
             'page': page,
             'show_properties': show_properties,
-            'sorting': sorting
-            }
+            'sorting': sorting}
         result, page, num_pages, errors = methods.search_sources(search_opts)
         # Don't show the MongoDB _id unless it is in show_properties
         if '_id' not in request.json['advancedOptions']['show_properties']:

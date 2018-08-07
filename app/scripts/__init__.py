@@ -52,6 +52,7 @@ ALLOWED_EXTENSIONS = ['zip']
 # Model.
 # ----------------------------------------------------------------------------#
 
+
 class Script():
     """Model a script or tool.
 
