@@ -1,6 +1,6 @@
-"""Scripts __init__.py."""
-
-"""Note: This module has not yet been developed. This file is a placeholder."""
+"""Scripts __init__.py.
+Note: This module has not yet been developed. This file is a placeholder.
+"""
 
 import itertools
 import json
