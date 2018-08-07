@@ -1,0 +1,25 @@
+language: python
+python:
+  - "3.6"
+cache: pip
+install:
+  - pip install -r requirements.txt
+  - pip install -r dev_requirements.txt
+script:
+  # At the moment only test files under Blueprint modules.
+  - pylint app/corpus/
+  - pydocstyle app/corpues/
+  - pylint app/projects/
+  - pydocstyle app/projects/
+  - pylint app/scripts/
+  - pydocstyle app/scripts/
+  - pylint app/sources/
+  - pydocstyle app/sources/
+  - pylint app/tasks/
+  - pydocstyle app/tasks/
+
+  # Test for javascript code style - not yet implemented
+  # - cd ./app/static
+  # - .\node_modules\.bin\eslint ./js/*.js
+  # - ./node_modules/.bin/eslint ./js/upload.js
+  # - cd ../..
