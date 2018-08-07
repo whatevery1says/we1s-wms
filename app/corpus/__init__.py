@@ -499,7 +499,7 @@ def export_search():
             else:
                 opt = (item[0], pymongo.DESCENDING)
             sorting.append(opt)
-        result, num_pages, errors = methods.search_corpus(query, limit, paginated, page, show_properties, sorting)
+        result, _num_pages, errors = methods.search_corpus(query, limit, paginated, page, show_properties, sorting)
         if not result:
             errors.append('No records were found matching your search criteria.')
         # Need to write the results to temp folder
