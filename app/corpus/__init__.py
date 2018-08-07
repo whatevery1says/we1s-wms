@@ -499,7 +499,7 @@ def export_search():
             else:
                 opt = (item[0], pymongo.DESCENDING)
             sorting.append(opt)
-        result, _num_pages, errors = methods.search_corpus(query, limit, paginated, page, show_properties, sorting)
+        result, _, errors = methods.search_corpus(query, limit, paginated, page, show_properties, sorting)
         if not result:
             errors.append('No records were found matching your search criteria.')
         # Need to write the results to temp folder
@@ -550,7 +550,7 @@ def import_data():
 
 
 def listdir(path):
-    """Replace os.listdir() with a function that ignores hidden files."""
+    """Replace the os directory list function with one that ignores hidden files."""
     return glob.glob(os.path.join(path, '*'))
 
 
