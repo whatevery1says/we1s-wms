@@ -7,16 +7,21 @@ install:
   - pip install -r dev_requirements.txt
 script:
   # At the moment only test files under Blueprint modules.
+  - pycodestyle app/corpus/
+  - pydocstyle app/corpus/
   - pylint app/corpus/
-  - pydocstyle app/corpues/
-  - pylint app/projects/
+  - pycodestyle app/projects/
   - pydocstyle app/projects/
-  - pylint app/scripts/
+  - pylint app/projects/
+  - pycodestyle app/scripts/
   - pydocstyle app/scripts/
-  - pylint app/sources/
+  - pylint app/scripts/
+  - pycodestyle app/sources/
   - pydocstyle app/sources/
-  - pylint app/tasks/
+  - pylint app/sources/
+  - pycodestyle app/tasks/
   - pydocstyle app/tasks/
+  - pylint app/tasks/
 
   # Test for javascript code style - not yet implemented
   # - cd ./app/static
