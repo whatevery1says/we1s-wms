@@ -1,4 +1,4 @@
-"""config.py: Flask site configuration file"""
+"""config.py: Flask site configuration file."""
 
 UPLOAD_FOLDER = 'uploads'
 # ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'md', 'docx', 'jpg', 'xlsx'}
@@ -23,7 +23,8 @@ SECRET_KEY = "secret"
 
 
 class BaseConfig:
-    """Base configuration: localisation (language and timezone options)"""
+    """Base configuration: localisation (language and timezone options)."""
+
     SUPPORTED_LANGUAGES = {'en': 'English', 'fr': 'Francais'}
     BABEL_DEFAULT_LOCALE = 'en'
     BABEL_DEFAULT_TIMEZONE = 'UTC'
