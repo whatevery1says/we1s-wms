@@ -32,7 +32,7 @@ disable=duplicate-code,
         # # NEXT
         # protected-access,
         # # IMPORTS
-        unused-import,
+        # unused-import,
         wrong-import-order,
         wrong-import-position,
         # # EXCEPTS
