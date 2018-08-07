@@ -375,8 +375,8 @@ def update_record(manifest):
     try:
         projects_db.update_one({'name': name}, {'$set': manifest}, upsert=False)
     except pymongo.errors.OperationFailure as e:
-        print(e.__dict__.keys())
-        print(e.__details)
+        print(e.code)
+        print(e.details)
         msg = 'Unknown Error: The record for <code>name</code> <strong>' + name + '</strong> could not be updated.'
         errors.append(msg)
     return errors

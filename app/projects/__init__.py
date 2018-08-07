@@ -127,8 +127,8 @@ class Project():
                                        {'$set': updated_manifest}, upsert=False)
                 return {'result': 'success', 'errors': []}
             except pymongo.errors.OperationFailure as e:
-                print(e.__dict__.keys())
-                print(e.__details)
+                print(e.code)
+                print(e.details)
                 msg = 'Unknown Error: The record for <code>name</code> <strong>' + \
                     self.name + '</strong> could not be updated.'
                 return {'result': 'fail', 'errors': [msg]}
@@ -143,8 +143,8 @@ class Project():
                 empty_tempfolder(key)
                 return {'result': 'success', 'errors': []}
             except pymongo.errors.OperationFailure as e:
-                print(e.__dict__.keys())
-                print(e.__details)
+                print(e.code)
+                print(e.details)
                 msg = 'Unknown Error: The record for <code>name</code> <strong>' + self.name + '</strong> could not be updated.'
                 errors.append(msg)
                 return {'result': 'fail', 'errors': errors}
