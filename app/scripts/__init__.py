@@ -1,6 +1,6 @@
-"""Scripts __init__.py."""
-
-"""Note: This module has not yet been developed. This file is a placeholder."""
+"""Scripts __init__.py.
+Note: This module has not yet been developed. This file is a placeholder.
+"""
 
 import itertools
 import json
@@ -54,12 +54,12 @@ ALLOWED_EXTENSIONS = ['zip']
 
 class Script():
     """Model a script or tool.
-    
+
     Parameters:
     - manifest: dict containing form data for the script or tool manifest
     - query: dict containing the database query
     - action: the database action to be taken: "insert" or "update"
-    
+
     Returns a JSON object: `{'response': 'success|fail', 'errors': []}`
 
     """
@@ -349,7 +349,7 @@ def get_page(pages, page):
 
 def paginate(iterable, page_size):
     """Return a generator with a list sliced into pages by the designated size.
-    
+
     If the generator is converted to a list called `pages`, and individual page can
     be called with `pages[0]`, `pages[1]`, etc.
     """
@@ -382,8 +382,8 @@ def zipfolder(source_dir, output_filename):
 
 def manifest_from_datapackage(zipfilepath):
     """Generate a script manifest from a zipped datapackage.
-    
-    The zip file is embedded in the `content` property, so the 
+
+    The zip file is embedded in the `content` property, so the
     script manifest is read for insertion in the database.
     """
     # Get the datapackage.json file
@@ -484,7 +484,7 @@ def dict2textarea(props):
 
 def testformat(s):
     """Parse a date and return a dict.
-    
+
     The dict contains the date string, format, and an error message
     if the date cannot be parsed.
     """
@@ -546,8 +546,8 @@ def textarea2datelist(textarea):
 
 def flatten_datelist(all_lines):
     """Flatten the output of textarea2datelist().
-    
-    Removes 'text' and 'format' properties and replaces their container dicts 
+
+    Removes 'text' and 'format' properties and replaces their container dicts
     with a simple date string.
     """
     flattened = []
@@ -566,7 +566,7 @@ def flatten_datelist(all_lines):
 
 def serialize_datelist(flattened_datelist):
     """Convert the output of flatten_datelist() to a line-delimited string.
-    
+
     The string is suitable for returning to the UI as the value of a textarea.
     """
     dates = []

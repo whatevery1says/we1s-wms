@@ -151,7 +151,7 @@ class Project():
 
     def make_datapackage(self):
         """Create a project folder and zip archive folder containing a data package.
-        
+
         Returns a binary of the zip archive, a list of errors, and the key to the
         location of the archive in the temp folder.
         """
@@ -527,9 +527,9 @@ def import_project():
 @projects.route('/launch-jupyter', methods=['GET', 'POST'])
 def launch_jupyter():
     """Create a project folder on the server.
-    
+
     Produces a project datapackage, along with any workspace templates.
-    If successful, the Jupyter notebook is lost; otherwise, an error report 
+    If successful, the Jupyter notebook is lost; otherwise, an error report
     is returned to the front end.
     """
     errors = []
@@ -657,7 +657,7 @@ def zipfolder(source_dir, output_filename):
 
 def manifest_from_datapackage(zipfilepath):
     """Generate a project manifest from a zipped datapackage.
-    
+
     The zip file is embedded in the `content` property, so the project manifest
     is read for insertion in the database.
     """
@@ -759,7 +759,7 @@ def dict2textarea(props):
 
 def testformat(s):
     """Parse a date and return a dict.
-    
+
     The dict contains the date string, format, and an error message
     if the date cannot be parsed.
     """
@@ -821,8 +821,8 @@ def textarea2datelist(textarea):
 
 def flatten_datelist(all_lines):
     """Flatten the output of textarea2datelist().
-    
-    Removes 'text' and 'format' properties and replaces their container dicts 
+
+    Removes 'text' and 'format' properties and replaces their container dicts
     with a simple date string.
     """
     flattened = []
@@ -841,7 +841,7 @@ def flatten_datelist(all_lines):
 
 def serialize_datelist(flattened_datelist):
     """Convert the output of flatten_datelist() to a line-delimited string.
-    
+
     The string is suitable for returning to the UI as the value of a textarea.
     """
     dates = []

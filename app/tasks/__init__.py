@@ -1,3 +1,5 @@
+"""Tasks __init__.py."""
+
 import itertools
 import json
 import os

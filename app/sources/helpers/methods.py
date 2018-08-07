@@ -87,7 +87,7 @@ def get_page(pages, page):
 
 def make_dir(folder):
     """Check for the existence of directory at the specified file path.
-    
+
     Creates the directory if it does not exist.
     """
     folder = folder.replace('\\', '/')
@@ -97,7 +97,7 @@ def make_dir(folder):
 
 def NestedDictValues(d):
     """Yield all values in a multilevel dict.
-    
+
     Returns a generator from which can be cast as a list.
     """
     for v in d.values():
@@ -112,7 +112,7 @@ def NestedDictValues(d):
 
 def paginate(iterable, page_size):
     """Return a generator with a list sliced into pages by the designated size.
-    
+
     If the generator is converted to a list called `pages`, and individual page can
     be called with `pages[0]`, `pages[1]`, etc.
     """
@@ -268,7 +268,7 @@ def delete_source(name, metapath):
 
 def import_manifests(source_files):
     """Loop through the source files and stream them into a dataframe.
-    
+
     The dataframe is converted to a list of manifest dicts.
     """
     # Set up the storage functions for pandas dataframes
@@ -407,8 +407,8 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
     """Convert a textarea string to a dict containing a list of properties for each line.
 
     Multiple properties should be formatted as key: value pairs. The key must be separated
-    from the value by a space. If ": " occurs in the value, the entire value can be put 
-    in quotes. Where there is only one value, the key can be omitted, and it will be 
+    from the value by a space. If ": " occurs in the value, the entire value can be put
+    in quotes. Where there is only one value, the key can be omitted, and it will be
     supplied from main_key. A list of valid properties is supplied in valid_props.
     If any property is invalid the function returns a dict with only the error key and
     a list of errors.
@@ -445,7 +445,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
 
 def testformat(s):
     """Parse a date and returns a dict.
-    
+
     The dict contains the date string, format, and an error message
     if the date cannot be parsed.
     """
@@ -505,8 +505,8 @@ def textarea2datelist(textarea):
 
 def flatten_datelist(all_lines):
     """Flatten the output of textarea2datelist().
-    
-    Removes 'text' and 'format' properties and replaces their 
+
+    Removes 'text' and 'format' properties and replaces their
     container dicts with a simple date string.
     """
     flattened = []
@@ -525,7 +525,7 @@ def flatten_datelist(all_lines):
 
 def serialize_datelist(flattened_datelist):
     """Convert the output of flatten_datelist() to a line-delimited string.
-    
+
     The string is suitable for returning to the UI as the value of a textarea.
     """
     dates = []
