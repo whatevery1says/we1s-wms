@@ -126,9 +126,9 @@ class Project():
                 projects_db.update_one({'_id': ObjectId(saved_project['_id'])},
                                        {'$set': updated_manifest}, upsert=False)
                 return {'result': 'success', 'errors': []}
-            except pymongo.errors.PyMongoError as e:
+            except pymongo.errors.OperationFailure as e:
                 print(e.__dict__.keys())
-                # print(e._OperationFailure__details)
+                print(e.__details)
                 msg = 'Unknown Error: The record for <code>name</code> <strong>' + \
                     self.name + '</strong> could not be updated.'
                 return {'result': 'fail', 'errors': [msg]}
@@ -142,9 +142,9 @@ class Project():
                                        {'$set': self.manifest}, upsert=False)
                 empty_tempfolder(key)
                 return {'result': 'success', 'errors': []}
-            except pymongo.errors.PyMongoError as e:
+            except pymongo.errors.OperationFailure as e:
                 print(e.__dict__.keys())
-                # print(e._OperationFailure__details)
+                print(e.__details)
                 msg = 'Unknown Error: The record for <code>name</code> <strong>' + self.name + '</strong> could not be updated.'
                 errors.append(msg)
                 return {'result': 'fail', 'errors': errors}
