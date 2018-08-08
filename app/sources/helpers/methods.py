@@ -4,11 +4,12 @@ import itertools
 import json
 import os
 import re
-import requests
 import zipfile
 
-import dateutil.parser
 from datetime import datetime
+import dateutil.parser
+
+import requests
 
 from tabulator import Stream
 

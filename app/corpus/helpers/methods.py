@@ -1,15 +1,17 @@
 """methods.py."""
 
-import dateutil.parser
 import itertools
 import json
 import os
 import re
-import requests
 import zipfile
 
-from flask import current_app
 from datetime import datetime
+import dateutil.parser
+
+import requests
+
+from flask import current_app
 from jsonschema import validate, FormatChecker
 
 import pymongo

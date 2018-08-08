@@ -4,19 +4,16 @@ import itertools
 import json
 import os
 import re
-import requests
 import shutil
 import yaml
 
 import tabulator
 
-# from datetime import datetime
 from jsonschema import validate, FormatChecker
-# from tabulator import Stream
-# import pandas as pd
-# from tableschema_pandas import Storage
 from flask import Blueprint, make_response, render_template, request, url_for, current_app
 from werkzeug.utils import secure_filename
+
+import requests
 
 import pymongo
 from pymongo import MongoClient
