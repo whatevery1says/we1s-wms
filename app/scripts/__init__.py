@@ -117,7 +117,7 @@ def display(name):
             else:
                 manifest[key] = str(value)
         manifest['metapath'] = 'Scripts'
-    except:
+    except AssertionError:
         errors.append('Unknown Error: The script or tool does not exist or could not be loaded.')
     return render_template('scripts/display.html', scripts=script_list,
                            breadcrumbs=breadcrumbs, manifest=manifest,
@@ -223,7 +223,7 @@ def import_script():
             result = scripts_db.find(test)
             assert list(result)
             scripts_db.insert_one(manifest)
-        except:
+        except AssertionError:
             errors.append('The database already contains a script or tool with the same name.')
         # Create a response to send to the browser
         if errors == []:
@@ -257,7 +257,7 @@ def make_new_datapackage(script_dir, data):
     try:
         result = list(corpus_db.find(data['db_query']))
         assert result
-    except:
+    except AssertionError:
         errors.append('<p>Could not find any Corpus data. Please test your query.</p>')
     if result:
         try:
@@ -532,7 +532,7 @@ def textarea2datelist(textarea):
                         assert start['text'] < end['text']
                         d['range']['start'] = start
                         d['range']['end'] = end
-                except:
+                except AssertionError:
                     d = {'error': 'The start date "' + start['text'] + '" must precede the end date "' + end['text'] + '".'}
                 else:
                     d['range']['start'] = start

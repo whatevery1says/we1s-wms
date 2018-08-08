@@ -83,7 +83,7 @@ def create_manifest():
     if data['nodetype'] == 'collection':
         try:
             assert data['metapath'] == 'Corpus'
-        except:
+        except AssertionError:
             errors.append('The <code>metapath</code> for a collection must be "Corpus".')
     elif data['nodetype'] in ['RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results']:
         data['name'] = data['nodetype']
@@ -192,7 +192,7 @@ def display(name):
             nodetype = 'branch'
         with open("app/templates/corpus/template_config.yml", 'r') as stream:
             templates = yaml.load(stream)
-    except:
+    except AssertionError:
         nodetype = None
         templates = yaml.load('')
         errors.append('Unknown Error: The manifest does not exist or could not be loaded.')
@@ -311,7 +311,7 @@ def send_export():
             filepath = os.path.join('app/temp', filename)
             with open(filepath, 'w') as f:
                 f.write(manifest)
-        except:
+        except AssertionError:
             print('Could not find the manifest in the database.')
     # The user wants a zip of multiple data documents
     else:
@@ -376,7 +376,7 @@ def send_export():
                     folder = 'app/temp' + path
                     methods.make_dir(folder)
                 # Otherwise, use it to create a folder with a manifest file
-                except:
+                except AssertionError:
                     path = os.path.join(path, item['name'])
                     folder = 'app/temp' + path
                     methods.make_dir(folder)
@@ -679,7 +679,7 @@ def save_upload():
                 collection = request.json['collection']
             else:
                 collection = 'Corpus,' + request.json['collection']
-        except:
+        except AssertionError:
             errors.append('The specified collection does not exist in the database. Check your entry or <a href="/corpus/create">create a collection</a> before importing data.')
 
         if not errors:

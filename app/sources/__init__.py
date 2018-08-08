@@ -190,7 +190,7 @@ def display(name):
                 manifest[key] = '\n'.join(manifest[key])
             else:
                 manifest[key] = str(value)
-    except:
+    except AssertionError:
         errors.append('Unknown Error: The manifest does not exist or could not be loaded.')
     return render_template('sources/display.html', lang_list=lang_list,
                            country_list=country_list, scripts=scripts,

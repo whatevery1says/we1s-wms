@@ -51,7 +51,7 @@ def check_date_format(dates):
             try:
                 assert date_range[1] > date_range[0]
                 log = log + date_range
-            except:
+            except AssertionError:
                 msg = 'Your end date <code>' + date_range[1] + '</code> must be after your start date <code>' + date_range[0] + '</code>.'
                 errors.append(msg)
         else:
@@ -239,7 +239,7 @@ def create_record(manifest):
         try:
             assert manifest['name'] not in sources_db.distinct('name')
             sources_db.insert_one(manifest)
-        except:
+        except AssertionError:
             msg = 'The <code>name</code> <strong>' + manifest['name'] + '</strong> already exists in the database.'
             errors.append(msg)
     else:
@@ -486,7 +486,7 @@ def textarea2datelist(textarea):
                         assert start['text'] < end['text']
                         d['range']['start'] = start
                         d['range']['end'] = end
-                except:
+                except AssertionError:
                     d = {'error': 'The start date "' + start['text'] + '" must precede the end date "' + end['text'] + '".'}
                 else:
                     d['range']['start'] = start

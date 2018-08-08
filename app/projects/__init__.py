@@ -506,7 +506,7 @@ def import_project():
             result = projects_db.find(test)
             assert list(result)
             projects_db.insert_one(manifest)
-        except:
+        except AssertionError:
             errors.append('The database already contains a project with the same name.')
         # Create a response to send to the browser
         if errors == []:
@@ -802,7 +802,7 @@ def textarea2datelist(textarea):
                         assert start['text'] < end['text']
                         d['range']['start'] = start
                         d['range']['end'] = end
-                except:
+                except AssertionError:
                     d = {'error': 'The start date "' + start['text'] + '" must precede the end date "' + end['text'] + '".'}
                 else:
                     d['range']['start'] = start
