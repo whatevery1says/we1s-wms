@@ -1,17 +1,20 @@
 """Projects workspace.py."""
 
+# import: standard
+from datetime import datetime
 import json
 import os
+from pathlib import Path
 import re
 import shutil
 import zipfile
-
-from datetime import datetime
-from pathlib import Path
-
+# import: third-party
 from bs4 import BeautifulSoup
-from pymongo import MongoClient
 from bson import json_util
+from pymongo import MongoClient
+# import: app
+
+
 JSON_UTIL = json_util.default
 
 client = MongoClient('mongodb://localhost:27017')

@@ -1,37 +1,31 @@
 """Corpus __init__.py."""
 
+# import: standard
+from datetime import datetime
 import glob
 import itertools
 import json
 import os
+from pathlib import Path
+from random import randint
 import re
 import shutil
 import subprocess
 import zipfile
-
-from datetime import datetime
-from pathlib import Path
-from random import randint
-
-import requests
-
-import tabulator
-import yaml
-
-from jsonschema import validate, FormatChecker
-from flask import Blueprint, render_template, request, url_for, current_app, send_file, session
-from werkzeug.utils import secure_filename
-
-import pymongo
-from pymongo import MongoClient
-
-from app.corpus.helpers import methods
-
-# For various solutions to dealing with ObjectID, see
-# https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
-# If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
+# import: third-party
 from bson import BSON
 from bson import json_util
+from flask import Blueprint, render_template, request, url_for, current_app, send_file, session
+from jsonschema import validate, FormatChecker
+import pymongo
+from pymongo import MongoClient
+import requests
+import tabulator
+from werkzeug.utils import secure_filename
+import yaml
+# import: app
+from app.corpus.helpers import methods
+
 
 JSON_UTIL = json_util.default
 

@@ -4,15 +4,15 @@
 # Imports
 # ----------------------------------------------------------------------------#
 
+# import: standard
 import json
 import os
 import re
 import urllib
-
-import markdown
-
+# import: third-party
 from flask import Flask, render_template, request
-
+import markdown
+# import: app
 from .sources import sources
 from .corpus import corpus
 from .projects import projects

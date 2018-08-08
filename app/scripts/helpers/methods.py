@@ -3,8 +3,12 @@
 Note: This module has not yet been developed. This file is a placeholder.
 """
 
+# import: standard
+# import: third-party
 from flask import current_app
 from pymongo import MongoClient
+# import: app
+
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')

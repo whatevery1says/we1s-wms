@@ -1,24 +1,22 @@
 """Sources methods.py."""
 
+# import: standard
+from datetime import datetime
 import itertools
 import json
 import os
 import re
 import zipfile
-
-from datetime import datetime
+# import: third-party
 import dateutil.parser
-
-import requests
-
-from tabulator import Stream
-
 from flask import current_app
 from jsonschema import validate, FormatChecker
-
+import requests
 from tableschema_pandas import Storage
-
+from tabulator import Stream
 from pymongo import MongoClient
+# import: app
+
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')

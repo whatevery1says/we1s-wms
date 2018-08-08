@@ -1,30 +1,26 @@
 """Sources __init__.py."""
 
+# import: standard
 import itertools
 import json
 import os
 import re
 import shutil
 import yaml
-
-import tabulator
-
-from jsonschema import validate, FormatChecker
-from flask import Blueprint, make_response, render_template, request, url_for, current_app
-from werkzeug.utils import secure_filename
-
-import requests
-
-import pymongo
-from pymongo import MongoClient
-
-from app.sources.helpers import methods
-
-# For various solutions to dealing with ObjectID, see
-# https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
-# If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
+# import: third-party
 from bson import BSON
 from bson import json_util
+from flask import Blueprint, make_response, render_template, request, url_for, current_app
+from jsonschema import validate, FormatChecker
+import pymongo
+from pymongo import MongoClient
+import requests
+import tabulator
+from werkzeug.utils import secure_filename
+# import: app
+from app.sources.helpers import methods
+
+
 JSON_UTIL = json_util.default
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"

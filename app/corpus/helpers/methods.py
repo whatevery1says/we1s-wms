@@ -1,22 +1,21 @@
 """methods.py."""
 
+# import: standard
+from datetime import datetime
 import itertools
 import json
 import os
 import re
 import zipfile
-
-from datetime import datetime
+# import: third-party
 import dateutil.parser
-
-import requests
-
 from flask import current_app
 from jsonschema import validate, FormatChecker
-
 import pymongo
 from pymongo import MongoClient
 from pymongo.collation import Collation
+import requests
+# import: app
 
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"

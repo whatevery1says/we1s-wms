@@ -2,33 +2,30 @@
 Note: This module has not yet been developed. This file is a placeholder.
 """
 
+# import: standard
+from datetime import datetime
 import itertools
 import json
 import os
-import re
-import requests
-import shutil
-import zipfile
-
-import dateutil.parser
-from datetime import datetime
-
-import tabulator
-import yaml
-import subprocess
 from pathlib import Path
-
-from jsonschema import validate, FormatChecker
+import re
+import shutil
+import subprocess
+import zipfile
+# import: third-party
+from bson import BSON, Binary, json_util
+import dateutil.parser
 from flask import Blueprint, render_template, request, url_for, current_app, send_file
-from werkzeug.utils import secure_filename
-
+from jsonschema import validate, FormatChecker
 import pymongo
 from pymongo import MongoClient
+import requests
+import tabulator
+from werkzeug.utils import secure_filename
+import yaml
+# import: app
 
-# For various solutions to dealing with ObjectID, see
-# https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
-# If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
-from bson import BSON, Binary, json_util
+
 JSON_UTIL = json_util.default
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
