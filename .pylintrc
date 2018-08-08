@@ -34,7 +34,7 @@ disable=duplicate-code,
         # # IMPORTS
         # unused-import,
         # wrong-import-order,
-        # wrong-import-position,
+        wrong-import-position,
         # # EXCEPTS
         bare-except,
         # # CLEAN LOGIC
