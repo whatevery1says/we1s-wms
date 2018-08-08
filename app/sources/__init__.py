@@ -18,8 +18,6 @@ from werkzeug.utils import secure_filename
 import pymongo
 from pymongo import MongoClient
 
-from app.sources.helpers import methods
-
 # For various solutions to dealing with ObjectID, see
 # https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
 # If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
@@ -31,6 +29,8 @@ JSON_UTIL = json_util.default
 client = MongoClient('mongodb://localhost:27017')
 db = client.we1s
 sources_db = db.Sources
+
+from app.sources.helpers import methods
 
 sources = Blueprint('sources', __name__, template_folder='sources')
 
