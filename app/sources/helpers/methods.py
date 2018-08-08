@@ -5,24 +5,18 @@ import json
 import os
 import re
 import requests
-import shutil
 import zipfile
 
 import dateutil.parser
 from datetime import datetime
 
-import tabulator
 from tabulator import Stream
 
 from flask import current_app
-from bson import BSON
-from bson import json_util
 from jsonschema import validate, FormatChecker
 
-import pandas as pd
 from tableschema_pandas import Storage
 
-import pymongo
 from pymongo import MongoClient
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
@@ -310,7 +304,7 @@ def import_manifests(source_files):
         else:
             options = {'headers': 1}
         filepath = os.path.join(path, item)
-        with tabulator.Stream(filepath, **options) as stream:
+        with Stream(filepath, **options) as stream:
             try:
                 stream.headers == ['name', 'metapath', 'namespace', 'title',
                                    'id', '_id', 'description', 'version',
@@ -321,7 +315,7 @@ def import_manifests(source_files):
             except:
                 col_order = 'name, metapath, namespace, title, id, _id, description, version, shortTitle, label, notes, keywords, image, publisher, webpage, authors, date, edition, contentType, country, language, citation'
                 error_list.append('Error: The table headings in ' + item + ' do not match the Sources schema. Please use the headings ' + col_order + ' in that order.')
-        with tabulator.Stream(filepath, **options) as stream:
+        with Stream(filepath, **options) as stream:
             try:
                 storage.write('data', stream)
             except:
