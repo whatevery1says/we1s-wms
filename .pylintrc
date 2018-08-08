@@ -33,7 +33,7 @@ disable=duplicate-code,
         # protected-access,
         # # IMPORTS
         # unused-import,
-        # wrong-import-order,
+        wrong-import-order,
         wrong-import-position,
         # # EXCEPTS
         bare-except,
