@@ -4,15 +4,20 @@ import itertools
 import json
 import os
 import re
+import requests
+import shutil
 import zipfile
 
-from datetime import datetime
 import dateutil.parser
+from datetime import datetime
 
-import requests
+import tabulator
+from tabulator import Stream
 
 from flask import current_app
 from jsonschema import validate, FormatChecker
+import pandas as pd
+from tableschema_pandas import Storage
 
 import pymongo
 from pymongo import MongoClient

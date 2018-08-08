@@ -3,15 +3,18 @@
 import json
 import os
 import re
+import requests
 import shutil
+import subprocess
 import zipfile
 
 from datetime import datetime
 from pathlib import Path
 
 from bs4 import BeautifulSoup
+import pymongo
 from pymongo import MongoClient
-from bson import json_util
+from bson import BSON, Binary, json_util
 JSON_UTIL = json_util.default
 
 client = MongoClient('mongodb://localhost:27017')

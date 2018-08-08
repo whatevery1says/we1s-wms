@@ -4,19 +4,24 @@ import itertools
 import json
 import os
 import re
+import requests
 import shutil
 import yaml
 
-import requests
-
 import tabulator
 
+# from datetime import datetime
 from jsonschema import validate, FormatChecker
+# from tabulator import Stream
+# import pandas as pd
+# from tableschema_pandas import Storage
 from flask import Blueprint, make_response, render_template, request, url_for, current_app
 from werkzeug.utils import secure_filename
 
 import pymongo
 from pymongo import MongoClient
+
+from app.sources.helpers import methods
 
 # For various solutions to dealing with ObjectID, see
 # https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
@@ -29,8 +34,6 @@ JSON_UTIL = json_util.default
 client = MongoClient('mongodb://localhost:27017')
 db = client.we1s
 sources_db = db.Sources
-
-from app.sources.helpers import methods
 
 sources = Blueprint('sources', __name__, template_folder='sources')
 

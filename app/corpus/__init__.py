@@ -5,34 +5,36 @@ import itertools
 import json
 import os
 import re
+import requests
 import shutil
-import subprocess
 import zipfile
 
-from datetime import datetime
-from pathlib import Path
-from random import randint
-
 import tabulator
+import subprocess
 import yaml
 
-import requests
-
+from datetime import datetime
+from random import randint
+from pathlib import Path
 from jsonschema import validate, FormatChecker
+# from tabulator import Stream
+# import pandas as pd
+# from tableschema_pandas import Storage
 from flask import Blueprint, render_template, request, url_for, current_app, send_file, session
 from werkzeug.utils import secure_filename
 
 import pymongo
 from pymongo import MongoClient
 
+from app.corpus.helpers import methods
+
 # For various solutions to dealing with ObjectID, see
 # https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
 # If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
 from bson import BSON
 from bson import json_util
-JSON_UTIL = json_util.default
 
-from app.corpus.helpers import methods
+JSON_UTIL = json_util.default
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')

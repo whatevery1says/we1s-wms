@@ -4,20 +4,22 @@ import itertools
 import json
 import os
 import re
+import requests
 import shutil
-import subprocess
-import uuid
 import zipfile
 
-from pathlib import Path
-from datetime import datetime
 import dateutil.parser
-
-import requests
+from datetime import datetime
 
 import tabulator
+import uuid
 import yaml
+import subprocess
+from pathlib import Path
 from jsonschema import validate, FormatChecker
+
+# from app.projects.helpers import methods as methods
+from app.projects.helpers import workspace
 
 from flask import Blueprint, render_template, request, url_for, current_app, send_file
 from werkzeug.utils import secure_filename
@@ -32,14 +34,12 @@ from pymongo import MongoClient
 from bson import BSON, Binary, json_util, ObjectId
 JSON_UTIL = json_util.default
 
+
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')
 db = client.we1s
 projects_db = db.Projects
 corpus_db = db.Corpus
-
-# from app.projects.helpers import methods as methods
-from app.projects.helpers import workspace
 
 projects = Blueprint('projects', __name__, template_folder='projects')
 

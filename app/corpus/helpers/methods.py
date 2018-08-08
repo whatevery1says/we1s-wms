@@ -1,18 +1,23 @@
 """methods.py."""
 
+import dateutil.parser
 import itertools
 import json
 import os
 import re
+import requests
+import shutil
 import zipfile
 
-from datetime import datetime
-import dateutil.parser
-
-import requests
-
 from flask import current_app
+from datetime import datetime
 from jsonschema import validate, FormatChecker
+
+import tabulator
+from tabulator import Stream
+
+import pandas as pd
+from tableschema_pandas import Storage
 
 import pymongo
 from pymongo import MongoClient
