@@ -4,18 +4,19 @@ import itertools
 import json
 import os
 import re
-import requests
 import shutil
+import subprocess
+import uuid
 import zipfile
 
-import dateutil.parser
+from pathlib import Path
 from datetime import datetime
+import dateutil.parser
+
+import requests
 
 import tabulator
-import uuid
 import yaml
-import subprocess
-from pathlib import Path
 from jsonschema import validate, FormatChecker
 
 # from app.projects.helpers import methods as methods
