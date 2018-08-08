@@ -1,37 +1,32 @@
+"""Projects __init.py__."""
+
+# import: standard
+from datetime import datetime
 import itertools
 import json
 import os
-import re
-import requests
-import shutil
-import zipfile
-
-import dateutil.parser
-from datetime import datetime
-
-import tabulator
-import uuid
-import yaml
-import subprocess
 from pathlib import Path
-from jsonschema import validate, FormatChecker
-
-# from app.projects.helpers import methods as methods
-from app.projects.helpers import workspace
-
+import re
+import shutil
+import subprocess
+import uuid
+import zipfile
+# import: third-party
+from bson import BSON, Binary, json_util, ObjectId
+import dateutil.parser
 from flask import Blueprint, render_template, request, url_for, current_app, send_file
-from werkzeug.utils import secure_filename
-
+from jsonschema import validate, FormatChecker
 import pymongo
 from pymongo import MongoClient
+import requests
+import tabulator
+from werkzeug.utils import secure_filename
+import yaml
+# import: app
+from app.projects.helpers import workspace
 
 
-# For various solutions to dealing with ObjectID, see
-# https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
-# If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
-from bson import BSON, Binary, json_util, ObjectId
 JSON_UTIL = json_util.default
-
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 client = MongoClient('mongodb://localhost:27017')
@@ -62,11 +57,16 @@ WORKSPACE_TEMPLATES = os.path.join(WORKSPACE_DIR, 'templates')
 
 
 class Project():
-    """Models a project. Parameters:
-    manifest: dict containing form data for the project manifest
-    query: dict containing the database query
-    action: the database action to be taken: "insert" or "update"
-    Returns a JSON object: `{'response': 'success|fail', 'errors': []}`"""
+    """Model a project.
+
+    Parameters:
+    - manifest: dict containing form data for the project manifest.
+    - query: dict containing the database query.
+    - action: the database action to be taken: "insert" or "update".
+
+    Returns a JSON object with the format `{'response': 'success|fail', 'errors': []}`.
+
+    """
 
     def __init__(self, manifest, query, action):
         """Initialize the object."""
@@ -119,9 +119,9 @@ class Project():
                 projects_db.update_one({'_id': ObjectId(saved_project['_id'])},
                                        {'$set': updated_manifest}, upsert=False)
                 return {'result': 'success', 'errors': []}
-            except pymongo.errors.PyMongoError as e:
-                print(e.__dict__.keys())
-                # print(e._OperationFailure__details)
+            except pymongo.errors.OperationFailure as e:
+                print(e.code)
+                print(e.details)
                 msg = 'Unknown Error: The record for <code>name</code> <strong>' + \
                     self.name + '</strong> could not be updated.'
                 return {'result': 'fail', 'errors': [msg]}
@@ -135,18 +135,19 @@ class Project():
                                        {'$set': self.manifest}, upsert=False)
                 empty_tempfolder(key)
                 return {'result': 'success', 'errors': []}
-            except pymongo.errors.PyMongoError as e:
-                print(e.__dict__.keys())
-                # print(e._OperationFailure__details)
-                msg = 'Unknown Fluff: The record for <code>name</code> <strong>' + self.name + '</strong> could not be updated.'
+            except pymongo.errors.OperationFailure as e:
+                print(e.code)
+                print(e.details)
+                msg = 'Unknown Error: The record for <code>name</code> <strong>' + self.name + '</strong> could not be updated.'
                 errors.append(msg)
                 return {'result': 'fail', 'errors': errors}
 
     def make_datapackage(self):
-        """Create a project folder containing a data package, then
-        make a zip archive of the folder. Returns a binary of the
-        zip archive, a list of errors, and the key to the location
-        of the archive in the temp folder."""
+        """Create a project folder and zip archive folder containing a data package.
+
+        Returns a binary of the zip archive, a list of errors, and the key to the
+        location of the archive in the temp folder.
+        """
         errors = []
         # Remove empty form values and form builder parameters
         data = {}
@@ -201,18 +202,16 @@ class Project():
             return content, errors, key
 
     def zipfolder(self, source_dir, temp_folder, output_filename):
-        """Creates a zip archive of a source directory.
+        """Create a zip archive of a source directory.
 
-        Takes file paths for both the source directory
-        and the output file.
+        Takes file paths for both the source directory and the output file.
 
-        Note that the output filename should not have the
-        .zip extension; it is added here.
+        Note that the output filename should not have the .zip extension; it is added here.
         """
         output_filepath = os.path.join(temp_folder, output_filename + '.zip')
         zipobj = zipfile.ZipFile(output_filepath, 'w', zipfile.ZIP_DEFLATED)
         rootlen = len(source_dir) + 1
-        for base, dirs, files in os.walk(source_dir):
+        for base, _, files in os.walk(source_dir):
             for file in files:
                 fn = os.path.join(base, file)
                 zipobj.write(fn, fn[rootlen:])
@@ -275,8 +274,7 @@ def display(name):
 
 @projects.route('/test-query', methods=['GET', 'POST'])
 def test_query():
-    """Tests whether the project query returns results
-    from the Corpus database."""
+    """Test whether the project query returns results from the Corpus database."""
     query = json.loads(request.json['db-query'])
     result = corpus_db.find(query)
     num_results = len(list(result))
@@ -295,9 +293,10 @@ def test_query():
 
 @projects.route('/save-project', methods=['GET', 'POST'])
 def save_project():
-    """ Handles Ajax request data and instantiates the project class.
-    Returns a dict containing a result (success or fail) and a list
-    of errors."""
+    """Handle Ajax request data and instantiate the project class.
+
+    Returns a dict containing a result (success or fail) and a list of errors.
+    """
     query = request.json['query']
     action = request.json['action']  # insert or update
     data = request.json['manifest']
@@ -354,9 +353,8 @@ def save_project():
 
 @projects.route('/delete-project', methods=['GET', 'POST'])
 def delete_project():
+    """Delete a project."""
     manifest = request.json['manifest']
-    print('Manifest to delete')
-    print(manifest['name'])
     result = projects_db.delete_one({'name': manifest['name']})
     if result.deleted_count == 1:
         return json.dumps({'result': 'success', 'errors': []})
@@ -367,15 +365,16 @@ def delete_project():
 
 @projects.route('/export-project', methods=['GET', 'POST'])
 def export_project():
-    """ Handles Ajax request data and instantiates the project class.
-    Returns a dict containing a result (success or fail) and a list
-    of errors."""
+    """Handle Ajax request data and instantiate the project class.
+
+    Returns a dict containing a result (success or fail) and a list of errors.
+    """
     manifest = request.json['manifest']
     query = request.json['query']
     action = request.json['action']  # export
     # Instantiate a project object and make a data pacakge
     project = Project(manifest, query, action)
-    content, errors, key = project.make_datapackage()
+    _, errors, key = project.make_datapackage()
     if not errors:
         response = {'result': 'success', 'key': key, 'errors': []}
     else:
@@ -387,7 +386,7 @@ def export_project():
 
 @projects.route('/download-export/<filepath>', methods=['GET', 'POST'])
 def download_export(filepath):
-    """ Ajax route to trigger download and empty the temp folder."""
+    """Ajax route to trigger download and empty the temp folder."""
     from flask import make_response
     key, filename = filepath.split('#')
     temp_folder = os.path.join(WORKSPACE_TEMP, key)
@@ -404,7 +403,7 @@ def download_export(filepath):
 
 @projects.route('/search', methods=['GET', 'POST'])
 def search():
-    """ Experimental Page for searching Projects manifests."""
+    """Experimental Page for searching Projects manifests."""
     scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/projects/projects.js', 'js/jquery-sortable-min.js', 'js/projects/search.js', 'js/dateformat.js', 'js/jquery-ui.js']
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/projects', 'label': 'Projects'}, {'link': '/projects/search', 'label': 'Search Projects'}]
@@ -435,7 +434,7 @@ def search():
 
 @projects.route('/export-search-results', methods=['GET', 'POST'])
 def export_search_results():
-    """ Ajax route for exporting search results."""
+    """Ajax route for exporting search results."""
     if request.method == 'POST':
         query = request.json['query']
         page = 1
@@ -453,7 +452,7 @@ def export_search_results():
             else:
                 opt = (item[0], pymongo.DESCENDING)
             sorting.append(opt)
-        result, num_pages, errors = search_projects(query, limit, paginated, page, show_properties, sorting)
+        result, _, errors = search_projects(query, limit, paginated, page, show_properties, sorting)
         if not result:
             errors.append('No records were found matching your search criteria.')
         else:
@@ -472,6 +471,7 @@ def export_search_results():
 
 @projects.route('/import-project', methods=['GET', 'POST'])
 def import_project():
+    """Handle import project request."""
     if request.method == 'POST':
         response = {}
         manifest = {}
@@ -519,10 +519,12 @@ def import_project():
 
 @projects.route('/launch-jupyter', methods=['GET', 'POST'])
 def launch_jupyter():
-    """ Creates a project folder on the server containing a
-    project datapackage, along with any workspace templates.
-    If successful, the Jupyter notebook is lost; otherwise,
-    an error report is returned to the front end."""
+    """Create a project folder on the server.
+
+    Produces a project datapackage, along with any workspace templates.
+    If successful, the Jupyter notebook is lost; otherwise, an error report
+    is returned to the front end.
+    """
     errors = []
     manifest = request.json['manifest']
     # The folder containing the notebook (e.g. we1s-topic-modeling)
@@ -530,7 +532,7 @@ def launch_jupyter():
     # Notebook to launch
     notebook_start = notebook_type + '/start'
     # Path to notebook
-    path = manifest['name'] + '/Workspace/' + notebook_start + '.ipynb'
+    # path = manifest['name'] + '/Workspace/' + notebook_start + '.ipynb'
     # Fetch or create a datapackage based on the info received
     datapackage = workspace.Datapackage(manifest, WORKSPACE_PROJECTS)
     errors += datapackage.errors
@@ -558,6 +560,7 @@ def launch_jupyter():
 
 
 def generate_key():
+    """Generate a UUID to use as a workspace folder key."""
     uid = uuid.uuid4()
     dirlist = [item for item in os.listdir(WORKSPACE_TEMP) if os.path.isdir(os.path.join(WORKSPACE_TEMP, item))]
     if uid.hex not in dirlist:
@@ -567,6 +570,7 @@ def generate_key():
 
 
 def empty_tempfolder(key):
+    """Empty the termporary folder specified by the key."""
     # temp_folder = Path(os.path.join('app', current_app.config['TEMP_FOLDER']))
     temp_folder = Path(os.path.join(WORKSPACE_TEMP, key))
     shutil.rmtree(temp_folder)
@@ -574,8 +578,7 @@ def empty_tempfolder(key):
 
 
 def search_projects(query, limit, paginated, page, show_properties, sorting):
-    """Uses the query generated in /search and returns the search results.
-    """
+    """Use the query generated in /search and returns the search results."""
     page_size = 10
     errors = []
     if list(projects_db.find()):
@@ -605,9 +608,7 @@ def search_projects(query, limit, paginated, page, show_properties, sorting):
 
 
 def get_page(pages, page):
-    """Takes a list of paginated results form `paginate()` and
-    returns a single page from the list.
-    """
+    """Take a list of paginated results form `paginate()` and returns a single page from the list."""
     try:
         return pages[page - 1]
     except:
@@ -615,9 +616,10 @@ def get_page(pages, page):
 
 
 def paginate(iterable, page_size):
-    """Returns a generator with a list sliced into pages by the designated size. If
-    the generator is converted to a list called `pages`, and individual page can
-    be called with `pages[0]`, `pages[1]`, etc.
+    """Return a generator with a list sliced into pages by the designated size.
+
+    If the generator is converted to a list called `pages`, and individual page
+    can be called with `pages[0]`, `pages[1]`, etc.
     """
     while True:
         i1, i2 = itertools.tee(iterable)
@@ -629,7 +631,7 @@ def paginate(iterable, page_size):
 
 
 def zipfolder(source_dir, output_filename):
-    """Creates a zip archive of a source directory.
+    """Create a zip archive of a source directory.
 
     Duplicates method in Project class.
 
@@ -640,16 +642,18 @@ def zipfolder(source_dir, output_filename):
     output_filepath = os.path.join(temp_folder, output_filename + '.zip')
     zipobj = zipfile.ZipFile(output_filepath, 'w', zipfile.ZIP_DEFLATED)
     rootlen = len(source_dir) + 1
-    for base, dirs, files in os.walk(source_dir):
+    for base, _, files in os.walk(source_dir):
         for file in files:
             fn = os.path.join(base, file)
             zipobj.write(fn, fn[rootlen:])
 
 
 def manifest_from_datapackage(zipfilepath):
-    """Generates a project manifest from a zipped datapackage. The zip file is
-    embedded in the `content` property, so the project manifest is read for
-    insertion in the database."""
+    """Generate a project manifest from a zipped datapackage.
+
+    The zip file is embedded in the `content` property, so the project manifest
+    is read for insertion in the database.
+    """
     # Get the datapackage.json file
     manifest = {}
     try:
@@ -685,15 +689,15 @@ def manifest_from_datapackage(zipfilepath):
 
 
 def textarea2dict(fieldname, textarea, main_key, valid_props):
-    """Converts a textarea string to a dict containing a list of
-    properties for each line. Multiple properties should be
-    formatted as comma-separated key: value pairs. The key must be
-    separated from the value by a space, and the main key should come
-    first. If ": " occurs in the value, the entire value can be put in
-    quotes. Where there is only one value, the key can be omitted, and
-    it will be supplied from main_key. A list of valid properties is
-    supplied in valid_props. If any property is invalid the function
-    returns a dict with only the error key and a list of errors.
+    """Convert a textarea string to a dict with a list of properties for each line.
+
+    Multiple properties should be formatted as comma-separated key: value pairs.
+    The key must be separated from the value by a space, and the main key should
+    come first. If ": " occurs in the value, the entire value can be put in quotes.
+    Where there is only one value, the key can be omitted, and it will be supplied
+    from main_key. A list of valid properties is supplied in valid_props. If any
+    property is invalid the function returns a dict with only the error key and a
+    list of errors.
     """
     lines = textarea.split('\n')
     all_lines = []
@@ -713,7 +717,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
             if re.search(pattern, line):
                 line = re.sub(pattern, '\n\\1', line)  # Could be improved to handle more variations
                 opts = yaml.load(line.strip())
-                for k, v in opts.items():
+                for k, _v in opts.items():
                     if valid_props != [] and k not in valid_props:
                         errors.append('The ' + fieldname + ' field is incorrectly formatted or ' + k + ' is not a valid property for the field.')
             # There are no options, but the main_key is present
@@ -731,9 +735,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
 
 
 def dict2textarea(props):
-    """Converts a dict to a line-delimited string suitable for
-    returning to the UI as the value of a textarea.
-    """
+    """Convert a dict to a line-delimited string to return to the UI as the value of a textarea."""
     lines = ''
     for item in props:
         line = ''
@@ -749,8 +751,10 @@ def dict2textarea(props):
 
 
 def testformat(s):
-    """Parses date and returns a dict with the date string, format,
-    and an error message if the date cannot be parsed.
+    """Parse a date and return a dict.
+
+    The dict contains the date string, format, and an error message
+    if the date cannot be parsed.
     """
     error = ''
     try:
@@ -778,9 +782,7 @@ def testformat(s):
 
 
 def textarea2datelist(textarea):
-    """Converts a textarea string into a list of date dicts.
-    """
-
+    """Convert a textarea string into a list of date dicts."""
     lines = textarea.replace('-\n', '- \n').split('\n')
     all_lines = []
     for line in lines:
@@ -811,8 +813,10 @@ def textarea2datelist(textarea):
 
 
 def flatten_datelist(all_lines):
-    """Flattens the output of textarea2datelist() by removing 'text' and 'format' properties
-    and replacing their container dicts with a simple date string.
+    """Flatten the output of textarea2datelist().
+
+    Removes 'text' and 'format' properties and replaces their container dicts
+    with a simple date string.
     """
     flattened = []
     for line in all_lines:
@@ -829,8 +833,9 @@ def flatten_datelist(all_lines):
 
 
 def serialize_datelist(flattened_datelist):
-    """Converts the output of flatten_datelist() to a line-delimited string suitable for
-    returning to the UI as the value of a textarea.
+    """Convert the output of flatten_datelist() to a line-delimited string.
+
+    The string is suitable for returning to the UI as the value of a textarea.
     """
     dates = []
     for item in flattened_datelist:

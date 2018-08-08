@@ -1,31 +1,26 @@
+"""Sources __init__.py."""
+
+# import: standard
 import itertools
 import json
 import os
 import re
-import requests
 import shutil
 import yaml
-
-import tabulator
-
-# from datetime import datetime
-from jsonschema import validate, FormatChecker
-# from tabulator import Stream
-# import pandas as pd
-# from tableschema_pandas import Storage
-from flask import Blueprint, make_response, render_template, request, url_for, current_app
-from werkzeug.utils import secure_filename
-
-import pymongo
-from pymongo import MongoClient
-
-from app.sources.helpers import methods
-
-# For various solutions to dealing with ObjectID, see
-# https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
-# If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
+# import: third-party
 from bson import BSON
 from bson import json_util
+from flask import Blueprint, make_response, render_template, request, url_for, current_app
+from jsonschema import validate, FormatChecker
+import pymongo
+from pymongo import MongoClient
+import requests
+import tabulator
+from werkzeug.utils import secure_filename
+# import: app
+from app.sources.helpers import methods
+
+
 JSON_UTIL = json_util.default
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
@@ -52,7 +47,7 @@ country_list = ['AF', 'AX', 'AL', 'DZ', 'AS', 'AD', 'AO', 'AI', 'AQ', 'AG', 'AR'
 
 @sources.route('/')
 def index():
-    """Sources index page."""
+    """Create sources index page."""
     scripts = [
         # 'js/jQuery-File-Upload-9.20.0/js/vendor/jquery.ui.widget.js',
         # 'js/jQuery-File-Upload-9.20.0/js/jquery.iframe-transport.js',
@@ -69,7 +64,7 @@ def index():
 
 @sources.route('/create', methods=['GET', 'POST'])
 def create():
-    """Create manifest page."""
+    """Create Sources manifest page."""
     scripts = ['js/parsley.min.js', 'js/sources/sources.js', 'js/dateformat.js', 'js/jquery-ui.js', 'js/moment.min.js']
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/create', 'label': 'Create Publication'}]
     with open("app/templates/sources/template_config.yml", 'r') as stream:
@@ -79,7 +74,7 @@ def create():
 
 @sources.route('/create-manifest', methods=['GET', 'POST'])
 def create_manifest():
-    """ Ajax route for creating manifests."""
+    """Create Sources manifests ajax route."""
     properties = {'namespace': 'we1sv2.0', 'path': 'Sources'}
     errors = []
     for key, value in request.json.items():
@@ -160,7 +155,7 @@ def create_manifest():
 
 @sources.route('/delete-manifest', methods=['GET', 'POST'])
 def delete_manifest():
-    """ Ajax route for deleting manifests."""
+    """Delete Sources Ajax route."""
     errors = []
     name = request.json['name']
     metapath = request.json['metapath']
@@ -172,7 +167,7 @@ def delete_manifest():
 
 @sources.route('/display/<name>')
 def display(name):
-    """ Page for displaying Source manifests."""
+    """Display Sources page."""
     scripts = ['js/parsley.min.js', 'js/sources/sources.js']
     with open("app/templates/sources/template_config.yml", 'r') as stream:
         templates = yaml.load(stream)
@@ -205,7 +200,7 @@ def display(name):
 
 @sources.route('/download-export/<filename>', methods=['GET', 'POST'])
 def download_export(filename):
-    """ Ajax route to trigger download and empty the temp folder."""
+    """Trigger download and empty the temp folder."""
     filepath = os.path.join('app/temp', filename)
     # Can't get Firefox to save the file extension by any means
     with open(filepath, 'rb') as f:
@@ -222,7 +217,7 @@ def download_export(filename):
 '''
 @sources.route('/search', methods=['GET', 'POST'])
 def search():
-    """ Page for searching Sources manifests."""
+    """Search Sources manifests page."""
     scripts = ['js/parsley.min.js', 'js/jquery.twbsPagination.min.js', 'js/sources/sources.js']
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/search', 'label': 'Search Sources'}]
     if request.method == 'GET':
@@ -236,7 +231,7 @@ def search():
 
 @sources.route('/search', methods=['GET', 'POST'])
 def search2():
-    """ Experimental Page for searching sources manifests."""
+    """Search Sources page."""
     scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/sources/sources.js', 'js/jquery-sortable-min.js', 'js/sources/search.js', 'js/dateformat.js', 'js/jquery-ui.js']
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/search', 'label': 'Search Sources'}]
@@ -259,10 +254,17 @@ def search2():
             else:
                 opt = (item[0], pymongo.DESCENDING)
             sorting.append(opt)
-        result, num_pages, errors = methods.search_sources(query, limit, paginated, page, show_properties, sorting)
+        search_opts = {
+            'query': query,
+            'limit': limit,
+            'paginated': paginated,
+            'page': page,
+            'show_properties': show_properties,
+            'sorting': sorting}
+        result, page, num_pages, errors = methods.search_sources(search_opts)
         # Don't show the MongoDB _id unless it is in show_properties
         if '_id' not in request.json['advancedOptions']['show_properties']:
-            for k, v in enumerate(result):
+            for k, _ in enumerate(result):
                 del result[k]['_id']
         if result == []:
             errors.append('No records were found matching your search criteria.')
@@ -271,7 +273,7 @@ def search2():
 
 @sources.route('/export-manifest', methods=['GET', 'POST'])
 def export_manifest():
-    """ Ajax route for exporting a single manifest from the Display page."""
+    """Export a single manifest from the Display page."""
     if request.method == 'POST':
         errors = []
         result = sources_db.find_one(request.json)
@@ -290,9 +292,9 @@ def export_manifest():
 
 @sources.route('/export-search', methods=['GET', 'POST'])
 def export_search():
-    """ Ajax route for exporting search results."""
+    """Ajax route for exporting search results."""
     if request.method == 'POST':
-        result, num_pages, errors = methods.search_sources(request.json)
+        result, _, errors = methods.search_sources(request.json)
         if not result:
             errors.append('No records were found matching your search criteria.')
         # Need to write the results to temp folder
@@ -311,7 +313,7 @@ def export_search():
 
 @sources.route('/update-manifest', methods=['GET', 'POST'])
 def update_manifest():
-    """ Ajax route for updating manifests."""
+    """Ajax route for updating manifests."""
     properties = {'namespace': 'we1sv2.0', 'path': 'Sources'}
     errors = []
     for key, value in request.json.items():
@@ -353,8 +355,9 @@ def update_manifest():
 
 @sources.route('/upload', methods=['GET', 'POST'])
 def upload():
-    """Ajax route saves each file uploaded by the import function
-    to the uploads folder. Currently supports only one file.
+    """Save each file uploaded by the import function to the uploads folder.
+
+    Currently supports only one file.
     """
     if request.method == 'POST':
         try:
@@ -386,8 +389,6 @@ def upload():
 
 @sources.route('/clear')
 def clear():
-    """ Going to this page will quickly empty the datbase.
-    Disable this for production.
-    """
+    """Go to this page to quickly empty the database. Disable this for production."""
     sources_db.delete_many({})
     return 'success'

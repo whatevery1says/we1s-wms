@@ -1,27 +1,27 @@
+"""Tasks __init__.py."""
+
+# import: standard
+from datetime import datetime
 import itertools
 import json
 import os
-import re
-import requests
-import shutil
-import zipfile
-
-import tabulator
-import subprocess
-from datetime import datetime
 from pathlib import Path
-
-from jsonschema import validate, FormatChecker
+import re
+import shutil
+import subprocess
+import zipfile
+# import: third-party
+from bson import BSON, Binary, json_util
 from flask import Blueprint, render_template, request, url_for, current_app, send_file
-from werkzeug.utils import secure_filename
-
+from jsonschema import validate, FormatChecker
 import pymongo
 from pymongo import MongoClient
+import requests
+import tabulator
+from werkzeug.utils import secure_filename
+# import: app
 
-# For various solutions to dealing with ObjectID, see
-# https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
-# If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
-from bson import BSON, Binary, json_util
+
 JSON_UTIL = json_util.default
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
@@ -66,7 +66,7 @@ def index():
 
 @tasks.route('/api/status/<id>', methods=['GET', 'POST'])
 def api_status(job_id):
-    """ For testing. """
+    """For testing."""
     response = json.dumps({'success': True,
                            'id': '123',
                            'status': 1,
@@ -76,7 +76,7 @@ def api_status(job_id):
 
 @tasks.route('/api/enqueue', methods=['GET', 'POST'])
 def api_enqueue():
-    """ For testing. """
+    """For testing."""
     response = json.dumps({
         'success': True,
         'id': '789',

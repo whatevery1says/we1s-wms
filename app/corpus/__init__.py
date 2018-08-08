@@ -1,36 +1,31 @@
+"""Corpus __init__.py."""
+
+# import: standard
+from datetime import datetime
 import glob
 import itertools
 import json
 import os
-import re
-import requests
-import shutil
-import zipfile
-
-import tabulator
-import subprocess
-import yaml
-
-from datetime import datetime
-from random import randint
 from pathlib import Path
-from jsonschema import validate, FormatChecker
-# from tabulator import Stream
-# import pandas as pd
-# from tableschema_pandas import Storage
-from flask import Blueprint, render_template, request, url_for, current_app, send_file, session
-from werkzeug.utils import secure_filename
-
-import pymongo
-from pymongo import MongoClient
-
-from app.corpus.helpers import methods
-
-# For various solutions to dealing with ObjectID, see
-# https://stackoverflow.com/questions/16586180/typeerror-objectid-is-not-json-serializable
-# If speed becomes an issue: https://github.com/mongodb-labs/python-bsonjs
+from random import randint
+import re
+import shutil
+import subprocess
+import zipfile
+# import: third-party
 from bson import BSON
 from bson import json_util
+from flask import Blueprint, render_template, request, url_for, current_app, send_file, session
+from jsonschema import validate, FormatChecker
+import pymongo
+from pymongo import MongoClient
+import requests
+import tabulator
+from werkzeug.utils import secure_filename
+import yaml
+# import: app
+from app.corpus.helpers import methods
+
 
 JSON_UTIL = json_util.default
 
@@ -80,7 +75,7 @@ def create():
 
 @corpus.route('/create-manifest', methods=['GET', 'POST'])
 def create_manifest():
-    """ Ajax route for creating manifests."""
+    """Ajax route for creating manifests."""
     errors = []
     data = request.json
     # data['namespace'] = 'we1sv2.0'
@@ -165,7 +160,7 @@ def create_manifest():
 
 @corpus.route('/display/<name>')
 def display(name):
-    """ Page for displaying Corpus manifests."""
+    """Page for displaying Corpus manifests."""
     scripts = ['js/parsley.min.js', 'js/corpus/corpus.js']
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/display', 'label': 'Display Collection'}]
     errors = []
@@ -209,7 +204,7 @@ def display(name):
 
 @corpus.route('/update-manifest', methods=['GET', 'POST'])
 def update_manifest():
-    """ Ajax route for updating manifests."""
+    """Ajax route for updating manifests."""
     errors = []
     data = request.json
     # data['namespace'] = 'we1sv2.0'
@@ -297,9 +292,7 @@ def update_manifest():
 
 @corpus.route('/send-export', methods=['GET', 'POST'])
 def send_export():
-    """ Ajax route to process user export options and write
-    the export files to the temp folder.
-    """
+    """Ajax route to process user export options and write the export files to the temp folder."""
     data = request.json
     # The user only wants to print the manifest
     if data['exportoptions'] == ['manifestonly']:
@@ -404,7 +397,7 @@ def send_export():
 
 @corpus.route('/download-export/<filename>', methods=['GET', 'POST'])
 def download_export(filename):
-    """ Ajax route to trigger download and empty the temp folder."""
+    """Ajax route to trigger download and empty the temp folder."""
     from flask import make_response
     filepath = os.path.join('app/temp', filename)
     # Can't get Firefox to save the file extension by any means
@@ -421,7 +414,7 @@ def download_export(filename):
 
 @corpus.route('/search1', methods=['GET', 'POST'])
 def search():
-    """ Page for searching Corpus manifests."""
+    """Page for searching Corpus manifests."""
     scripts = ['js/parsley.min.js',
                'js/jquery.twbsPagination.min.js',
                'js/corpus/corpus.js',
@@ -439,7 +432,7 @@ def search():
 
 @corpus.route('/search', methods=['GET', 'POST'])
 def search2():
-    """ Experimental Page for searching Corpus manifests."""
+    """Experimental Page for searching Corpus manifests."""
     scripts = ['js/query-builder.standalone.js',
                'js/moment.min.js',
                'js/jquery.twbsPagination.min.js',
@@ -472,7 +465,7 @@ def search2():
         result, num_pages, errors = methods.search_corpus(query, limit, paginated, page, show_properties, sorting)
         # Don't show the MongoDB _id unless it is in show_properties
         if '_id' not in request.json['advancedOptions']['show_properties']:
-            for k, v in enumerate(result):
+            for k, _ in enumerate(result):
                 del result[k]['_id']
         if result == []:
             errors.append('No records were found matching your search criteria.')
@@ -481,7 +474,7 @@ def search2():
 
 @corpus.route('/export-search', methods=['GET', 'POST'])
 def export_search():
-    """ Ajax route for exporting search results."""
+    """Ajax route for exporting search results."""
     if request.method == 'POST':
         query = request.json['query']
         page = 1
@@ -499,7 +492,7 @@ def export_search():
             else:
                 opt = (item[0], pymongo.DESCENDING)
             sorting.append(opt)
-        result, num_pages, errors = methods.search_corpus(query, limit, paginated, page, show_properties, sorting)
+        result, _, errors = methods.search_corpus(query, limit, paginated, page, show_properties, sorting)
         if not result:
             errors.append('No records were found matching your search criteria.')
         # Need to write the results to temp folder
@@ -517,7 +510,7 @@ def export_search():
 
 @corpus.route('/delete-manifest', methods=['GET', 'POST'])
 def delete_manifest():
-    """ Ajax route for deleting manifests."""
+    """Ajax route for deleting manifests."""
     errors = []
     name = request.json['name']
     metapath = request.json['metapath']
@@ -529,7 +522,7 @@ def delete_manifest():
 
 @corpus.route('/import', methods=['GET', 'POST'])
 def import_data():
-    """ Page for importing manifests."""
+    """Page for importing manifests."""
     scripts = ['js/corpus/dropzone.js',
                'js/parsley.min.js',
                'js/corpus/corpus.js',
@@ -550,12 +543,12 @@ def import_data():
 
 
 def listdir(path):
-    """ Replacement for os.listdir() that ignores hidden files."""
+    """Replace the os directory list function with one that ignores hidden files."""
     return glob.glob(os.path.join(path, '*'))
 
 
 def get_server_files():
-    """ Get the files available for import from the server."""
+    """Get the files available for import from the server."""
     file_list = listdir(IMPORT_SERVER_DIR)
     # file_list = ['myfile1.json', 'myfile2.json', 'myfile3.json', 'myzipfile1.zip']
     return file_list
@@ -563,6 +556,7 @@ def get_server_files():
 
 @corpus.route('/import-server-file', methods=['GET', 'POST'])
 def import_server_data():
+    """Import files staged by the task manager."""
     errors = []
     collection = request.json['collection']
     category = request.json['category']
@@ -621,15 +615,17 @@ def import_server_data():
 
 @corpus.route('/refresh-server-imports', methods=['GET', 'POST'])
 def refresh_server_imports():
+    """Refresh the table of files staged for import on the front end."""
     file_list = get_server_files()
     return json.dumps({'file_list': file_list})
 
 
 @corpus.route('/remove-file', methods=['GET', 'POST'])
 def remove_file():
-    """Ajax route triggered when a file is deleted from the file
-    uploads table. This function removes the file from the imports
-    folder but does not remove it from the database.
+    """Ajax route triggered when a file is deleted from the file uploads table.
+
+    This function removes the file from the imports folder but does not remove
+    it from the database.
     """
     if request.method == 'POST':
         if os.path.isfile(os.path.join(session['IMPORT_DIR'], request.json['filename'])):
@@ -641,9 +637,10 @@ def remove_file():
 
 @corpus.route('/remove-all-files', methods=['GET', 'POST'])
 def remove_all_files():
-    """Ajax route triggered when all files are deleted from the file
-    uploads table. This function deletes the import session folder
-    but does not remove any items already added to the database.
+    """Ajax route triggered when all files are deleted from the file uploads table.
+
+    This function deletes the import session folder but does not remove any items
+    already added to the database.
     """
     # If there is a session import folder
     if os.path.isdir(session['IMPORT_DIR']):
@@ -651,6 +648,7 @@ def remove_all_files():
         for filename in listdir(session['IMPORT_DIR']):
             if filename in listdir(TRASH_DIR):
                 filename = datetime.now().strftime('%Y%m%d%H%M%S_') + filename
+            source = os.path.join(session['IMPORT_DIR'], filename)
             destination = os.path.join(TRASH_DIR, filename)
             shutil.move(source, destination)
         # Delete the session import folder
@@ -662,9 +660,7 @@ def remove_all_files():
 
 @corpus.route('/save-upload', methods=['GET', 'POST'])
 def save_upload():
-    """ Ajax route to create a manifest for each uploaded file
-    and insert it in the database.
-    """
+    """Ajax route to create a manifest for each uploaded file and insert it in the database."""
     if request.method == 'POST':
         print('Working session folder: ' + session['IMPORT_DIR'])
         errors = []
@@ -752,9 +748,7 @@ def save_upload():
 
 @corpus.route('/upload/', methods=['GET', 'POST'])
 def upload():
-    """Ajax route saves each file uploaded by the import function
-    to the uploads folder.
-    """
+    """Ajax route saves each file uploaded by the import function to the uploads folder."""
     errors = []
     if request.method == 'POST':
         # Create a session import directory if it does not exist
@@ -802,10 +796,9 @@ def upload():
 
 @corpus.route('/clear/<metapath>')
 def clear(metapath):
-    """ Going to this page will quickly empty the database
-    of all records along the designated metapath. Use the
-    metapath 'all' for delete all records in the database.
-    Disable this for production.
+    """Go to this page to quickly empty the database of all records along the designated metapath.
+
+    Use the metapath 'all' for delete all records in the database. Disable this for production.
     """
     try:
         if metapath == 'all':

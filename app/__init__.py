@@ -1,19 +1,18 @@
-"""Flask app init.py
-"""
+"""Flask app init.py."""
 
 # ----------------------------------------------------------------------------#
 # Imports
 # ----------------------------------------------------------------------------#
 
+# import: standard
 import json
 import os
 import re
 import urllib
-
-import markdown
-
+# import: third-party
 from flask import Flask, render_template, request
-
+import markdown
+# import: app
 from .sources import sources
 from .corpus import corpus
 from .projects import projects
@@ -50,11 +49,13 @@ app.config.from_pyfile('config.py')
 
 @app.route('/todo')
 def todo():
+    """Load To Do page."""
     return render_template('todo.html')
 
 
 @app.route('/thought-experiments/<name>')
 def thought_experiments(name):
+    """Load Thought Experiments page."""
     filename = os.path.join('app/static/markdown', name + '.md')
     with open(filename, 'r') as f:
         md = f.read()
@@ -64,17 +65,19 @@ def thought_experiments(name):
 
 @app.route('/')
 def home():
+    """Load Home page."""
     return render_template('index.html')
 
 
 @app.route('/guide')
 def guide():
+    """Load Guide page."""
     breadcrumbs = [{'link': '/guide', 'label': 'Guide'}]
     return render_template('guide.html', breadcrumbs=breadcrumbs)
 
 
 def add_links(doc):
-    """ Helper for /schema """
+    """Add links to headers on /schema page."""
     pats = ['(<h1>)(.+?)(</h1>)', '(<h2>)(.+?)(</h2>)', '(<h3>)(.+?)(</h3>)', '(<h4>)(.+?)(</h4>)', '(<h5>)(.+?)(</h5>)']
     for p in pats:
         doc = re.sub(p, r'\g<1><a id="user-content-\g<2>" class="anchor" aria-hidden="true" href="#\g<2>"></a>\g<2>\g<3>', doc)
@@ -83,6 +86,7 @@ def add_links(doc):
 
 @app.route('/schema')
 def schema():
+    """Load Schema page."""
     breadcrumbs = [{'link': '/schema', 'label': 'Manifest Schema Documentation'}]
     f = urllib.request.urlopen('https://github.com/whatevery1says/manifest/raw/master/we1s-manifest-schema-2.0.md')
     md = f.read().decode('utf-8')
@@ -98,11 +102,13 @@ def schema():
 
 @app.errorhandler(500)
 def internal_error(error):
+    """Load 500 Error page."""
     return render_template('errors/500.html'), 500
 
 
 @app.errorhandler(404)
 def not_found_error(error):
+    """Load 404 Error page."""
     return render_template('errors/404.html'), 404
 
 
