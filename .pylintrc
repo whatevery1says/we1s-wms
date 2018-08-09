@@ -38,11 +38,11 @@ disable=duplicate-code,
         # # EXCEPTS
         bare-except,
         # # CLEAN LOGIC
-        # inconsistent-return-statements,
+        inconsistent-return-statements,
         # no-else-return,
         # pointless-string-statement,
         # simplifiable-if-statement,
-        # unused-argument,
+        unused-argument,
         # # SPACE
         line-too-long,
         bad-continuation,
