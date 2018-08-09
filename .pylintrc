@@ -47,7 +47,7 @@ disable=duplicate-code,
         line-too-long,
         bad-continuation,
         # # STRICT NAMING
-        # invalid-name,
+        invalid-name,
         # # IGNORE
         consider-using-in,
         consider-using-set-comprehension,
