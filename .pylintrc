@@ -38,16 +38,16 @@ disable=duplicate-code,
         # # EXCEPTS
         bare-except,
         # # CLEAN LOGIC
-        inconsistent-return-statements,
-        no-else-return,
-        pointless-string-statement,
-        simplifiable-if-statement,
-        unused-argument,
+        # inconsistent-return-statements,
+        # no-else-return,
+        # pointless-string-statement,
+        # simplifiable-if-statement,
+        # unused-argument,
         # # SPACE
         line-too-long,
         bad-continuation,
         # # STRICT NAMING
-        invalid-name,
+        # invalid-name,
         # # IGNORE
         consider-using-in,
         consider-using-set-comprehension,

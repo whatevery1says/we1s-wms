@@ -214,19 +214,17 @@ def download_export(filename):
     return response
 
 
-'''
-@sources.route('/search', methods=['GET', 'POST'])
-def search():
-    """Search Sources manifests page."""
-    scripts = ['js/parsley.min.js', 'js/jquery.twbsPagination.min.js', 'js/sources/sources.js']
-    breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/search', 'label': 'Search Sources'}]
-    if request.method == 'GET':
-        return render_template('sources/search.html', scripts=scripts,
-            breadcrumbs=breadcrumbs)
-    if request.method == 'POST':
-        result, num_pages, errors = methods.search_sources(request.json)
-        return json.dumps({'response': result, 'num_pages': num_pages, 'errors': errors}, default=JSON_UTIL)
-        '''
+# @sources.route('/search', methods=['GET', 'POST'])
+# def search():
+#     """Search Sources manifests page."""
+#     scripts = ['js/parsley.min.js', 'js/jquery.twbsPagination.min.js', 'js/sources/sources.js']
+#     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/search', 'label': 'Search Sources'}]
+#     if request.method == 'GET':
+#         return render_template('sources/search.html', scripts=scripts,
+#             breadcrumbs=breadcrumbs)
+#     if request.method == 'POST':
+#         result, num_pages, errors = methods.search_sources(request.json)
+#         return json.dumps({'response': result, 'num_pages': num_pages, 'errors': errors}, default=JSON_UTIL)
 
 
 @sources.route('/search', methods=['GET', 'POST'])

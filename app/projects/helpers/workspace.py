@@ -94,7 +94,7 @@ def validate_corpus_query(query):
     return False
 
 
-def make_datapackage(manifest, project_dir, workspace_dir, query):
+def make_datapackage(manifest, project_dir, query):
     """Create a new datapackage from a Corpus query."""
     errors = []
     try:
@@ -161,15 +161,14 @@ class Datapackage():
             # Get the project from the database
             result = fetch_datapackage(self.manifest, self.zip_path, self.project_dir, self.workspace_projects, self.workspace_dir)
             self.errors += result
-            """In case we need to write files to the workspace folder.
-            This probably could be moved to fetch_datapackage().
-            """
-            # if result == []:
-            #     populate_workspace(self.projects_dir, self.workspace_dir)
+            # In case we need to write files to the workspace folder.
+            # This probably could be moved to fetch_datapackage().
+            # # if result == []:
+            # #     populate_workspace(self.projects_dir, self.workspace_dir)
         else:
             # Otherwise, make a datapackage
             if validate_corpus_query(json.loads(self.manifest['db-query'])):
-                result = make_datapackage(self.manifest, self.project_dir, self.workspace_dir, self.manifest['db-query'])
+                result = make_datapackage(self.manifest, self.project_dir, self.manifest['db-query'])
                 # If there are any errors, delete the container folder
                 if result:
                     print('Erasing folder.')

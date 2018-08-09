@@ -319,20 +319,18 @@ def search_corpus(query, limit, paginated, page, show_properties, sorting):
     """Use the query generated in /search2 and returns the search results."""
     page_size = 10
     errors = []
-    """
-    # Check that the query has a valid path within the Corpus
-    # Good for testing
-    key = list(query.keys())[0]
-    is_path = next((item for item in query.get(key) if item.get('path')), False)
-    # False if the query does not have a path; set it to ',Corpus,' by default
-    if is_path == False:
-        query.get(key).append({'path': ',Corpus,'})
-    print(query.get(key))
-    is_corpus_path = next((item for item in query.get(key) if item.get('path') is not None and item.get('path').startswith(',Corpus,')), False)
-    # False if the path is not in the Corpus; return an error
-    if is_corpus_path == False:
-        errors.append('Please supply a valid path within the Corpus.')
-    """
+    # # Check that the query has a valid path within the Corpus
+    # # Good for testing
+    # key = list(query.keys())[0]
+    # is_path = next((item for item in query.get(key) if item.get('path')), False)
+    # # False if the query does not have a path; set it to ',Corpus,' by default
+    # if is_path == False:
+    #     query.get(key).append({'path': ',Corpus,'})
+    # print(query.get(key))
+    # is_corpus_path = next((item for item in query.get(key) if item.get('path') is not None and item.get('path').startswith(',Corpus,')), False)
+    # # False if the path is not in the Corpus; return an error
+    # if is_corpus_path == False:
+    #     errors.append('Please supply a valid path within the Corpus.')
     if list(corpus_db.find()):
         result = corpus_db.find(
             query,
