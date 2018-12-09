@@ -264,9 +264,10 @@ def delete_source(name, metapath):
     """
     result = sources_db.delete_one({'name': name, 'metapath': metapath})
     if result.deleted_count != 0:
-        return 'success'
+        response = 'success'
     else:
-        return 'Unknown error: The document could not be deleted.'
+        response = 'Unknown error: The document could not be deleted.'
+    return response
 
 
 def import_manifests(source_files):
@@ -473,9 +474,10 @@ def testformat(s):
         except:
             error = 'Could not parse date "' + s + '" into a valid format.'
     if error == '':
-        return {'text': s, 'format': dateformat}
+        response = {'text': s, 'format': dateformat}
     else:
-        return {'text': s, 'format': 'unknown', 'error': error}
+        response = {'text': s, 'format': 'unknown', 'error': error}
+    return response
 
 
 def textarea2datelist(textarea):

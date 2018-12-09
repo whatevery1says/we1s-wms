@@ -123,6 +123,7 @@ def get_default_property(template, prop):
             if item['name'] == prop:
                 return item['cols'][0]
 
+
 def reshape_list(key, value, template):
     """Reshape a list for the UI.
 
@@ -140,6 +141,7 @@ def reshape_list(key, value, template):
             else:
                 new_value.append(item)
     return new_value
+
 
 @sources.route('/display/<name>')
 def display(name):
