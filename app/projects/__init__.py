@@ -779,9 +779,9 @@ def testformat(s):
         except:
             error = 'Could not parse date "' + s + '" into a valid format.'
     if error == '':
-        response =  {'text': s, 'format': dateformat}
+        response = {'text': s, 'format': dateformat}
     else:
-        response =  {'text': s, 'format': 'unknown', 'error': error}
+        response = {'text': s, 'format': 'unknown', 'error': error}
     return response
 
 
