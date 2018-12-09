@@ -1,0 +1,268 @@
+<html
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css">
+<script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<link rel="stylesheet" href="https://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+<script>
+  $( function () {
+    // Configure datepickers
+    const pickers = ['#created-start0', '#created-end0', '#updated-start0', '#updated-end0']
+    var dateFormat = 'yy-mm-dd'
+    var options = {
+        dateFormat: dateFormat,
+        constrainInput: false,
+        changeMonth: true,
+        changeYear: true,
+        minDate: null,
+        maxDate: null
+    }
+    // Set the row counters to 0
+    sessionStorage.setItem('createdCounter', '0')
+    sessionStorage.setItem('updatedCounter', '0')
+
+    // Force datepickers below the input field
+    $.extend($.datepicker, {_checkOffset: function (inst, offset, isFixed) {return offset}})
+
+    // Initialise all the datepickers on the page
+    for (picker of pickers) {
+        start = $(picker).datepicker(options)
+        .on('change', function () {
+            end.datepicker('option', 'minDate', getDate(this))
+        }),
+        end = $(picker).datepicker(options)
+        .on('change', function () {
+            start.datepicker('option', 'maxDate', getDate(this))
+        })
+    }
+    
+    // Get the date from a datepicker
+    function getDate (element) {
+        var date
+        try {
+            date = $.datepicker.parseDate(dateFormat, element.value)
+        } catch(error) {
+            date = null
+        }
+        return date
+    }
+    
+    // Validate a single date for use when a single datepicker is closed
+    function validDate(date) {
+        // If the field is not empty
+        let valid
+        if (date !== '' && date !== null) {
+            if (moment(date, ['YYYY-MM-DD', moment.ISO_8601], true).isValid()) {
+                let valid = true
+            } else {
+                valid = false
+            }
+        }
+        return valid
+    }
+
+    // Call the validate function when a datepicker is closed
+    $('.datepicker').blur(function () {
+        let id = $(this).attr('id')
+        if (validDate($(this).val()) === false) {
+            $('#' + id).addClass('is-invalid')
+            //bootbox
+            alert('Please re-enter the correct format. Valid formats are <code>YYYY-MM-DD</code> and <code>YYYY-MM-DDTHH:MM:SSZ</code>.')
+        // Otherwise, remove the error class
+        } else {
+            $('#' + id).removeClass('is-invalid')
+        }
+    })
+
+    // Add a date row by cloning the date template and setting its field names
+    $(document).on('click', '.add', function () {
+        let container = $(this).closest('.row')
+        let rowType = $(this).data('row')
+        let counter =  parseInt(sessionStorage.getItem(rowType + 'Counter')) + 1
+        sessionStorage.setItem(rowType + 'Counter', counter.toString())
+        let $template = $('.date-template').clone()
+        $template.addClass(rowType + '-row')
+        $template.find('.input-group').addClass(rowType + counter)
+        $template.find('.input-group').addClass('daterange')
+        $template.find('.add').attr('data-row', rowType)
+        $template.find('.remove').attr('data-row', rowType)
+        $template.find('input').eq(0).attr('id', rowType + '-start' + counter)
+        $template.find('input').eq(0).attr('name', rowType + '-start' + counter)
+        $template.find('input').eq(1).attr('id', rowType + '-end' + counter)
+        $template.find('input').eq(1).attr('name', rowType + '-end' + counter)
+        $template.removeClass('date-template').show().insertAfter(container)
+    })
+
+    // Trigger dynamically generated datepickers
+    $(document).on('focus', '.datepicker', function () {
+        $(this).datepicker(options)
+    })
+
+    // Remove a date row
+    $(document).on('click', '.remove', function () {
+        let container = $(this).closest('.row')
+        let rowType = $(this).data('row')
+        let numRows = $('.' + rowType + '-row').length
+        if (numRows > 1) {
+            container.remove()
+        } else {
+            container.find('.col-form-label').css('visibility', 'visible')
+            container.find('.datepicker').datepicker('setDate', null)
+        }
+    })
+
+    // Validate a date range row
+    function validateDates(startField, endField, property) {
+        let errors = []
+        let start = startField.val()
+        let end = endField.val()
+        switch (true) {
+            case start.length == 0 && end.length == 0:
+                errors.push('Please delete the empty date row for the ' + property + ' property.')
+                break
+            case start.length > 0 && end.length == 0:
+                if (!moment(start, ['YYYY-MM-DD', moment.ISO_8601], true).isValid()) {
+                    errors.push('A start field in the ' + property + ' property contains an invalid date type. Valid formats are <code>YYYY-MM-DD</code> and <code>YYYY-MM-DDTHH:MM:SS</code>.')
+                }
+                break
+            case start.length == 0 && end.length > 0:
+                errors.push('Please enter a date in the empty ' + property + ' start field . Dates that are not date ranges should be entered in the start field, and the end field should be left empty.')
+                break
+            default:
+                if (!moment(start, ['YYYY-MM-DD', moment.ISO_8601], true).isValid()) {
+                    errors.push('A start field in the ' + property + ' property contains an invalid date type. Valid formats are <code>YYYY-MM-DD</code> and <code>YYYY-MM-DDTHH:MM:SS</code>.')
+                }
+                if (!moment(end, ['YYYY-MM-DD', moment.ISO_8601], true).isValid()) {
+                    errors.push('An end field in the ' + property + ' property contains an invalid date type. Valid formats are <code>YYYY-MM-DD</code> and <code>YYYY-MM-DDTHH:MM:SS</code>.')
+                }
+        }
+        // Make sure the start date precedes the end date
+        if (!moment(start).isBefore(moment(end))) {
+            errors.push('The ' + property + ' property contains an end date earlier than the start date in the same row.') 
+        }
+        return errors
+    }
+
+    // Serialise all dates for insertion in the manifest
+    function serialiseDates() {
+        let dates = {'created': [], 'updated': []}
+        $('.daterange').each(function () {
+            var date
+            let fieldType = $(this).find('button').first().data('row')
+            let startDate = $(this).find('input').eq(0).val()
+            let endDate = $(this).find('input').eq(1).val()
+            // Format the date values from the input field
+            if (moment(startDate, 'YYYY-MM-DDTHH:mm:ss', true).isValid()) {
+                startDate = moment(startDate).toISOString()
+            } else {
+                startDate = moment(startDate).format('YYYY-MM-DD')
+            }
+            if (moment(endDate, 'YYYY-MM-DDTHH:mm:ss', true).isValid()) {
+                endDate = moment(endDate).toISOString()
+            } else {
+                endDate = moment(endDate).format('YYYY-MM-DD')
+            }
+            // Set the date value to pass to the serialiser
+            if (startDate === '' || startDate === null) {
+                date = null
+            } else if (endDate === '' || endDate === null) {
+                date = startDate
+            } else {
+                date = {'start': startDate, 'end': endDate}
+            }
+            // Push the date to the dates object to pass to the serialsier
+            if (date !== null) {
+                dates[fieldType].push(date)
+            }
+            // Delete empty properties from the dates object
+            if (dates[fieldType][0] === null) {
+                delete dates[fieldType]
+            }
+        })
+        return dates
+    }
+
+    // Preview button
+    $(document).on('click', '.preview', function () {
+        let errors = []
+        $('.daterange').each(function () {
+            // Validate all dates
+            let property = $(this).find('button').first().data('row')
+            let startDateField = $(this).find('input').eq(0)
+            let endDateField = $(this).find('input').eq(1)
+            result = validateDates(startDateField, endDateField, property)
+            errors = errors + result
+        })
+        if (errors.length === 0) {
+            // Passed validation
+            dates = serialiseDates()
+            alert(JSON.stringify(dates))
+        } else {
+            alert(JSON.stringify(errors))
+        }
+    })
+  })
+</script>
+</head>
+<body>
+    <div id="wrap" class="container" style="width:50%; margin: 50px auto;">
+        <div class="form-group row created-row">
+            <div class="col-sm-3"><label class="col-form-label">created</label></div>
+            <div class="col-sm-9">
+                <div class="input-group daterange created0">
+                    <input type="text" name="created-start0" id="created-start0" class="form-control datepicker" value="2012-04-05" placeholder="Start Date">
+                    <div class="input-group-addon" style="padding:10px;">to</div>
+                    <input type="text" name="created-end0" id="created-end0" class="form-control datepicker" value="2012-04-19" placeholder="End Date">
+                    <button role="button" class="btn btn-sm add" data-row="created" style="margin: 2px 5px 10px 10px; padding: 10px;"><i class="fa fa-plus"></i></button>
+                    <button role="button" class="btn btn-sm remove" data-row="created" style="margin: 2px 5px 10px 0; padding: 10px;"><i class="fa fa-minus"></i></button>
+                </div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-sm-12 text-center"><hr></div>
+        </div>
+        <div class="form-group row updated-row">
+            <div class="col-sm-3"><label class="col-form-label">updated</label></div>
+            <div class="col-sm-9">
+                <div class="input-group daterange updated0">
+                    <input type="text" name="updated-start0" id="updated-start0" class="form-control datepicker" value="2012-04-05" placeholder="Start Date">
+                    <div class="input-group-addon" style="padding:10px;">to</div>
+                    <input type="text" name="updated-end0" id="updated-end0" class="form-control datepicker" value="2012-04-19" placeholder="End Date">
+                    <button role="button" class="btn btn-sm add" data-row="updated" style="margin: 2px 5px 10px 10px; padding: 10px;"><i class="fa fa-plus"></i></button>
+                    <button role="button" class="btn btn-sm remove" data-row="updated" style="margin: 2px 5px 10px 0; padding: 10px;"><i class="fa fa-minus"></i></button>
+                </div>
+            </div>
+        </div>
+
+        <button role="button" class="btn preview">Preview</button>
+        <!-- Notes -->
+        <ol>
+            <li>I need to build in all the Jinja templating.</li>
+        </ol>
+
+        <select class="form-control form-control-sm">
+                <option>Small select</option>
+              </select>
+    
+    </div>
+
+<!-- Date Template -->
+<div class="form-group row date-template" style="display: none;">
+    <div class="col-sm-3"><label class="col-form-label" style="visibility: hidden;">created</label></div>
+    <div class="col-sm-9">
+        <div class="input-group">
+            <input type="text" class="form-control datepicker" placeholder="Start Date">
+            <div class="input-group-addon" style="padding:10px;">to</div>
+            <input type="text" class="form-control datepicker" placeholder="End Date">
+            <button role="button" class="btn btn-sm add" style="margin: 2px 5px 10px 10px; padding: 10px;"><i class="fa fa-plus"></i></button>
+            <button role="button" class="btn btn-sm remove" style="margin: 2px 5px 10px 0; padding: 10px;"><i class="fa fa-minus"></i></button>
+        </div>
+    </div>
+</div>
+</body>
+</html>

@@ -103,8 +103,7 @@
 								<footer id="footer">
 									<p class="copyright">&copy; <a href="https://we1s.ucsb.edu" target="_blank">The WhatEvery1Says Project</a>. All rights reserved.</p>
 									<p class="copyright">Materials created by the WE1S project are published under a <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank" class="customize-unpreviewable">Creative Commons Attribution-ShareAlike 4.0 International License</a>.</p>
-									<p class="copyright">Demo Images: <a href="https://unsplash.com">Unsplash.com</a>.<br>
-										Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
+									<p class="copyright">Design: <a href="https://html5up.net">HTML5 UP</a>.</p>
 								</footer>
 
 						</div>
@@ -132,5 +131,58 @@
 			<script src="{{ url_for('static', filename='js/bootbox.min.js') }}"></script>
 			<!-- <script src="https://cdnjs.cloudflare.com/ajax/libs/bootbox.js/4.4.0/bootbox.min.js"></script> -->
 			{% if scripts %}{% for script in scripts %}<script src="{{ url_for('static', filename=script) }}"></script>{% endfor %}{% endif %}
+			<script>
+			/* Parsley Validators */
+			window.Parsley.addValidator('dateformat', {
+				validate: function (date) {
+					let isValid = false
+					if (date !== '' && date !== null) {
+						if (moment(date, ['YYYY-MM-DD', moment.ISO_8601], true).isValid()) {
+							isValid = true
+						}
+					}
+					return isValid
+				},
+				messages: {
+					en: 'Please use the format <code>yyyy-mm-dd</code> or <code>YYYY-MM-DDTHH:MM:SSZ</code>.'
+				}
+			})
+			// Parsley-native invalid date range validator does not
+			// work because you can't access the trigger element
+			window.Parsley.addValidator('daterange', {
+				validate: function (value) {
+					let errorAdded = false
+					$('.datepicker').each(function () {
+						var container = $(this).closest('.form-group')
+						var startField = container.children().find('input').eq(0)
+						var endField = container.children().find('input').eq(1)
+						var startVal = startField.val()
+						var endVal = endField.val()
+						try {
+							var startDate = $.datepicker.parseDate('yy-mm-dd', startVal)
+							var endDate = $.datepicker.parseDate('yy-mm-dd', endVal)
+						} catch (e) {
+							return true
+						}
+						// Valid date range
+						if (endVal.length === 0 || startDate <= endDate) {
+							startField.attr('data-parsley-daterange', 'valid')
+							endField.attr('data-parsley-daterange', 'valid')
+						// Invalid date range
+						} else {
+							startField.attr('data-parsley-daterange', 'invalid')
+							endField.attr('data-parsley-daterange', 'invalid')
+							errorAdded = true
+						}
+					})
+					if (errorAdded === true) {
+						return false
+					}
+				},
+				messages: {
+					en: 'The start date must precede the end date.'
+				}
+			})  
+			</script>
 	</body>
 </html>

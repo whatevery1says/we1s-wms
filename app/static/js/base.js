@@ -26,6 +26,7 @@ $(document).ready(function () {
     return false
   })
 
+/*
   // Anando's javascript code for the functionality of the buttons "+", "submit", and "x".
   // Remove an input using the "x" button.
   $(document).on('click', '.remove', function () {
@@ -250,4 +251,5 @@ $(document).ready(function () {
     $('.queryterm_field').append('<div><input name="sadface" type="textarea"><button class="btn rip remove btn-lg btn-outline-editorial">X</button></div>')
     return false // Prevent form submission
   })
+  */
 })

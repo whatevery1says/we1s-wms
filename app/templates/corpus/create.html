@@ -1,164 +1,236 @@
 {% extends "base.html" %}
 {% block main %}
+<!-- Clear session storage on page load -->
+<script>
+    sessionStorage.clear()
+</script>
 <form method="POST" id="manifestForm">
-<br>
-<div class="row">
-    <div class="col-sm">
-        <header class="major">
-            <h2>Create a Collection Manifest</h2>
-        </header>
-    </div>    
-    <div class="col-sm text-right">
-        <button id="preview" class="btn btn-lg btn-outline-editorial">Preview</button>
-        <button type="submit" id="save" class="btn btn-lg  btn-outline-editorial">Save</button>
-    </div>
-</div>
-<div class="card card-body">
-    <div class="form-row">
-        <div class="form-group col-sm-2">
-            <label class="form-check-label">Node Type</label>
-        </div>
-        <div class="form-group col-sm-2 form-check-inline">
-          <input class="form-control form-check-input" type="radio" name="nodetype" id="collection" value="collection" checked="checked">
-          <label class="form-check-label" for="collection">Collection</label>
-        </div>
-        <div class="form-group col-sm-2 form-check-inline">
-          <input class="form-control form-check-input" type="radio" name="nodetype" id="rawdata" value="RawData">
-          <label class="form-check-label" for="rawdata">RawData</label>
-        </div>
-        <div class="form-group form-check-inline">
-          <input class="form-control form-check-input" type="radio" name="nodetype" id="processeddata" value="ProcessedData">
-          <label class="form-check-label" for="processeddata">ProcessedData</label>
-        </div>
-        <div class="form-group col-sm-2 form-check-inline">
-          <input class="form-control form-check-input" type="radio" name="nodetype" id="metadata" value="Metadata">
-          <label class="form-check-label" for="metadata">Metadata</label>
-        </div>
-    </div>
-    <div class="form-row">
-        <div class="form-group col-sm-2 offset-sm-2 form-check-inline">
-          <input class="form-control form-check-input" type="radio" name="nodetype" id="outputs" value="Outputs">
-          <label class="form-check-label" for="outputs">Outputs</label>
-        </div>
-        <div class="form-group col-sm-2 form-check-inline">
-          <input class="form-control form-check-input" type="radio" name="nodetype" id="related" value="Related">
-          <label class="form-check-label" for="related">Related</label>
-        </div>
-        <div class="form-group form-check-inline">
-          <input class="form-control form-check-input" type="radio" name="nodetype" id="branch" value="Branch">
-          <label class="form-check-label" for="branch">Branch</label>
-        </div>
-    </div>
     <br>
-    <ul class="nav nav-tabs" id="publicationsFormNav" role="tablist">
-        <li class="nav-item">
-            <a class="nav-link active" id="required-tab" data-toggle="tab" href="#required" role="tab" aria-controls="required" aria-selected="true">Required Properties</a>
-        </li>
-        <li class="nav-item">
-            <a class="nav-link" id="optional-tab" data-toggle="tab" href="#optional" role="tab" aria-controls="optional" aria-selected="false">Optional Properties</a>
-        </li>
-    </ul>
-    <br>
-    <div id="manifestCard">
-        <div class="tab-content" id="collectionsForm">
-          {% set template = templates['collection-template'] %}
-          {% set required_opts = template[0]['required'] %}
-          {% set optional_opts = template[1]['optional'] %}
-            <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
-                {% for opt in required_opts %}
-                {% if not opt.skip %}
-                  {% if opt.fieldtype == 'text' %}
-                  <div class="form-group row">
-                    <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-                    <div class="col-sm-10">
-                        <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
+    <div class="row">
+        <div class="col-sm">
+            <header class="major">
+                <h2>Create a Collection Manifest</h2>
+            </header>
+        </div>
+        <div class="col-sm text-right">
+            <button id="preview" class="btn btn-lg btn-outline-editorial">Preview</button>
+            <button type="submit" id="save" class="btn btn-lg  btn-outline-editorial">Save</button>
+        </div>
+    </div>
+    <div class="card card-body">
+        <div class="form-row">
+            <div class="form-group col-sm-2">
+                <label class="form-check-label">Node Type</label>
+            </div>
+            <div class="form-group col-sm-2 form-check-inline">
+                <input class="form-control form-check-input" type="radio" name="nodetype" id="collection" value="collection"
+                    checked="checked">
+                <label class="form-check-label" for="collection">Collection</label>
+            </div>
+            <div class="form-group col-sm-2 form-check-inline">
+                <input class="form-control form-check-input" type="radio" name="nodetype" id="rawdata" value="RawData">
+                <label class="form-check-label" for="rawdata">RawData</label>
+            </div>
+            <div class="form-group form-check-inline">
+                <input class="form-control form-check-input" type="radio" name="nodetype" id="processeddata" value="ProcessedData">
+                <label class="form-check-label" for="processeddata">ProcessedData</label>
+            </div>
+            <div class="form-group col-sm-2 form-check-inline">
+                <input class="form-control form-check-input" type="radio" name="nodetype" id="metadata" value="Metadata">
+                <label class="form-check-label" for="metadata">Metadata</label>
+            </div>
+        </div>
+        <div class="form-row">
+            <div class="form-group col-sm-2 offset-sm-2 form-check-inline">
+                <input class="form-control form-check-input" type="radio" name="nodetype" id="outputs" value="Outputs">
+                <label class="form-check-label" for="outputs">Outputs</label>
+            </div>
+            <div class="form-group col-sm-2 form-check-inline">
+                <input class="form-control form-check-input" type="radio" name="nodetype" id="related" value="Related">
+                <label class="form-check-label" for="related">Related</label>
+            </div>
+            <div class="form-group form-check-inline">
+                <input class="form-control form-check-input" type="radio" name="nodetype" id="branch" value="Branch">
+                <label class="form-check-label" for="branch">Branch</label>
+            </div>
+        </div>
+        <br>
+        <ul class="nav nav-tabs" id="publicationsFormNav" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="required-tab" data-toggle="tab" href="#required" role="tab"
+                    aria-controls="required" aria-selected="true">Required Properties</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="optional-tab" data-toggle="tab" href="#optional" role="tab" aria-controls="optional"
+                    aria-selected="false">Optional Properties</a>
+            </li>
+        </ul>
+        <br>
+
+        {# Generate a unique ID - Keep everything on one line to prevent extra white space #}
+        {% macro random_int(vals) %}{% for n in range(6) %}{{ vals|random }}{% endfor %}{% endmacro %}
+        {% macro unique_id(property_name) %}{% set vals = [0,1,2,3,4,5,6,7,8,9,'c','a','t'] %}{% set parts =
+        [random_int(vals), random_int(vals), random_int(vals), random_int(vals), random_int(vals), random_int(vals)]
+        %}{{property_name}}{{parts|join('')}}{% endmacro %}
+
+        <div id="manifestCard">
+            <div class="tab-content" id="collectionsForm">
+                {% set template = templates['collection-template'] %}
+                {% set required_opts = template[0]['required'] %}
+                {% set optional_opts = template[1]['optional'] %}
+                <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+                    {% for opt in required_opts %}
+                    {% if not opt.skip %}
+                    {% if opt.fieldtype == 'text' %}
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                        data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10">
+                            <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                                {% if opt.value %}value="{{ opt.value|safe }}" {% endif %} class="form-control"
+                                {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }}
+                                {{ 'disabled' if opt.disabled }}>
+                        </div>
                     </div>
-                  </div>
-                  {% elif opt.fieldtype == 'textarea' %}
-                  {% if opt.name == 'sources' %}
+                    {% elif opt.fieldtype == 'textarea' %}
+                    {% if opt.name == 'sources' %}
                     <input type="hidden" id="sources" name="sources" value="">
-                    <div class="form-group row">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                        data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                         <label class="col-sm-2 col-form-label" for="sourceTitle0">sources</label>
                         <div class="col-sm-3">
-                            <input type="text" class="source-field" id="sourceTitle0" name="sourceTitle" placeholder="Title">
-                        </div>    
+                            <input type="text" class="source-field" id="sourceTitle0" name="sourceTitle" placeholder="Title"
+                                {{ 'required' if opt.required }}>
+                        </div>
                         <div class="col-sm-3">
-                            <input type="text" class="source-field" id="sourcePath0" name="sourcePath" placeholder="Path">
+                            <input type="text" class="source-field" id="sourcePath0" name="sourcePath" placeholder="Path"
+                                required>
                         </div>
                         <div class="col-sm-3">
                             <input type="text" class="source-field" id="sourceEmail0" name="sourceEmail" placeholder="Email">
                         </div>
                         <div class="col-sm-1" style="padding: 5px 0px;">
-                            <button type="button" class="btn btn-sm btn-outline-editorial add-source" title="Add another source"><i class="fa fa-plus-circle"></i></button>
-                            <button type="button" class="btn btn-sm btn-outline-editorial remove-source hidden" title="Remove source"><i class="fa fa-minus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial add add-source" title="Add another source"><i
+                                    class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-source hidden"
+                                title="Remove source"><i class="fa fa-minus-circle"></i></button>
                         </div>
                     </div>
                     {% elif opt.name == 'contributors' %}
-                  <input type="hidden" id="contributors" name="contributors" value="">
-                  <div class="form-group row">
-                      <label class="col-sm-2 col-form-label" for="contributorTitle0">contributors</label>
-                      <div class="col-sm-3">
-                          <input type="text" class="contributor-field" id="contributorTitle0" name="contributorTitle" placeholder="Contributor Title">
-                      </div>
-                      <div class="col-sm-3">
-                          <input type="text" class="contributor-field" id="contributorGroup0" name="contributorGroup" placeholder="Group">
-                      </div>
-                      <div class="col-sm-3">
-                          <input type="text" class="contributor-field" id="contributorOrg0" name="contributorOrg" placeholder="Organization">
-                      </div>    
-                      <div class="col-sm-1" style="padding: 5px 0px;">
-                          <button type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
-                          <button type="button" class="btn btn-sm btn-outline-editorial remove-contributor hidden" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
-                      </div>
-                          <label class="col-sm-2 col-form-label" for="contributorTitle0"></label>
-                      <div class="col-sm-3">
-                          <input type="text" class="contributor-field" id="contributorPath0" name="contributorPath" placeholder="Path">
-                      </div>
-                      <div class="col-sm-3">
-                          <input type="text" class="contributor-field" id="contributorEmail0" name="contributorEmail" placeholder="Email">
-                      </div>
-                      <div class="col-sm-3">
-                          <input type="text" class="contributor-field" id="contributorRole0" name="contributorRole" placeholder="Role">
-                      </div>    
-                      <div class="col-sm-1" style="padding: 5px 0px;">
-                          <button hidden type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
-                          <button hidden type="button" class="btn btn-sm btn-outline-editorial remove-contributor hidden" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
-                      </div>
-                  </div>
-                  {% elif opt.name == 'created' %}
-                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
-                    <div class="form-group row">
-                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_initcollection">{{ opt.name|safe }}</label>
-                        <div class="col-sm-10" id="{{ opt.name|safe }}_initcollection_dateformat"></div>
-                    </div>      
+                    <input type="hidden" id="contributors" name="contributors" value="">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                        data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                        <label class="col-sm-2 col-form-label" for="contributorTitle0">contributors</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="contributor-field" id="contributorTitle0" name="contributorTitle"
+                                placeholder="Contributor Title" required>
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" class="contributor-field" id="contributorGroup0" name="contributorGroup"
+                                placeholder="Group">
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" class="contributor-field" id="contributorOrg0" name="contributorOrg"
+                                placeholder="Organization">
+                        </div>
+                        <div class="col-sm-1" style="padding: 5px 0px;">
+                            <button type="button" class="btn btn-sm btn-outline-editorial add add-contributor" title="Add another contributor"><i
+                                    class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-contributor hidden"
+                                title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                        <label class="col-sm-2 col-form-label" for="contributorTitle0"></label>
+                        <div class="col-sm-3">
+                            <input type="text" class="contributor-field" id="contributorPath0" name="contributorPath"
+                                placeholder="Path">
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" class="contributor-field" id="contributorEmail0" name="contributorEmail"
+                                placeholder="Email">
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" class="contributor-field" id="contributorRole0" name="contributorRole"
+                                placeholder="Role">
+                        </div>
+                        <div class="col-sm-1" style="padding: 5px 0px;">
+                            <button hidden type="button" class="btn btn-sm btn-outline-editorial add add-contributor"
+                                title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
+                            <button hidden type="button" class="btn btn-sm btn-outline-editorial remove remove-contributor hidden"
+                                title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                    </div>
+                    {% elif opt.name == 'created' %}
+                    <div id="created0" class="form-group row created-row input-group daterange created0">
+                        <label class="col-sm-2 col-form-label" for="created-start0">created</label>
+                        <div class="col-sm-4">
+                            <input data-parsley-daterange data-parsley-dateformat="date" type="text" name="created-start0"
+                                id="created-start0" class="form-control datepicker" placeholder="Start Date" required>
+                        </div>
+                        <div class="col-sm-4">
+                            <input data-parsley-daterange data-parsley-dateformat="date" type="text" name="created-end0"
+                                id="created-end0" class="form-control datepicker" placeholder="End Date">
+                        </div>
+                        <div class="col-sm-2" style="padding: 5px 0px;">
+                            <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="created"
+                                title="Add another date"><i class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="created"
+                                data-count="created0" title="Remove date"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                    </div>
                     {% else %}
                     <!-- Generic Textarea -->
-                    <div class="form-group row">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                        data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                         <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                         <div class="col-sm-10">
-                            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control"
+                                placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }}
+                                {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
                         </div>
                     </div>
                     <!-- End Generic Textarea -->
-                    {% endif %}         
-                  {% endif %}
-                {% endif %}
-                {% endfor %}
-            </div>
-            <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
-              {% for opt in optional_opts %}
-              {% if not opt.skip %}
-                {% if opt.fieldtype == 'text' %}
-                <div class="form-group row">
-                  <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-                  <div class="col-sm-10">
-                      <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
-                  </div>
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
                 </div>
-                {% elif opt.fieldtype == 'textarea' %}
-                {% if opt.name == 'licenses' %}
+                <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+                    {% for opt in optional_opts %}
+                    {% if not opt.skip %}
+                    {% if opt.fieldtype == 'text' %}
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                        data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10">
+                            <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                                {% if opt.value %}value="{{ opt.value|safe }}" {% endif %} class="form-control"
+                                {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }}
+                                {{ 'disabled' if opt.disabled }}>
+                        </div>
+                    </div>
+                    {% elif opt.fieldtype == 'textarea' %}
+                    {% if opt.name == 'processes' %}
+                    <input type="hidden" id="processes" name="processes" value="">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                        data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                        <label class="col-sm-2 col-form-label" for="processName0">processes</label>
+                        <div class="col-sm-4">
+                            <input type="text" class="process-field" id="processTitle0" name="processTitle" placeholder="Process title">
+                        </div>
+                        <div class="col-sm-4">
+                            <input type="text" class="process-field" id="processPath0" name="processPath" placeholder="Path">
+                        </div>
+                        <div class="col-sm-2" style="padding: 5px 0px;">
+                            <button type="button" class="btn btn-sm btn-outline-editorial add add-process" title="Add another process"><i
+                                    class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-process hidden"
+                                title="Remove process"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                    </div>
+                    {% elif opt.name == 'licenses' %}
                     <input type="hidden" id="licenses" name="licenses" value="">
-                    <div class="form-group row">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                        data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                         <label class="col-sm-2 col-form-label" for="licenseName0">licenses</label>
                         <div class="col-sm-3">
                             <input type="text" class="license-field" id="licenseName0" name="licenseName" placeholder="License name">
@@ -168,48 +240,81 @@
                         </div>
                         <div class="col-sm-3">
                             <input type="text" class="license-field" id="licenseTitle0" name="licenseTitle" placeholder="Title">
-                        </div>    
-                        <div class="col-sm-1" style="padding: 5px 0px;">
-                            <button type="button" class="btn btn-sm btn-outline-editorial add-license" title="Add another license"><i class="fa fa-plus-circle"></i></button>
-                            <button type="button" class="btn btn-sm btn-outline-editorial remove-license hidden" title="Remove license"><i class="fa fa-minus-circle"></i></button>
                         </div>
-                    </div>     
+                        <div class="col-sm-1" style="padding: 5px 0px;">
+                            <button type="button" class="btn btn-sm btn-outline-editorial add add-license" title="Add another license"><i
+                                    class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-license hidden"
+                                title="Remove license"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                    </div>
+                    <!-- Description Field -->
+                    {% elif opt.name == 'description' %}
+                    <div id="descriptionRow" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10">
+                            <textarea name="description" id="description" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}"
+                                {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }}
+                                {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                        </div>
+                    </div>
                     <!-- Notes Field -->
                     {% elif opt.name == 'notes' %}
                     <input type="hidden" id="notes" name="notes" value="">
-                    <div class="form-group row">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                        data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                         <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                         <div class="col-sm-9">
-                            <textarea name="{{ opt.name|safe }}Field" id="note0" class="form-control note-field" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                            <textarea name="{{ opt.name|safe }}Field" id="note0" class="form-control note-field"
+                                placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }}
+                                {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
                         </div>
                         <div class="col-sm-1" style="padding: 15px 0px;">
-                            <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
-                            <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial add add-note" title="Add another note"><i
+                                    class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-note hidden"
+                                title="Remove note"><i class="fa fa-minus-circle"></i></button>
                         </div>
-                    </div>    
+                    </div>
                     {% elif opt.name == 'updated' %}
-                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
-                    <div class="form-group row">
-                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_initcollection">{{ opt.name|safe }}</label>
-                        <div class="col-sm-10" id="{{ opt.name|safe }}_initcollection_dateformat"></div>
-                    </div>          
+                    <div id="updated{{ loop.index0 }}" class="form-group row updated-row input-group daterange updated0"
+                        data-fieldtype="updated" data-id="updated{{ loop.index0|string or '' }}">
+                        <label class="col-sm-2 col-form-label" for="updated-start{{ loop.index0 }}">updated</label>
+                        <div class="col-sm-4">
+                            <input data-parsley-dateformat="date" type="text" name="updated-start{{ loop.index0 }}" id="updated-start{{ loop.index0 }}"
+                                class="form-control datepicker" placeholder="Start Date">
+                        </div>
+                        <div class="col-sm-4">
+                            <input data-parsley-dateformat="date" type="text" name="updated-end{{ loop.index0 }}" id="updated-end{{ loop.index0 }}"
+                                class="form-control datepicker" placeholder="End Date">
+                        </div>
+                        <div class="col-sm-2" style="padding: 5px 0px;">
+                            <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="updated"
+                                title="Add another date"><i class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="updated"
+                                data-count="updated{{ loop.index0 }}" title="Remove date"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                    </div>
                     {% else %}
                     <!-- Generic Textarea -->
-                    <div class="form-group row">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                        data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                         <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                         <div class="col-sm-10">
-                            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control"
+                                placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }}
+                                {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
                         </div>
                     </div>
                     <!-- End Generic Textarea -->
                     {% endif %}
-                {% endif %}
-              {% endif %}
-              {% endfor %}
-            </div> <!-- /tab-pane -->
-        </div> <!-- /collectionsForm -->
-    </div> <!-- /manifestCard -->
-</div>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                </div> <!-- /tab-pane -->
+            </div> <!-- /collectionsForm -->
+        </div> <!-- /manifestCard -->
+    </div>
 </form>
 <!-- Preview -->
 <div id="previewDisplay" style="display: none;">
@@ -221,7 +326,7 @@
 <!-- include '/corpus/create-form-templates.html' -->
 <!-- Collection Form Template -->
 <script type="text/html" id="collection-template">
-  <div class="tab-content" id="collectionsForm">
+    <div class="tab-content" id="collectionsForm">
     {% set template = templates['collection-template'] %}
           {% set required_opts = template[0]['required'] %}
           {% set optional_opts = template[1]['optional'] %}
@@ -229,7 +334,7 @@
                 {% for opt in required_opts %}
                 {% if not opt.skip %}
                   {% if opt.fieldtype == 'text' %}
-                  <div class="form-group row">
+                  <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                     <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                     <div class="col-sm-10">
                         <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
@@ -238,7 +343,7 @@
                   {% elif opt.fieldtype == 'textarea' %}
                   {% if opt.name == 'sources' %}
                     <input type="hidden" id="sources" name="sources" value="">
-                    <div class="form-group row">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                         <label class="col-sm-2 col-form-label" for="sourceEmail0">sources</label>
                         <div class="col-sm-3">
                             <input type="text" class="source-field" id="sourceTitle0" name="sourceTitle" placeholder="Title">
@@ -250,13 +355,13 @@
                             <input type="text" class="source-field" id="sourceEmail0" name="sourceEmail" placeholder="Email">
                         </div>
                         <div class="col-sm-1" style="padding: 5px 0px;">
-                            <button type="button" class="btn btn-sm btn-outline-editorial add-source" title="Add another source"><i class="fa fa-plus-circle"></i></button>
-                            <button type="button" class="btn btn-sm btn-outline-editorial remove-source hidden" title="Remove source"><i class="fa fa-minus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial add add-source" title="Add another source"><i class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-source hidden" title="Remove source"><i class="fa fa-minus-circle"></i></button>
                         </div>
                     </div>
                     {% elif opt.name == 'contributors' %}
                   <input type="hidden" id="contributors" name="contributors" value="">
-                  <div class="form-group row">
+                  <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                       <label class="col-sm-2 col-form-label" for="contributorTitle0">contributors</label>
                       <div class="col-sm-3">
                           <input type="text" class="contributor-field" id="contributorTitle0" name="contributorTitle" placeholder="Contributor Title">
@@ -268,8 +373,8 @@
                           <input type="text" class="contributor-field" id="contributorOrg0" name="contributorOrg" placeholder="Organization">
                       </div>    
                       <div class="col-sm-1" style="padding: 5px 0px;">
-                          <button type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
-                          <button type="button" class="btn btn-sm btn-outline-editorial remove-contributor hidden" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+                          <button type="button" class="btn btn-sm btn-outline-editorial add add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
+                          <button type="button" class="btn btn-sm btn-outline-editorial remove remove-contributor hidden" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
                       </div>
                           <label class="col-sm-2 col-form-label" for="contributorTitle0"></label>
                       <div class="col-sm-3">
@@ -282,19 +387,28 @@
                           <input type="text" class="contributor-field" id="contributorRole0" name="contributorRole" placeholder="Role">
                       </div>    
                       <div class="col-sm-1" style="padding: 5px 0px;">
-                          <button hidden type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
-                          <button hidden type="button" class="btn btn-sm btn-outline-editorial remove-contributor hidden" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+                          <button hidden type="button" class="btn btn-sm btn-outline-editorial add add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
+                          <button hidden type="button" class="btn btn-sm btn-outline-editorial remove remove-contributor hidden" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
                       </div>
                   </div>    
                   {% elif opt.name == 'created' %}
                     <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
-                    <div class="form-group row">
-                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_collection">{{ opt.name|safe }}</label>
-                        <div class="col-sm-10" id="{{ opt.name|safe }}_collection_dateformat"></div>
-                    </div>  
+                    <div id="" class="form-group row created-row input-group daterange created0" data-fieldtype="created" data-id="created">
+                        <label class="col-sm-2 col-form-label" for="created-start{{ loop.index0 }}">{{prop['name'] if loop.index0 == 0 }}</label>
+                        <div class="col-sm-4">
+                            <input data-parsley-dateformat="date" type="text" name="created-start{{ loop.index0 }}" id="created-start{{ loop.index0 }}" class="form-control datepicker" placeholder="Start Date" value="">
+                        </div>    
+                        <div class="col-sm-4">
+                            <input data-parsley-dateformat="date" type="text" name="created-end{{ loop.index0 }}" id="created-end{{ loop.index0 }}" class="form-control datepicker" placeholder="End Date" value="">
+                        </div>
+                        <div class="col-sm-2" style="padding: 5px 0px;">
+                            <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="created" title="Add another date"><i class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="created" data-count="created{{ loop.index0 }}" title="Remove date"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                    </div>            
                     {% else %}
                     <!-- Generic Textarea -->
-                    <div class="form-group row">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                         <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                         <div class="col-sm-10">
                             <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
@@ -310,7 +424,7 @@
               {% for opt in optional_opts %}
               {% if not opt.skip %}
                 {% if opt.fieldtype == 'text' %}
-                <div class="form-group row">
+                <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                   <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                   <div class="col-sm-10">
                       <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
@@ -319,7 +433,7 @@
                 {% elif opt.fieldtype == 'textarea' %}
                 {% if opt.name == 'licenses' %}
                     <input type="hidden" id="licenses" name="licenses" value="">
-                    <div class="form-group row">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                         <label class="col-sm-2 col-form-label" for="licenseName0">licenses</label>
                         <div class="col-sm-3">
                             <input type="text" class="license-field" id="licenseName0" name="licenseName" placeholder="License name">
@@ -331,32 +445,48 @@
                             <input type="text" class="license-field" id="licenseTitle0" name="licenseTitle" placeholder="Title">
                         </div>    
                         <div class="col-sm-1" style="padding: 5px 0px;">
-                            <button type="button" class="btn btn-sm btn-outline-editorial add-license" title="Add another license"><i class="fa fa-plus-circle"></i></button>
-                            <button type="button" class="btn btn-sm btn-outline-editorial remove-license hidden" title="Remove license"><i class="fa fa-minus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial add add-license" title="Add another license"><i class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-license hidden" title="Remove license"><i class="fa fa-minus-circle"></i></button>
                         </div>
-                    </div>     
+                    </div>
+                    <!-- Description Field -->
+                    {% elif opt.name == 'description' %}
+                    <div id="descriptionRow" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                        <div class="col-sm-10">
+                            <textarea name="description" id="description" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                        </div>
+                    </div>         
                     <!-- Notes Field -->
                     {% elif opt.name == 'notes' %}
                     <input type="hidden" id="notes" name="notes" value="">
-                    <div class="form-group row">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                         <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                         <div class="col-sm-9">
                             <textarea name="{{ opt.name|safe }}Field" id="note0" class="form-control note-field" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
                         </div>
                         <div class="col-sm-1" style="padding: 15px 0px;">
-                            <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
-                            <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial add add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
                         </div>
                     </div>        
                     {% elif opt.name == 'updated' %}
-                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
-                    <div class="form-group row">
-                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_collection">{{ opt.name|safe }}</label>
-                        <div class="col-sm-10" id="{{ opt.name|safe }}_collection_dateformat"></div>
-                    </div>      
+                    <div id="updated0" class="form-group row updated-row input-group daterange updated0">
+                        <label class="col-sm-2 col-form-label" for="updated-start0">updated</label>
+                        <div class="col-sm-4">
+                            <input type="text" name="updated-start0" id="updated-start0" class="form-control datepicker" placeholder="Start Date">
+                        </div>    
+                        <div class="col-sm-4">
+                            <input type="text" name="updated-end0" id="updated-end0" class="form-control datepicker" placeholder="End Date">
+                        </div>
+                        <div class="col-sm-2" style="padding: 5px 0px;">
+                            <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="updated" title="Add another date"><i class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="updated" data-count="updated0" title="Remove date"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                    </div>     
                     {% else %}
                     <!-- Generic Textarea -->
-                    <div class="form-group row">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                         <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                         <div class="col-sm-10">
                             <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
@@ -373,14 +503,14 @@
 
 <!-- RawData Form Template -->
 <script type="text/html" id="rawdata-template">
-  <div class="tab-content" id="collectionsForm">
+    <div class="tab-content" id="collectionsForm">
     {% set template = templates['rawdata-template'] %}
     {% set required_opts = template[0]['required'] %}
     {% set optional_opts = template[1]['optional'] %}
       <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
         {% for opt in required_opts %}
         {% if not opt.skip %}
-        <div class="form-group row">
+        <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
           {% if opt.fieldtype == 'text' %}
           <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
           <div class="col-sm-10">
@@ -400,7 +530,7 @@
       {% for opt in optional_opts %}
       {% if not opt.skip %}
         {% if opt.fieldtype == 'text' %}
-        <div class="form-group row">
+        <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
           <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
           <div class="col-sm-10">
               <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
@@ -409,7 +539,7 @@
         {% elif opt.fieldtype == 'textarea' %}
             {% if opt.name == 'licenses' %}
             <input type="hidden" id="licenses" name="licenses" value="">
-            <div class="form-group row">
+            <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                 <label class="col-sm-2 col-form-label" for="licenseName0">licenses</label>
                 <div class="col-sm-3">
                     <input type="text" class="license-field" id="licenseName0" name="licenseName" placeholder="License name">
@@ -421,32 +551,48 @@
                     <input type="text" class="license-field" id="licenseTitle0" name="licenseTitle" placeholder="Title">
                 </div>    
                 <div class="col-sm-1" style="padding: 5px 0px;">
-                    <button type="button" class="btn btn-sm btn-outline-editorial add-license" title="Add another license"><i class="fa fa-plus-circle"></i></button>
-                    <button type="button" class="btn btn-sm btn-outline-editorial remove-license hidden" title="Remove license"><i class="fa fa-minus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-license" title="Add another license"><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-license hidden" title="Remove license"><i class="fa fa-minus-circle"></i></button>
                 </div>
-            </div>     
+            </div>
+            <!-- Description Field --> 
+            {% elif opt.name == 'description' %}
+            <div id="descriptionRow" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                    <textarea name="description" id="description" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                </div>
+            </div>    
             <!-- Notes Field -->
             {% elif opt.name == 'notes' %}
             <input type="hidden" id="notes" name="notes" value="">
-            <div class="form-group row">
+            <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                 <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                 <div class="col-sm-9">
                     <textarea name="{{ opt.name|safe }}Field" id="note0" class="form-control note-field" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
                 </div>
                 <div class="col-sm-1" style="padding: 15px 0px;">
-                    <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
-                    <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
                 </div>
             </div>          
             {% elif opt.name == 'updated' %}
-                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
-                    <div class="form-group row">
-                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_rawdata">{{ opt.name|safe }}</label>
-                        <div class="col-sm-10" id="{{ opt.name|safe }}_rawdata_dateformat"></div>
-                    </div>    
+            <div id="updated0" class="form-group row updated-row input-group daterange updated0" data-fieldtype="updated" data-id="updated">
+                <label class="col-sm-2 col-form-label" for="updated-start0">updated</label>
+                <div class="col-sm-4">
+                    <input type="text" name="updated-start0" id="updated-start0" class="form-control datepicker" placeholder="Start Date">
+                </div>    
+                <div class="col-sm-4">
+                    <input type="text" name="updated-end0" id="updated-end0" class="form-control datepicker" placeholder="End Date">
+                </div>
+                <div class="col-sm-2" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="updated" title="Add another date"><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="updated" data-count="updated0" title="Remove date"><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
             {% else %}
             <!-- Generic Textarea -->
-            <div class="form-group row">
+            <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                 <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                 <div class="col-sm-10">
                     <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
@@ -455,7 +601,7 @@
             <!-- End Generic Textarea -->
             {% endif %}
         {% elif opt.fieldtype == 'checkbox' %}
-        <div class="form-group row">
+        <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
           <div class="col-sm-12">
             <input class="form-control form-check-input" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" type="checkbox" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }} {% if opt.value %}value="{{ opt.value|safe }}"{% endif %}><label class="form-check-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
           </div>
@@ -469,26 +615,45 @@
 
 <!-- ProcessedData Form Template -->
 <script type="text/html" id="processeddata-template">
-  <div class="tab-content" id="collectionsForm">
+    <div class="tab-content" id="collectionsForm">
     {% set template = templates['processeddata-template'] %}
     {% set required_opts = template[0]['required'] %}
     {% set optional_opts = template[1]['optional'] %}
       <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
         {% for opt in required_opts %}
         {% if not opt.skip %}
-        <div class="form-group row">
           {% if opt.fieldtype == 'text' %}
-          <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-          <div class="col-sm-10">
-              <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
+          <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+            <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+            <div class="col-sm-10">
+                <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
+            </div>
           </div>
           {% elif opt.fieldtype == 'textarea' %}
-          <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-          <div class="col-sm-10">
-            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
-          </div>
-          {% endif %}
-        </div> 
+            {% if opt.name == 'processes' %}
+            <input type="hidden" id="processes" name="processes" value="">
+            <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="processName0">processes</label>
+                <div class="col-sm-4">
+                    <input type="text" class="process-field" id="processTitle0" name="processTitle" placeholder="Process title">
+                </div>
+                <div class="col-sm-4">
+                    <input type="text" class="process-field" id="processPath0" name="processPath" placeholder="Path">
+                </div>    
+                <div class="col-sm-2" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-process" title="Add another process"><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-process hidden" title="Remove process"><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% else %}
+            <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                    <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                </div>
+            </div>
+            {% endif %}
+        {% endif %}
         {% endif %}
         {% endfor %}
     </div>
@@ -496,34 +661,49 @@
       {% for opt in optional_opts %}
       {% if not opt.skip %}
         {% if opt.fieldtype == 'text' %}
-        <div class="form-group row">
+        <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
           <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
           <div class="col-sm-10">
               <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
           </div>
         </div>
         {% elif opt.fieldtype == 'textarea' %}
-        {% if opt.name == 'notes' %}
+        {% if opt.name == 'description' %}
+        <div id="descriptionRow" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+            <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+            <div class="col-sm-10">
+                <textarea name="description" id="description" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+            </div>
+        </div>    
+        {% elif opt.name == 'notes' %}
         <input type="hidden" id="notes" name="notes" value="">
-        <div class="form-group row">
+        <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
             <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
             <div class="col-sm-9">
                 <textarea name="{{ opt.name|safe }}Field" id="note0" class="form-control note-field" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
             </div>
             <div class="col-sm-1" style="padding: 15px 0px;">
-                <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
-                <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-editorial add add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-editorial remove remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
             </div>
-        </div>   
-        {% elif opt.name == 'accessed' or opt.name == 'updated' or opt.name == 'created' %}
-                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
-                    <div class="form-group row">
-                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_processeddata">{{ opt.name|safe }}</label>
-                        <div class="col-sm-10" id="{{ opt.name|safe }}_processeddata_dateformat"></div>
-                    </div>           
+        </div>
+        {# elif opt.name == 'accessed' or opt.name == 'updated' or opt.name == 'created' #}
+        <div id="updated0" class="form-group row updated-row input-group daterange updated0">
+            <label class="col-sm-2 col-form-label" for="updated-start0">updated</label>
+            <div class="col-sm-4">
+                <input data-parsley-dateformat="date" type="text" name="updated-start0" id="updated-start0" class="form-control datepicker" placeholder="Start Date">
+            </div>    
+            <div class="col-sm-4">
+                <input data-parsley-dateformat="date" type="text" name="updated-end0" id="updated-end0" class="form-control datepicker" placeholder="End Date">
+            </div>
+            <div class="col-sm-2" style="padding: 5px 0px;">
+                <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="updated" title="Add another date"><i class="fa fa-plus-circle"></i></button>
+                <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="updated" data-count="updated0" title="Remove date"><i class="fa fa-minus-circle"></i></button>
+            </div>
+        </div>
         {% else %}
         <!-- Generic Textarea -->
-        <div class="form-group row">
+        <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
             <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
             <div class="col-sm-10">
                 <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
@@ -540,14 +720,14 @@
 
 <!-- Branch Form Template -->
 <script type="text/html" id="branch-template">
-  <div class="tab-content" id="collectionsForm">
+    <div class="tab-content" id="collectionsForm">
     {% set template = templates['branch-template'] %}
     {% set required_opts = template[0]['required'] %}
     {% set optional_opts = template[1]['optional'] %}
       <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
                 {% for opt in required_opts %}
                 {% if not opt.skip %}
-                <div class="form-group row">
+                <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                   {% if opt.fieldtype == 'text' %}
                   <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                   <div class="col-sm-10">
@@ -567,34 +747,49 @@
               {% for opt in optional_opts %}
               {% if not opt.skip %}
                 {% if opt.fieldtype == 'text' %}
-                <div class="form-group row">
+                <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                   <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                   <div class="col-sm-10">
                       <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
                   </div>
                 </div>
                 {% elif opt.fieldtype == 'textarea' %}
-                {% if opt.name == 'notes' %}
+                {% if opt.name == 'description' %}
+                <div id="descriptionRow" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                    <div class="col-sm-10">
+                        <textarea name="description" id="description" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                    </div>
+                </div>    
+                {% elif opt.name == 'notes' %}
                 <input type="hidden" id="notes" name="notes" value="">
-                <div class="form-group row">
+                <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                     <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                     <div class="col-sm-9">
                         <textarea name="{{ opt.name|safe }}Field" id="note0" class="form-control note-field" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
                     </div>
                     <div class="col-sm-1" style="padding: 15px 0px;">
-                        <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
-                        <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-editorial add add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-editorial remove remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
                     </div>
-                </div> 
+                </div>
                 {% elif opt.name == 'accessed' or opt.name == 'updated' or opt.name == 'created' %}
-                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
-                    <div class="form-group row">
-                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_branch">{{ opt.name|safe }}</label>
-                        <div class="col-sm-10" id="{{ opt.name|safe }}_branch_dateformat"></div>
-                    </div>             
+                <div id="updated0" class="form-group row updated-row input-group daterange updated0">
+                    <label class="col-sm-2 col-form-label" for="updated-start0">updated</label>
+                    <div class="col-sm-4">
+                        <input data-parsley-dateformat="date" type="text" name="updated-start0" id="updated-start0" class="form-control datepicker" placeholder="Start Date">
+                    </div>    
+                    <div class="col-sm-4">
+                        <input data-parsley-dateformat="date" type="text" name="updated-end0" id="updated-end0" class="form-control datepicker" placeholder="End Date">
+                    </div>
+                    <div class="col-sm-2" style="padding: 5px 0px;">
+                        <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="updated" title="Add another date"><i class="fa fa-plus-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="updated" data-count="updated0" title="Remove date"><i class="fa fa-minus-circle"></i></button>
+                    </div>
+                </div>      
                 {% else %}
                 <!-- Generic Textarea -->
-                <div class="form-group row">
+                <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                     <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                     <div class="col-sm-10">
                         <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
@@ -611,14 +806,14 @@
 
 <!-- Generic Form Template -->
 <script type="text/html" id="generic-template">
-  <div class="tab-content" id="collectionsForm">
+    <div class="tab-content" id="collectionsForm">
     {% set template = templates['branch-template'] %}
     {% set required_opts = template[0]['required'] %}
     {% set optional_opts = template[1]['optional'] %}
       <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
         {% for opt in required_opts %}
         {% if not opt.skip %}
-        <div class="form-group row">
+        <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
             <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
             <div class="col-sm-10">
                 {% if opt.fieldtype == 'text' %}
@@ -635,34 +830,50 @@
         {% for opt in optional_opts %}
         {% if not opt.skip %}
                 {% if opt.fieldtype == 'text' %}
-                <div class="form-group row">
+                <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                   <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                   <div class="col-sm-10">
                   <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}" {% if opt.value %}value="{{ opt.value|safe }}"{% endif %} class="form-control" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>
                   </div>
                 </div>
                 {% elif opt.fieldtype == 'textarea' %}
-                    {% if opt.name == 'notes' %}
+                {% if opt.name == 'description' %}
+                <div id="descriptionRow" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                    <div class="col-sm-10">
+                        <textarea name="description" id="description" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                    </div>
+                </div>    
+
+                    {% elif opt.name == 'notes' %}
                     <input type="hidden" id="notes" name="notes" value="">
-                    <div class="form-group row">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                         <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                         <div class="col-sm-9">
                             <textarea name="{{ opt.name|safe }}Field" id="note0" class="form-control note-field" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
                         </div>
                         <div class="col-sm-1" style="padding: 15px 0px;">
-                            <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
-                            <button type="button" class="btn btn-sm btn-outline-editorial remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial add add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-note hidden" title="Remove note"><i class="fa fa-minus-circle"></i></button>
                         </div>
                     </div> 
                     {% elif opt.name == 'accessed' or opt.name == 'updated' or opt.name == 'created' %}
-                    <input type="hidden" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" value="">
-                    <div class="form-group row">
-                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}_generic">{{ opt.name|safe }}</label>
-                        <div class="col-sm-10" id="{{ opt.name|safe }}_generic_dateformat"></div>
-                    </div>             
+                    <div id="updated0" class="form-group row updated-row input-group daterange updated0">
+                        <label class="col-sm-2 col-form-label" for="updated-start0">updated</label>
+                        <div class="col-sm-4">
+                            <input type="text" name="updated-start0" id="updated-start0" class="form-control datepicker" placeholder="Start Date">
+                        </div>    
+                        <div class="col-sm-4">
+                            <input type="text" name="updated-end0" id="updated-end0" class="form-control datepicker" placeholder="End Date">
+                        </div>
+                        <div class="col-sm-2" style="padding: 5px 0px;">
+                            <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="updated" title="Add another date"><i class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="updated" data-count="updated0" title="Remove date"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                    </div>               
                     {% else %}
                     <!-- Generic Textarea -->
-                    <div class="form-group row">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}" data-id="{{ opt.name|safe + loop.index0|string or '' }}">
                         <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
                         <div class="col-sm-10">
                             <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} {{ 'readonly' if opt.readonly }} {{ 'disabled' if opt.disabled }}>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
@@ -679,7 +890,7 @@
 
 <!-- contributors Template -->
 <script type="text/html" id="contributors-template">
-    <div class="form-group row">
+    <div id="contributors0" class="form-group row" data-fieldtype="contributors" data-id="contributors0">
         <label class="col-sm-2 col-form-label" for="contributorTitle">&nbsp;</label>
         <div class="col-sm-3">
             <input type="text" class="contributor-field contributorTitle" name="contributorTitle" placeholder="Contributor Title">
@@ -691,8 +902,8 @@
             <input type="text" class="contributor-field contributorOrg" name="contributorOrg" placeholder="Organization">
         </div>    
         <div class="col-sm-1" style="padding: 5px 0px;">
-            <button type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
-            <button type="button" class="btn btn-sm btn-outline-editorial remove-contributor" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-editorial add add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-contributor" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
         </div>
         <label class="col-sm-2 col-form-label" for="contributorTitle">&nbsp;</label>
         <div class="col-sm-3">
@@ -705,38 +916,54 @@
             <input type="text" class="contributor-field contributorRole" name="contributorRole" placeholder="Role">
         </div>    
         <div class="col-sm-1" style="padding: 5px 0px;">
-            <button hidden type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
-            <button hidden type="button" class="btn btn-sm btn-outline-editorial remove-contributor" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+            <button hidden type="button" class="btn btn-sm btn-outline-editorial add add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
+            <button hidden type="button" class="btn btn-sm btn-outline-editorial remove remove-contributor" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
         </div>
     </div>            
-</script>     
+</script>
 
 <!-- sources Template -->
 <script type="text/html" id="sources-template">
-    <div class="form-group row">
+    <div id="" class="form-group row" data-fieldtype="sources" data-id="sources }}">
         <label class="col-sm-2 col-form-label" for="sourceTitle">&nbsp;</label>
         <div class="col-sm-3">
             <input type="text" class="source-field sourceTitle" name="sourceTitle" placeholder="Title">
         </div>    
         <div class="col-sm-3">
-            <input type="text" class="source-field sourceEmail" name="sourceEmail" required="" placeholder="Email">
-        </div>
-        <div class="col-sm-3">
             <input type="text" class="source-field sourcePath" name="sourcePath" required="" placeholder="Path">
         </div>
+        <div class="col-sm-3">
+            <input type="text" class="source-field sourceEmail" name="sourceEmail" required="" placeholder="Email">
+        </div>
         <div class="col-sm-1" style="padding: 5px 0px;">
-            <button type="button" class="btn btn-sm btn-outline-editorial add-source" title="Add another source"><i class="fa fa-plus-circle"></i></button>
-            <button type="button" class="btn btn-sm btn-outline-editorial remove-source" title="Remove source"><i class="fa fa-minus-circle"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-editorial add add-source" title="Add another source"><i class="fa fa-plus-circle"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-source" title="Remove source"><i class="fa fa-minus-circle"></i></button>
+        </div>
+    </div>            
+</script>
+<!-- processes Template -->
+<script type="text/html" id="processes-template">
+    <div id="" class="form-group row" data-fieldtype="processes" data-id="processes">
+        <label class="col-sm-2 col-form-label" for="processName">&nbsp;</label>
+        <div class="col-sm-4">
+            <input type="text" class="process-field processTitle" name="processTitle" required="" placeholder="Process title">
+        </div>
+        <div class="col-sm-4">
+            <input type="text" class="process-field processPath" name="processPath" placeholder="Path">
+        </div>    
+        <div class="col-sm-2" style="padding: 5px 0px;">
+            <button type="button" class="btn btn-sm btn-outline-editorial add add-process" title="Add another process"><i class="fa fa-plus-circle"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-process" title="Remove process"><i class="fa fa-minus-circle"></i></button>
         </div>
     </div>            
 </script>
 
 <!-- licenses Template -->
 <script type="text/html" id="licenses-template">
-    <div class="form-group row">
+    <div id="" class="form-group row" data-fieldtype="licenses" data-id="licenses">
         <label class="col-sm-2 col-form-label" for="licenseName">&nbsp;</label>
         <div class="col-sm-3">
-            <input type="text" class="license-field licenseName" name="licenseName" required="" placeholder="Author name">
+            <input type="text" class="license-field licenseName" name="licenseName" required="" placeholder="License name">
         </div>
         <div class="col-sm-3">
             <input type="text" class="license-field licensePath" name="licensePath" required="" placeholder="Path">
@@ -745,22 +972,49 @@
             <input type="text" class="license-field licenseTitle" name="licenseTitle" placeholder="Title">
         </div>    
         <div class="col-sm-1" style="padding: 5px 0px;">
-            <button type="button" class="btn btn-sm btn-outline-editorial add-license" title="Add another license"><i class="fa fa-plus-circle"></i></button>
-            <button type="button" class="btn btn-sm btn-outline-editorial remove-license" title="Remove license"><i class="fa fa-minus-circle"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-editorial add add-license" title="Add another license"><i class="fa fa-plus-circle"></i></button>
+            <button type="button" class="btn btn-sm btn-outline-editorial remove remove-license" title="Remove license"><i class="fa fa-minus-circle"></i></button>
         </div>
     </div>            
 </script>
+
+<!-- description Template -->
+<script type="text/html" id="description-template">
+    <div id="" class="form-group row" data-fieldtype="description" data-id="description">
+    <label class="col-sm-2 col-form-label" for="description">&nbsp;</label>
+    <div class="col-sm-10">
+        <textarea name="descriptionField" id="description" class="form-control"></textarea>
+    </div>
+</div>    
+
 <!-- notes Template -->
 <script type="text/html" id="notes-template">
-<div class="form-group row">
+<div id="" class="form-group row" data-fieldtype="notes" data-id="notes">
     <label class="col-sm-2 col-form-label">&nbsp;</label>
     <div class="col-sm-9">
-        <textarea name="notesField" id="note" class="form-control note-field"></textarea>
+        <textarea name="notesField" id="note" class="note-field form-control" placeholder="Click the (+) button to add more notes."></textarea>
     </div>
     <div class="col-sm-1" style="padding: 15px 0px;">
-        <button type="button" class="btn btn-sm btn-outline-editorial add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
-        <button type="button" class="btn btn-sm btn-outline-editorial remove-note" title="Remove note"><i class="fa fa-minus-circle"></i></button>
+        <button type="button" class="btn btn-sm btn-outline-editorial add add-note" title="Add another note"><i class="fa fa-plus-circle"></i></button>
+        <button type="button" class="btn btn-sm btn-outline-editorial remove remove-note" title="Remove note"><i class="fa fa-minus-circle"></i></button>
     </div>
 </div>            
 </script>
+
+<!-- Date Template -->
+<div class="form-group row input-group date-template" style="display: none;">
+    <label class="col-sm-2 col-form-label"></label>
+    <div class="col-sm-4">
+        <input data-parsley-dateformat="date" type="text" class="form-control datepicker" placeholder="Start Date">
+    </div>
+    <div class="col-sm-4">
+        <input data-parsley-dateformat="date" type="text" class="form-control datepicker" placeholder="End Date">
+    </div>
+    <div class="col-sm-2" style="padding: 5px 0px;">
+        <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="created" title="Add another date"><i
+                class="fa fa-plus-circle"></i></button>
+        <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="created" title="Remove date"><i
+                class="fa fa-minus-circle"></i></button>
+    </div>
+</div>
 {% endblock main %}

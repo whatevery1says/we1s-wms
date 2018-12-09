@@ -111,6 +111,14 @@ def not_found_error(error):
     """Load 404 Error page."""
     return render_template('errors/404.html'), 404
 
+@app.template_filter('is_list')
+def is_list(value):
+    """
+    Jinja filter to to detect a list.
+
+    Usage: `{% if var|is_list %}`
+    """
+    return isinstance(value, list)
 
 # ----------------------------------------------------------------------------#
 # Launch.

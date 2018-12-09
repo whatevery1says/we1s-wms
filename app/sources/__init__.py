@@ -48,15 +48,7 @@ country_list = ['AF', 'AX', 'AL', 'DZ', 'AS', 'AD', 'AO', 'AI', 'AQ', 'AG', 'AR'
 @sources.route('/')
 def index():
     """Create sources index page."""
-    scripts = [
-        # 'js/jQuery-File-Upload-9.20.0/js/vendor/jquery.ui.widget.js',
-        # 'js/jQuery-File-Upload-9.20.0/js/jquery.iframe-transport.js',
-        # 'js/jQuery-File-Upload-9.20.0/js/jquery.fileupload.js',
-        'js/corpus/dropzone.js',
-        'js/sources/sources.js',
-        'js/sources/upload.js',
-        'js/dateformat.js',
-        'js/jquery-ui.js']
+    scripts = ['js/parsley.min.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/corpus/dropzone.js', 'js/sources/sources.js', 'js/sources/upload.js']
     styles = []
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}]
     return render_template('sources/index.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
@@ -65,83 +57,41 @@ def index():
 @sources.route('/create', methods=['GET', 'POST'])
 def create():
     """Create Sources manifest page."""
-    scripts = ['js/parsley.min.js', 'js/sources/sources.js', 'js/dateformat.js', 'js/jquery-ui.js', 'js/moment.min.js']
+    scripts = ['js/parsley.min.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/sources/sources.js']
+    styles = ['jquery-ui.css']
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/create', 'label': 'Create Publication'}]
     with open("app/templates/sources/template_config.yml", 'r') as stream:
         templates = yaml.load(stream)
-    return render_template('sources/create.html', lang_list=lang_list, country_list=country_list, scripts=scripts, breadcrumbs=breadcrumbs, templates=templates)
+    return render_template('sources/create.html', lang_list=lang_list, country_list=country_list, scripts=scripts, styles=styles, breadcrumbs=breadcrumbs, templates=templates)
 
 
 @sources.route('/create-manifest', methods=['GET', 'POST'])
 def create_manifest():
     """Create Sources manifests ajax route."""
-    properties = {'namespace': 'we1sv2.0', 'path': 'Sources'}
     errors = []
-    for key, value in request.json.items():
-        if key == 'date':
-            ls = value.splitlines()
-            dates = [x.strip() for x in ls]
-            new_dates, error_list = methods.check_date_format(dates)
-            errors = errors + error_list
-            if new_dates != []:
-                properties[key] = new_dates
-        elif key == 'notes':
-            value = json.loads(value)
-            notes = []
-            for item in value:
-                for k, v in item.items():
-                    notes.append(v)
-            properties[key] = notes
-        elif key == 'authors':
-            value = json.loads(value)
-            # Convert evil properties from hidden fields to a list
-            good_dict = {}
-            good_list = []
-            evil_props = {k for d in value for k in d.keys()}
-            # Build a dict for each ID
-            for item in evil_props:
-                item = re.sub('[a-zA-Z]+', '', item)
-                good_dict[item] = {}
-            # Add the values to the good dict by ID
-            for item in value:
-                k = item.keys()
-                m_property = list(k)[0]
-                m_id = re.sub('[a-zA-Z]+', '', m_property)
-                val = item[m_property]
-                if m_property.startswith('authorName'):
-                    m_property = 'name'
-                if m_property.startswith('authorGroup'):
-                    m_property = 'group'
-                if m_property.startswith('authorOrg'):
-                    m_property = 'organization'
-                good_dict[m_id][m_property] = val
-            # Convert any author names to strings and add the good_dict values to the list
-            for k, v in good_dict.items():
-                if len(good_dict[k]) == 1:
-                    v = good_dict[k]['name']
-                good_list.append(v)
-            properties[key] = good_list
-        elif key == 'keywords':
-            properties[key] = [x.strip() for x in value.split(',')]
-        elif isinstance(value, list):
-            ls = value.splitlines()
-            ls = [x.strip() for x in ls]
-            if ls != []:
-                properties[key] = ls
-        elif value != '' and value != ['']:
-            properties[key] = value
-    if methods.validate_manifest(properties) is True:
-        validation_errors = methods.create_record(properties)
-        errors = errors + validation_errors
+    data = request.json
+    # Ensure that the metapath is correct
+    if not data['metapath'].startswith('Sources'):
+        data['metapath'] = 'Sources,' + data['metapath']
+    data['metapath'] = data['metapath'].strip(',')
+    # Remove empty values
+    manifest = {}
+    for key, value in data.items():
+        if value != '':
+            manifest[key] = value
+
+    # Validate the resulting manifest
+    print(json.dumps(manifest, indent=2, sort_keys=False))
+    if methods.validate_manifest(manifest) is True:
+        database_errors = methods.create_record(manifest)
+        errors = errors + database_errors
     else:
         msg = '''A valid manifest could not be created with the
         data supplied. Please check your entries against the
         <a href="/schema" target="_blank">manifest schema</a>.'''
         errors.append(msg)
 
-    # Need to insert into the database
-    manifest = json.dumps(properties, indent=2, sort_keys=False, default=JSON_UTIL)
-
+    manifest = json.dumps(manifest, indent=2, sort_keys=False, default=JSON_UTIL)
     if errors:
         error_str = '<ul>'
         for item in errors:
@@ -165,32 +115,62 @@ def delete_manifest():
     return json.dumps({'errors': errors})
 
 
+# Helpers for /display
+def get_default_property(template, prop):
+    """Return the first column key in the template for the specified property."""
+    for tab in [template['source-template'][0]['required'], template['source-template'][1]['optional']]:
+        for item in tab:
+            if item['name'] == prop:
+                return item['cols'][0]
+
+def reshape_list(key, value, template):
+    """Reshape a list for the UI.
+
+    Returns either a csv string or the name of the first
+    child for the specified property.
+    """
+    if len(value) > 1 and all(isinstance(item, str) for item in value):
+        new_value = ', '.join(value)
+    else:
+        default = get_default_property(template, key)
+        new_value = []
+        for item in value:
+            if isinstance(item, str):
+                new_value.append({default: item})
+            else:
+                new_value.append(item)
+    return new_value
+
 @sources.route('/display/<name>')
 def display(name):
     """Display Sources page."""
-    scripts = ['js/parsley.min.js', 'js/sources/sources.js']
+    scripts = ['js/parsley.min.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/sources/sources.js']
     with open("app/templates/sources/template_config.yml", 'r') as stream:
         templates = yaml.load(stream)
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/display', 'label': 'Display Publication'}]
     errors = []
     manifest = {}
     try:
-        result = sources_db.find_one({'name': name})
-        assert result is not None
-        for key, value in result.items():
+        manifest = sources_db.find_one({'name': name})
+        with open("app/templates/sources/template_config.yml", 'r') as stream:
+            templates = yaml.load(stream)
+        # Reshape Lists
+        for key, value in manifest.items():
+            # The property is a list
             if isinstance(value, list):
-                manifest[key] = []
-                for element in value:
-                    if isinstance(element, dict):
-                        list_ = list(methods.NestedDictValues(element))
-                        s = ', '.join(list_)
-                        manifest[key].append(s)
-                    else:
-                        manifest[key].append(element)
-                manifest[key] = '\n'.join(manifest[key])
-            else:
-                manifest[key] = str(value)
+                manifest[key] = reshape_list(key, value, templates)
+
+        # Make sure the manifest has all template properties
+        templates = templates['source-template']
+        opts = [templates[0]['required'], templates[1]['optional']]
+        for opt in opts:
+            for prop in opt:
+                if prop['name'] not in manifest and prop['fieldtype'] == 'text':
+                    manifest[prop['name']] = ''
+                if prop['name'] not in manifest and prop['fieldtype'] == 'textarea':
+                    manifest[prop['name']] = ['']
     except:
+        templates = []
         errors.append('Unknown Error: The manifest does not exist or could not be loaded.')
     return render_template('sources/display.html', lang_list=lang_list,
                            country_list=country_list, scripts=scripts,
@@ -214,27 +194,14 @@ def download_export(filename):
     return response
 
 
-# @sources.route('/search', methods=['GET', 'POST'])
-# def search():
-#     """Search Sources manifests page."""
-#     scripts = ['js/parsley.min.js', 'js/jquery.twbsPagination.min.js', 'js/sources/sources.js']
-#     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/search', 'label': 'Search Sources'}]
-#     if request.method == 'GET':
-#         return render_template('sources/search.html', scripts=scripts,
-#             breadcrumbs=breadcrumbs)
-#     if request.method == 'POST':
-#         result, num_pages, errors = methods.search_sources(request.json)
-#         return json.dumps({'response': result, 'num_pages': num_pages, 'errors': errors}, default=JSON_UTIL)
-
-
 @sources.route('/search', methods=['GET', 'POST'])
-def search2():
+def search():
     """Search Sources page."""
-    scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/sources/sources.js', 'js/jquery-sortable-min.js', 'js/sources/search.js', 'js/dateformat.js', 'js/jquery-ui.js']
+    scripts = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/sources/sources.js', 'js/jquery-sortable-min.js', 'js/sources/search.js']
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/search', 'label': 'Search Sources'}]
     if request.method == 'GET':
-        return render_template('sources/search2.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
+        return render_template('sources/search.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
     if request.method == 'POST':
         query = request.json['query']
         page = int(request.json['page'])
@@ -312,34 +279,19 @@ def export_search():
 @sources.route('/update-manifest', methods=['GET', 'POST'])
 def update_manifest():
     """Ajax route for updating manifests."""
-    properties = {'namespace': 'we1sv2.0', 'path': 'Sources'}
     errors = []
-    for key, value in request.json.items():
-        if key == 'date':
-            ls = value.splitlines()
-            dates = [x.strip() for x in ls]
-            new_dates, error_list = methods.check_date_format(dates)
-            errors = errors + error_list
-            if new_dates != []:
-                properties[key] = new_dates
-        elif isinstance(value, list):
-            ls = value.splitlines()
-            ls = [x.strip() for x in ls]
-            if ls != []:
-                properties[key] = ls
-        elif value != '' and value != ['']:
-            properties[key] = value
-    if methods.validate_manifest(properties) is True:
-        validation_errors = methods.update_record(properties)
-        errors = errors + validation_errors
-    else:
-        msg = '''A valid manifest could not be created with the
-        data supplied. Please check your entries against the
-        <a href="/schema" target="_blank">manifest schema</a>.'''
-        errors.append(msg)
+    data = request.json
+    # Remove empty values
+    manifest = {}
+    for key, value in data.items():
+        if value != '':
+            manifest[key] = value
+    # Validate the resulting manifest and update the record
+    database_errors = methods.update_record(manifest)
+    errors = errors + database_errors
 
-    # Need to insert into the database
-    manifest = json.dumps(properties, indent=2, sort_keys=False)
+    manifest = json.dumps(manifest, indent=2, sort_keys=False)
+    print(manifest)
     if errors:
         error_str = '<ul>'
         for item in errors:

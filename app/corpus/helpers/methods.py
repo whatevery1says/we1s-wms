@@ -352,18 +352,17 @@ def search_corpus(query, limit, paginated, page, show_properties, sorting):
         return [], 1, errors
 
 
-def update_record(manifest):
+def update_record(manifest, nodetype):
     """Update a manifest record in the database.
 
     Takes a manifest dict and returns a list of errors if any.
     """
     errors = []
-    # Need to set the nodetype
-    nodetype = 'collection'
     if validate_manifest(manifest, nodetype) is True:
         name = manifest.pop('name')
         metapath = manifest['metapath']
-        _id = manifest.pop('_id')
+        if '_id' in manifest:
+            _id = manifest.pop('_id')
         try:
             corpus_db.update_one({'name': name, 'metapath': metapath}, {'$set': manifest}, upsert=False)
         except pymongo.errors.OperationFailure as e:
@@ -372,7 +371,10 @@ def update_record(manifest):
             msg = 'Unknown Error: The record for <code>name</code> <strong>' + name + '</strong> could not be updated.'
             errors.append(msg)
     else:
-        errors.append('Unknown Error: Could not produce a valid manifest.')
+        msg = '''A valid manifest could not be created with the
+        data supplied. Please check your entries against the
+        <a href="/schema" target="_blank">manifest schema</a>.'''
+        errors.append(msg)
     return errors
 
 

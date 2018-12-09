@@ -1,0 +1,78 @@
+
+<html>
+<head>
+<meta charset="utf-8">
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css" integrity="sha384-MCw98/SFnGE8fJT3GXwEOngsV7Zt27NXFoaoApmYm81iuXoPkFOJwJ8ERdknLPMO" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/css/bootstrap-datepicker3.standalone.css">
+<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.2.0/css/all.css" integrity="sha384-hWVjflwFxL6sNzntih27bfxkr27PmbbK/iSvJ+a4+0owXq79v+lsFkW54bOGbiDQ" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js" integrity="sha384-ChfqqxuZUCnJSK3+MXmPNIyE6ZbWh2IMqE241rYiqJxyMiZ6OW/JmZQ5stwEULTy" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.22.2/moment.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datepicker/1.8.0/js/bootstrap-datepicker.js"></script>
+</head>
+<body>
+    <div id="wrap" class="row container" style="width:75%; margin: 50px auto;">
+        <div class="form-group row">
+            <div class="col-md-3"><label class="col-form-label">created</label></div>
+            <div class="col-md-9">
+                <div class="input-group input-daterange created" id="created0">
+                    <input type="text" id="createdStart0" class="form-control createdStart" value="2012-04-05">
+                    <div class="input-group-addon" style="padding:10px;">to</div>
+                    <input type="text" id="createdEnd0" class="form-control createdEnd" value="2012-04-19">
+                </div>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-md-3"></div>
+            <div class="col-md-3"><button class="btn btn-primary" id="get-dates">Get Dates</button></div>
+            <div class="col-md-3"><button class="btn btn-primary" id="add-row">Add Row</button></div>
+        </div>    
+    </div>
+<script>
+const options = {
+    format: 'yyyy-mm-dd',
+    container: '.created', // Problem here
+    immediateUpdates: true,
+    templates: {
+        leftArrow: '<i class="fa fa-arrow-left"></i>',
+        rightArrow: '<i class="fa fa-arrow-right"></i>'
+    }
+}
+const pickers = ['#createdStart0', '#createdEnd0']
+for (picker of pickers) {
+    $(picker).datepicker(options)
+}
+
+$(document).on('click', '#get-dates', function () {
+    let dates = []
+    $('.createdStart').each(function() {
+        let createdStart = $(this).datepicker('getDate')
+        let createdEnd = $(this).siblings('.createdEnd').datepicker('getDate')
+        createdStart = moment(createdStart).format('YYYY-MM-DD')
+        createdEnd = moment(createdEnd).format('YYYY-MM-DD')
+        console.log(createdStart)
+        console.log(createdEnd)
+        let created = {'created': {'start': createdStart, 'end': createdEnd}}
+        dates.push(created)
+    })
+    dates = JSON.stringify(dates, null, '  ')
+    alert(dates)
+})
+$(document).on('click', '#add-row', function () {
+    let counter = 1
+    let html = '<div class="form-group row"><div class="col-md-3"><label class="col-form-label">'
+    html += 'updated'
+    html += '</label></div><div class="col-md-9">'
+    html += '<div class="input-group input-daterange updated' + counter + '">'
+    html += '<input type="text" id="updated-start' + counter + '" class="form-control updated-start" value="2012-04-05">'
+    html += '<div class="input-group-addon" style="padding:10px;">to</div>'
+    html += '<input type="text" id="updated-end' + counter + '" class="form-control updated-end" value="2012-04-19">'
+    html += '</div></div></div></div>'
+    $('#wrap').append(html)
+    $('#updated-start' + counter).datepicker(options)
+    $('#updated-end' + counter).datepicker(options)
+})
+</script>        
+</body>
+</html>
