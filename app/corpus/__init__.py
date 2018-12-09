@@ -52,6 +52,7 @@ TRASH_DIR = os.path.join(instance_path, 'trash')
 # Controllers.
 # ----------------------------------------------------------------------------#
 
+
 @corpus.route('/')
 def index():
     """Corpus index page."""
@@ -121,12 +122,14 @@ def create_manifest():
     response = {'manifest': manifest, 'errors': error_str}
     return json.dumps(response)
 
+
 def get_default_property(template, prop):
     """Return the first column key in the template for the specified property."""
     for tab in [template['collection-template'][0]['required'], template['collection-template'][1]['optional']]:
         for item in tab:
             if item['name'] == prop:
                 return item['cols'][0]
+
 
 def reshape_list(key, value, template):
     """Reshape a list for the UI.
@@ -145,6 +148,7 @@ def reshape_list(key, value, template):
             else:
                 new_value.append(item)
     return new_value
+
 
 @corpus.route('/display/<name>')
 def display(name):
@@ -187,6 +191,7 @@ def display(name):
                            breadcrumbs=breadcrumbs, manifest=manifest,
                            errors=errors, nodetype=nodetype,
                            template=templates)
+
 
 @corpus.route('/update-manifest', methods=['GET', 'POST'])
 def update_manifest():
@@ -548,7 +553,7 @@ def import_server_data():
     if errors:
         response = json.dumps({'result': 'fail', 'errors': errors})
     else:
-        response json.dumps({'result': 'success', 'errors': []})
+        response = json.dumps({'result': 'success', 'errors': []})
     return response
 
 
