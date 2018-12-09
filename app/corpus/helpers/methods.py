@@ -265,9 +265,10 @@ def delete_collection(name, metapath):
     """
     result = corpus_db.delete_one({'name': name, 'metapath': metapath})
     if result.deleted_count != 0:
-        return 'success'
+        response = 'success'
     else:
-        return 'Unknown error: The document could not be deleted.'
+        response = 'Unknown error: The document could not be deleted.'
+    return response
 
 
 def search_collections(values):
@@ -300,12 +301,13 @@ def search_collections(values):
             pages = list(paginate(result, page_size=page_size))
             num_pages = len(pages)
             page = get_page(pages, int(values['page']))
-            return page, num_pages, errors
+            response = page, num_pages, errors
         else:
-            return result, 1, errors
+            response = result, 1, errors
     else:
         errors.append('The Corpus database is empty.')
-        return [], 1, errors
+        response = [], 1, errors
+    return response
 
 
 def search_corpus(query, limit, paginated, page, show_properties, sorting):
@@ -342,14 +344,15 @@ def search_corpus(query, limit, paginated, page, show_properties, sorting):
                 pages = list(paginate(result, page_size=page_size))
                 num_pages = len(pages)
                 page = get_page(pages, page)
-                return page, num_pages, errors
+                response = page, num_pages, errors
             else:
-                return result, 1, errors
+                response = result, 1, errors
         else:
-            return [], 1, errors
+            response = [], 1, errors
     else:
         errors.append('The Corpus database is empty.')
-        return [], 1, errors
+        response = [], 1, errors
+    return response
 
 
 def update_record(manifest, nodetype):
