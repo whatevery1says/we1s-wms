@@ -130,7 +130,7 @@ def get_default_property(template, prop):
 
 def reshape_list(key, value, template):
     """Reshape a list for the UI.
-   
+
     Returns either a csv string or the name of the first
     child for the specified property.
     """
