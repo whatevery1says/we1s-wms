@@ -69,7 +69,7 @@ def create():
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/create', 'label': 'Create Collection'}]
     with open("app/templates/corpus/template_config.yml", 'r') as stream:
         templates = yaml.load(stream)
-    return render_template('corpus/create.html', scripts=scripts, templates=templates, breadcrumbs=breadcrumbs)
+    return render_template('corpus/create.html', scripts=scripts, styles=styles, templates=templates, breadcrumbs=breadcrumbs)
 
 
 @corpus.route('/create-manifest', methods=['GET', 'POST'])
@@ -546,9 +546,10 @@ def import_server_data():
     else:
         errors.append('The filename could not be found on the server.')
     if errors:
-        return json.dumps({'result': 'fail', 'errors': errors})
+        response = json.dumps({'result': 'fail', 'errors': errors})
     else:
-        return json.dumps({'result': 'success', 'errors': []})
+        response json.dumps({'result': 'success', 'errors': []})
+    return response
 
 
 @corpus.route('/refresh-server-imports', methods=['GET', 'POST'])
@@ -591,9 +592,10 @@ def remove_all_files():
             shutil.move(source, destination)
         # Delete the session import folder
         shutil.rmtree(session['IMPORT_DIR'])
-        return json.dumps({'response': 'success'})
+        response = json.dumps({'response': 'success'})
     else:
-        return json.dumps({'response': 'session is empty'})
+        response = json.dumps({'response': 'session is empty'})
+    return response
 
 
 @corpus.route('/save-upload', methods=['GET', 'POST'])
@@ -679,9 +681,10 @@ def save_upload():
         session['IMPORT_DIR'] = os.path.join(TEMP_DIR, token).replace('\\', '/')
 
         if not errors:
-            return json.dumps({'result': 'success', 'session_token': 'token'})
+            response = json.dumps({'result': 'success', 'session_token': 'token'})
         else:
-            return json.dumps({'errors': errors})
+            response = json.dumps({'errors': errors})
+        return response
 
 
 @corpus.route('/upload/', methods=['GET', 'POST'])
