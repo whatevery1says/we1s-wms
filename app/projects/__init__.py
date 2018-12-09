@@ -357,10 +357,11 @@ def delete_project():
     manifest = request.json['manifest']
     result = projects_db.delete_one({'name': manifest['name']})
     if result.deleted_count == 1:
-        return json.dumps({'result': 'success', 'errors': []})
+        response = json.dumps({'result': 'success', 'errors': []})
     else:
         errors = ['<p>Unknown error: The document could not be deleted.</p>']
-        return json.dumps({'result': 'fail', 'errors': errors})
+        response = json.dumps({'result': 'fail', 'errors': errors})
+    return response
 
 
 @projects.route('/export-project', methods=['GET', 'POST'])
@@ -549,9 +550,10 @@ def launch_jupyter():
     # If the process has accumulated errors on the way, send the
     # error messages to the front end.
     if errors:
-        return json.dumps({'result': 'fail', 'errors': errors})
+        response = json.dumps({'result': 'fail', 'errors': errors})
     else:
-        return json.dumps({'result': 'success', 'errors': []})
+        response = json.dumps({'result': 'success', 'errors': []})
+    return response
 
 
 # ----------------------------------------------------------------------------#
@@ -563,10 +565,10 @@ def generate_key():
     """Generate a UUID to use as a workspace folder key."""
     uid = uuid.uuid4()
     dirlist = [item for item in os.listdir(WORKSPACE_TEMP) if os.path.isdir(os.path.join(WORKSPACE_TEMP, item))]
-    if uid.hex not in dirlist:
-        return uid.hex
-    else:
+    if uid.hex in dirlist:
         generate_key()
+    else:
+        return uid.hex
 
 
 def empty_tempfolder(key):
@@ -597,14 +599,15 @@ def search_projects(query, limit, paginated, page, show_properties, sorting):
                 pages = list(paginate(result, page_size=page_size))
                 num_pages = len(pages)
                 page = get_page(pages, page)
-                return page, num_pages, errors
+                response = page, num_pages, errors
             else:
-                return result, 1, errors
+                response = result, 1, errors
         else:
-            return [], 1, errors
+            response = [], 1, errors
     else:
         errors.append('The Projects database is empty.')
-        return [], 1, errors
+        response = [], 1, errors
+    return response
 
 
 def get_page(pages, page):
@@ -776,9 +779,10 @@ def testformat(s):
         except:
             error = 'Could not parse date "' + s + '" into a valid format.'
     if error == '':
-        return {'text': s, 'format': dateformat}
+        response =  {'text': s, 'format': dateformat}
     else:
-        return {'text': s, 'format': 'unknown', 'error': error}
+        response =  {'text': s, 'format': 'unknown', 'error': error}
+    return response
 
 
 def textarea2datelist(textarea):

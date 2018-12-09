@@ -37,9 +37,10 @@ def make_project_folder(project_dir, workspace_dir):
     if not os.path.isdir(project_dir):
         workspace_path = Path(project_dir) / workspace_dir
         Path(workspace_path).mkdir(parents=True, exist_ok=True)
-        return []
+        response = []
     else:
-        return ['<p>A project with this name already exists on the server.</p>']
+        response = ['<p>A project with this name already exists on the server.</p>']
+    return response
 
 
 def project_exists(name, location, WORKSPACE_PROJECTS):
@@ -51,13 +52,14 @@ def project_exists(name, location, WORKSPACE_PROJECTS):
     if location == 'database':
         result = list(projects_db.find({'name': name}))
         if result:
-            return True
-        return False
+            response = True
+        response = False
     else:
         dirlist = [item for item in os.listdir(WORKSPACE_PROJECTS) if os.path.isdir(os.path.join(WORKSPACE_PROJECTS, item))]
         if name not in dirlist:
-            return True
-        return False
+            response = True
+        response = False
+    return response
 
 
 def fetch_datapackage(manifest, zip_path, project_dir, workspace_projects, workspace_dir):
