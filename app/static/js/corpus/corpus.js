@@ -859,7 +859,7 @@ $(function () {
   /* Toggles the Edit/Update button and field disabled property */
   $('#update').click(function (e) {
     e.preventDefault()
-    if ($('#update').html() === 'Edit') {
+    if ($('#update').attr('title') === 'Edit') {
       $('.form-check-label').removeClass('not-allowed')
       $('form').find('button, input, textarea, select, checkbox').each(function () {
         let fieldId = $(this).attr('id')
@@ -874,7 +874,8 @@ $(function () {
           $(this).addClass('disabled')
         }
       })
-      $('#update').html('Update')
+      $('#update').attr('title', 'Save')
+      $('#update > i').removeClass('fa-pencil').addClass('fa-save')
     } else {
       var name = $('#name').val()
       bootbox.confirm({
