@@ -219,6 +219,7 @@ function searchCorpus (data) {
           totalPages: totalPages
         }))
         $('#results').append(out)
+        $('#hideSearch').removeClass('hidden')
         $('#hideSearch').html('Show Form')
         $('#exportSearchResults').show()
         $('#search-form').hide()
@@ -1069,14 +1070,14 @@ $(function () {
 
   /* Toggles the search form */
   $('#hideSearch').click(function () {
-    if ($('#hideSearch').html() === 'Hide Form') {
+    if ($('#hideSearch').html() === 'Show Results') {
       $('#search-form').hide()
       $('#exportSearchResults').show()
       $('#results').show()
       $('#pagination').show()
       $('#hideSearch').html('Show Form')
     } else {
-      $('#hideSearch').html('Hide Form')
+      $('#hideSearch').html('Show Results')
       $('#exportSearchResults').hide()
       $('#results').hide()
       $('#pagination').hide()

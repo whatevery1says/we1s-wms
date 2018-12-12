@@ -358,7 +358,7 @@ def download_export(filename):
 
 
 @corpus.route('/search1', methods=['GET', 'POST'])
-def search():
+def search1():
     """Page for searching Corpus manifests."""
     scripts = ['js/parsley.min.js', 'js/jquery.twbsPagination.min.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/corpus/corpus.js']
 
@@ -373,7 +373,7 @@ def search():
 
 
 @corpus.route('/search', methods=['GET', 'POST'])
-def search2():
+def search():
     """Experimental Page for searching Corpus manifests."""
     scripts = ['js/parsley.min.js',
                'js/query-builder.standalone.js',
@@ -387,7 +387,7 @@ def search2():
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/search', 'label': 'Search Collections'}]
     if request.method == 'GET':
-        return render_template('corpus/search2.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
+        return render_template('corpus/search.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
     if request.method == 'POST':
         query = request.json['query']
         page = int(request.json['page'])

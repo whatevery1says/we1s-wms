@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block main %}
+{% if errors %}
+{% for error in errors %}
+<p>{{ error|safe }}</p>
+{% endfor %}
+{% else %}
+<br>
+    <div class="row">
+        <div class="col-sm">
+            <header class="major">
+                <h2>Search</h2>
+            </header>
+        </div>
+        <div class="col-sm text-right">
+            <div class="btn-group">
+                <button id="hideSearch" class="btn btn-outline-editorial hidden">Show Results</button>
+                <button type="button" id="exportSearchResults" class="btn btn-lg btn-outline-editorial hidden" title="Export"><i class="fa fa-download"></i></button>
+            </div>
+        </div>
+    </div>
+<form method="POST">
+<div id="search-form">
+    <div class="row">
+        <div class="col-md-6">
+            <label for="query">Query (required)</label>
+            <textarea name="query" id="query" placeholder="Enter property-value pairs (e.g. 'property1': 'value1') to search on separate lines." class="form-control query-box"></textarea>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-2" style="padding-top: 6px;">
+            <input name="regex" class="form-check-input" type="checkbox" id="regex">
+          <label class="form-check-label" for="regex">Use Regex</label>
+        </div>
+        <div class="col-md-10">
+            <span class="limit-results">Number of Results</span>
+            <input name="limit" id="limit" type="number" value="10" class="form-control" style="width: 80px; display: inline !important;">                        
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-6">
+            <label for="properties">Properties to Show</label>
+            <textarea name="properies" id="properties" placeholder="List of properties to show on separate lines." class="form-control query-box"></textarea>
+        </div>
+    </div>
+    <br>
+    <div class="row">
+        <div class="col-md-12">
+            <input type="button" role="button" class="btn btn-sm btn-outline-editorial" value="Search" id="searchCorpus">
+        </div>
+    </div>
+</div>
+<div id="results" style="display:none;"></div>
+<ul id="pagination" class="justify-content-center" style="display:none;"></ul>
+{% endif %}
+{% endblock main %}
