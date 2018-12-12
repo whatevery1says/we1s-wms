@@ -1,4 +1,4 @@
-/* global bootbox, exportSearch, hideProcessing, moment, showProcessing */
+/* global bootbox, exportSearch, hideProcessing, moment, searchSources, showProcessing */
 /* eslint no-undef: "error" */
 //
 // General Helper Functions
@@ -751,79 +751,6 @@ $(document).ready(function () {
     searchSources(data)
   })
 
-  function searchSources (data) {
-    /* Searches the Sources database
-      Input: Values from the search form
-      Returns: An array containing results and errors for display */
-    $.ajax({
-      method: 'POST',
-      url: '/sources/search',
-      data: JSON.stringify(data),
-      contentType: 'application/json;charset=UTF-8',
-      beforeSend: showProcessing()
-    })
-      .done(function (response) {
-        hideProcessing()
-        $('#results').empty()
-        response = JSON.parse(response)
-        if (response['errors'].length !== 0) {
-          var result = response['errors']
-        } else {
-          result = response['response']
-        }
-        // Make the result into a string
-        var out = ''
-        $.each(result, function (i, item) {
-          var link = '/sources/display/' + item['name']
-          out += '<h4><a href="' + link + '">' + item['name'] + '</a></h4><br>'
-          $.each(item, function (key, value) {
-            value = JSON.stringify(value)
-            console.log(value)
-            out += '<code>' + key + '</code>: ' + value + '<br>'
-          })
-          out += '<hr>'
-        })
-        var $pagination = $('#pagination')
-        var defaultOpts = {
-          visiblePages: 5,
-          initiateStartPageClick: false,
-          onPageClick: function (event, page) {
-            var newdata = {
-              'query': $('#query').val(),
-              'regex': $('#regex').is(':checked'),
-              'limit': $('#limit').val(),
-              'properties': $('#properties').val(),
-              'page': page
-            }
-            searchSources(newdata)
-            $('#scroll').click()
-          }
-        }
-        var totalPages = parseInt(response['num_pages'])
-        var currentPage = $pagination.twbsPagination('getCurrentPage')
-        $pagination.twbsPagination('destroy')
-        $pagination.twbsPagination($.extend({}, defaultOpts, {
-          startPage: currentPage,
-          totalPages: totalPages
-        }))
-        $('#results').append(out)
-        $('#hideSearch').html('Show Form')
-        $('#exportSearchResults').show()
-        $('#search-form').hide()
-        $('#results').show()
-        $('#pagination').show()
-      })
-      .fail(function (jqXHR, textStatus, errorThrown) {
-        hideProcessing()
-        bootbox.alert({
-          message: '<p>Sorry, mate! You\'ve got an error!</p>',
-          callback: function () {
-            return 'Error: ' + textStatus + ': ' + errorThrown
-          }
-        })
-      })
-  }
-
   /* Handles the Search Export feature */
   $('#exportSearchResults').click(function (e) {
     e.preventDefault()
@@ -840,14 +767,14 @@ $(document).ready(function () {
 
   /* Toggles the search form */
   $('#hideSearch').click(function () {
-    if ($('#hideSearch').html() === 'Hide Form') {
+    if ($('#hideSearch').html() === 'Show Results') {
       $('#search-form').hide()
       $('#exportSearchResults').show()
       $('#results').show()
       $('#pagination').show()
       $('#hideSearch').html('Show Form')
     } else {
-      $('#hideSearch').html('Hide Form')
+      $('#hideSearch').html('Show Results')
       $('#exportSearchResults').hide()
       $('#results').hide()
       $('#pagination').hide()

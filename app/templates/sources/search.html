@@ -7,6 +7,7 @@
 {% else %}
 {% set fields = ['name', 'metapath', 'namespace', 'title', 'id', '_id', 'description', 'version', 'shortTitle', 'label', 'notes', 'keywords', 'image', 'webpage', 'publisher', 'authors', 'edition', 'contentType', 'country', 'language', 'citation'] %}
 <style type="text/css">
+.hidden { display: none; }
 .query-builder .btn-primary.active, .query-builder .btn-primary.focus,
 .query-builder .btn-primary:active, .query-builder .btn-primary:focus,
 .query-builder .btn-primary:hover {
@@ -44,8 +45,10 @@ td { cursor: move !important;}
             </header>
         </div>
         <div class="col-sm text-right">
-            <button id="hideSearch" class="btn btn-lg btn-outline-editorial">Hide Form</button>
-            <button id="exportSearchResults" class="btn btn-lg btn-outline-editorial" style="display:none;">Export</button>
+            <div class="btn-group">
+                <button id="hideSearch" class="btn btn-outline-editorial hidden">Show Results</button>
+                <button type="button" id="exportSearchResults" class="btn btn-lg btn-outline-editorial hidden" title="Export"><i class="fa fa-download"></i></button>
+            </div>
         </div>
     </div>
 <div id="search-form">

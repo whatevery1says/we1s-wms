@@ -418,6 +418,7 @@ $(document).ready(function () {
             totalPages: totalPages
           }))
           $('#results').append(out)
+          $('#hideSearch').removeClass('hidden')
           $('#hideSearch').html('Show Form')
           $('#exportSearchResults').show()
           $('#search-form').hide()
