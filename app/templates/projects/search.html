@@ -47,8 +47,10 @@ td { cursor: move !important;}
             </header>
         </div>
         <div class="col-sm text-right">
-            <button id="hideSearch" class="btn btn-lg btn-outline-editorial">Hide Form</button>
-            <button id="exportSearchResults" class="btn btn-lg btn-outline-editorial" style="display:none;">Export Results</button>
+            <div class="btn-group">
+                <button id="hideSearch" class="btn btn-outline-editorial hidden">Show Results</button>
+                <button type="button" id="exportSearchResults" class="btn btn-lg btn-outline-editorial hidden" title="Export"><i class="fa fa-download"></i></button>
+            </div>
         </div>
     </div>
 <div id="search-form">

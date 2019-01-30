@@ -24,16 +24,17 @@ project-template:
     fieldtype: textarea
     required: true
     placeholder: List each contributor on a separate line. Use the format 'title, path, email, role, group, organization' (in that order). Only the title property is required.
+    cols: ['title']
   - name: created
     fieldtype: textarea
     required: true
     placeholder: List each date on a separate line. Date ranges should separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS.
+    cols: ['start']
 - optional:
   - name: id
     fieldtype: text
   - name: _id
     fieldtype: text
-    readonly: true
   - name: description
     fieldtype: textarea
   - name: version
@@ -43,11 +44,11 @@ project-template:
   - name: label
     fieldtype: text
   - name: notes
-    placeholder: List each note on a separate line.
+    placeholder: Click the (+) button to add more notes.
     fieldtype: textarea
   - name: keywords
-    fieldtype: textarea
-    placeholder: List each keyword on a separate line.
+    fieldtype: text
+    placeholder: Separate multiple keywords with commas.
   - name: image
     fieldtype: text
   - name: updated
@@ -56,3 +57,5 @@ project-template:
   - name: licenses
     fieldtype: textarea
     placeholder: List each license on a separate line. Use the format 'name, path, title' (in that order). At least one of properties name or path is required.
+  - name: format
+    fieldtype: textarea
