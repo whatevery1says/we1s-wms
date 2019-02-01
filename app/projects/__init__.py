@@ -380,7 +380,7 @@ def delete_datapackage():
     """Delete a project datapackage."""
     try:
         projects_db.update_one({'_id': ObjectId(request.json['_id'])},
-                                {'$unset': {'content': ''}}, upsert=False)
+                               {'$unset': {'content': ''}}, upsert=False)
         response = json.dumps({'result': 'success', 'errors': []})
     except:
         errors = ['<p>Unknown error: The document could not be deleted.</p>']
