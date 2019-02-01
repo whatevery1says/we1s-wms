@@ -80,7 +80,7 @@ class Project():
         """Remove empty form values and form builder parameters."""
         data = {}
         for k, v in manifest.items():
-            if v != '' and not k.startswith('builder_'):
+            if v not in ['', [], ['']] and not k.startswith('builder_'):
                 data[k] = v
         return data
 
@@ -93,18 +93,27 @@ class Project():
 
     def insert(self):
         """Insert a project in the database."""
-        try:
-            # Create the datapackage and add it to the manifest
+        unknown_error_msg = 'An unknown error occurred when trying to insert the project into the database.'
+        self.manifest['created'] = datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
+        if self.query != {}:
+            # Create the datapackage and add it to the manifest with the datetime
             content, errors, key = self.make_datapackage()
             self.manifest['content'] = content
-            # Insert the manifest into the database
-            projects_db.insert_one(self.manifest)
-            empty_tempfolder(key)
-            return {'result': 'success', 'errors': errors}
-        except:
-            msg = """An unknown error occurred when trying to
-            insert the project into the database."""
-            return {'result': 'fail', 'errors': [msg]}
+            try:
+                # Insert the manifest into the database
+                projects_db.insert_one(self.manifest)
+                empty_tempfolder(key)
+                return {'result': 'success', 'manifest': str(self.manifest['_id']), 'errors': errors}
+            except:
+                return {'result': 'fail', 'errors': [unknown_error_msg]}
+        else:
+            self.manifest['content'] = ''
+            try:
+                # Insert the manifest into the database
+                projects_db.insert_one(self.manifest)
+                return {'result': 'success', 'manifest': str(self.manifest['_id']), 'errors': []}
+            except:
+                return {'result': 'fail', 'errors': [unknown_error_msg]}
 
     def update(self):
         """Update an existing project in the database."""
@@ -150,10 +159,7 @@ class Project():
         """
         errors = []
         # Remove empty form values and form builder parameters
-        data = {}
-        for k, v in self.manifest.items():
-            if v != '' and not k.startswith('builder_'):
-                data[k] = v
+        data = self.manifest
 
         # Add the resources property -- we're making a datapackage
         resources = []
@@ -162,7 +168,6 @@ class Project():
         data['resources'] = resources
 
         # Create a unique folder in /workspace/temp and save the datapackage to it
-        # temp_folder = os.path.join('app', current_app.config['TEMP_FOLDER'])
         key = generate_key()
         temp_folder = os.path.join(WORKSPACE_TEMP, key)
         Path(temp_folder).mkdir(parents=True, exist_ok=True)
@@ -233,7 +238,7 @@ def index():
 @projects.route('/create', methods=['GET', 'POST'])
 def create():
     """Create/update project page."""
-    scripts = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery-sortable-min.js', 'js/projects/projects.js', 'js/projects/search.js', 'js/jquery-ui.js', 'js/dateformat.js']
+    scripts = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/projects/projects.js', 'js/projects/search.js']
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/projects', 'label': 'Projects'}, {'link': '/projects/create', 'label': 'Create/Update Project'}]
     with open('app/templates/projects/template_config.yml', 'r') as stream:
@@ -241,28 +246,72 @@ def create():
     return render_template('projects/create.html', scripts=scripts, styles=styles, templates=templates, breadcrumbs=breadcrumbs)
 
 
-@projects.route('/display/<name>', methods=['GET', 'POST'])
-def display(name):
+# Helpers for /display
+def get_default_property(template, prop):
+    """Return the first column key in the template for the specified property."""
+    for tab in [template['project-template'][0]['required'], template['project-template'][1]['optional']]:
+        for item in tab:
+            if item['name'] == prop and item['name'] != 'resources':
+                return item['cols'][0]
+
+
+def reshape_list(key, value, template):
+    """Reshape a list for the UI.
+
+    Returns either a csv string or the name of the first
+    child for the specified property.
+    """
+    if len(value) > 1 and all(isinstance(item, str) for item in value):
+        new_value = ', '.join(value)
+    else:
+        default = get_default_property(template, key)
+        new_value = []
+        for item in value:
+            if isinstance(item, str):
+                new_value.append({default: item})
+            else:
+                new_value.append(item)
+    return new_value
+
+
+@projects.route('/display/<_id>', methods=['GET', 'POST'])
+def display(_id):
     """Display project page."""
-    scripts = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery-sortable-min.js', 'js/projects/projects.js', 'js/projects/search.js']
+    scripts = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/projects/projects.js', 'js/projects/search.js']
+    scripts = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/projects/display-query.js', 'js/projects/projects.js']
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/projects', 'label': 'Projects'}, {'link': '/projects/create', 'label': 'Display Project'}]
     errors = []
-    manifest = {}
     with open('app/templates/projects/template_config.yml', 'r') as stream:
         templates = yaml.load(stream)
-    manifest = projects_db.find_one({'name': name})
+    manifest = projects_db.find_one({'_id': ObjectId(_id)})
     if manifest is not None:
+        # manifest = {'content': ''}
         try:
-            del manifest['content']
-            for key, value in manifest.items():
-                if isinstance(value, list):
-                    textarea = str(value)
-                    textarea = dict2textarea(value)
-                    manifest[key] = textarea
-                else:
-                    manifest[key] = str(value)
+            if 'db-query' not in manifest:
+                manifest['db-query'] = json.dumps({'$and': [{'name': ' '}]})
+            if '_id' in manifest:
+                manifest['_id'] = str(manifest['_id'])
             manifest['metapath'] = 'Projects'
+            # Reshape Lists
+            for key, value in manifest.items():
+                # The property is a list
+                if isinstance(value, list):
+                    manifest[key] = reshape_list(key, value, templates)
+
+            # Make sure the manifest has all template properties
+            # templates = templates['project-template']
+            opts = [templates['project-template'][0]['required'], templates['project-template'][1]['optional']]
+            for opt in opts:
+                for prop in opt:
+                    if prop['name'] not in manifest and prop['fieldtype'] == 'text':
+                        manifest[prop['name']] = ''
+                    if prop['name'] not in manifest and prop['fieldtype'] == 'textarea':
+                        manifest[prop['name']] = ['']
+            if 'content' in manifest and manifest['content'] != '':
+                manifest['content'] = 'datapackage.json'
+            else:
+                manifest['content'] = ''
         except:
             errors.append('Unknown Error: Some items in the manifest could not be processed for display.')
     else:
@@ -275,7 +324,7 @@ def display(name):
 @projects.route('/test-query', methods=['GET', 'POST'])
 def test_query():
     """Test whether the project query returns results from the Corpus database."""
-    query = json.loads(request.json['db-query'])
+    query = request.json
     result = corpus_db.find(query)
     num_results = len(list(result))
     if num_results > 0:
@@ -297,70 +346,59 @@ def save_project():
 
     Returns a dict containing a result (success or fail) and a list of errors.
     """
-    query = request.json['query']
+    # Get manifest, query, and action from request
+    manifest = request.json['manifest']
+    query = json.dumps({})
+    # if 'db-query' in manifest:
+    #     query = manifest.pop(['db-query'])
     action = request.json['action']  # insert or update
-    data = request.json['manifest']
-    manifest = {}
-    # Get rid of empty values
-    for key, value in data.items():
-        if value != '':
-            manifest[key] = value
-    # Convert dates strings to lists
-    if 'created' in manifest.keys():
-        created = flatten_datelist(textarea2datelist(manifest['created']))
-        if isinstance(created, list) and len(created) == 1:
-            created = created[0]
-        manifest['created'] = created
-    if 'updated' in manifest.keys():
-        updated = flatten_datelist(textarea2datelist(manifest['updated']))
-        if isinstance(updated, list) and len(updated) == 1:
-            updated = updated[0]
-        manifest['updated'] = updated
-    # Handle other textarea strings
-    list_props = ['contributors', 'created', 'notes', 'keywords', 'licenses', 'updated']
-    prop_keys = {
-        'contributors': {'main_key': 'title', 'valid_props': ['title', 'email', 'path', 'role', 'group', 'organization']},
-        'licenses': {'main_key': 'name', 'valid_props': ['name', 'path', 'title']},
-        'created': {'main_key': '', 'valid_props': []},
-        'updated': {'main_key': '', 'valid_props': []},
-        'notes': {'main_key': '', 'valid_props': []},
-        'keywords': {'main_key': '', 'valid_props': []}
-    }
-    for item in list_props:
-        if item in manifest and manifest[item] != '':
-            all_lines = textarea2dict(item, manifest[item], prop_keys[item]['main_key'], prop_keys[item]['valid_props'])
-            if all_lines[item] != []:
-                manifest[item] = all_lines[item]
+
     # Instantiate a project object
     project = Project(manifest, query, action)
+
     # Reject an insert where the project name already exists
     if project.exists() and action == 'insert':
-        print('Duplicate project cannot be inserted.')
         msg = 'This project name already exists in the database. Please choose another value for <code>name</code>.'
         response = {'result': 'fail', 'errors': [msg]}
+
     # Update the project
     elif project.exists() and action == 'update':
-        print('Detected an update')
         response = project.update()
         # empty_tempfolder()
+
     # Insert a new project
     else:
         response = project.insert()
         # empty_tempfolder()
+
     # Return a success/fail flag and a list of errors to the browser
     return json.dumps(response)
+
+
+@projects.route('/delete-datapackage', methods=['GET', 'POST'])
+def delete_datapackage():
+    """Delete a project datapackage."""
+    try:
+        projects_db.update_one({'_id': ObjectId(request.json['_id'])},
+                               {'$unset': {'content': ''}}, upsert=False)
+        response = json.dumps({'result': 'success', 'errors': []})
+    except:
+        errors = ['<p>Unknown error: The document could not be deleted.</p>']
+        response = json.dumps({'result': 'fail', 'errors': errors})
+    return response
 
 
 @projects.route('/delete-project', methods=['GET', 'POST'])
 def delete_project():
     """Delete a project."""
     manifest = request.json['manifest']
-    result = projects_db.delete_one({'name': manifest['name']})
+    result = projects_db.delete_one({'_id': ObjectId(manifest['_id'])})
     if result.deleted_count == 1:
-        return json.dumps({'result': 'success', 'errors': []})
+        response = json.dumps({'result': 'success', 'errors': []})
     else:
         errors = ['<p>Unknown error: The document could not be deleted.</p>']
-        return json.dumps({'result': 'fail', 'errors': errors})
+        response = json.dumps({'result': 'fail', 'errors': errors})
+    return response
 
 
 @projects.route('/export-project', methods=['GET', 'POST'])
@@ -404,7 +442,7 @@ def download_export(filepath):
 @projects.route('/search', methods=['GET', 'POST'])
 def search():
     """Experimental Page for searching Projects manifests."""
-    scripts = ['js/query-builder.standalone.js', 'js/moment.min.js', 'js/jquery.twbsPagination.min.js', 'js/projects/projects.js', 'js/jquery-sortable-min.js', 'js/projects/search.js', 'js/dateformat.js', 'js/jquery-ui.js']
+    scripts = ['js/parsley.min.js', 'js/jquery.twbsPagination.min.js', 'js/query-builder.standalone.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/projects/projects.js', 'js/projects/search.js']
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/projects', 'label': 'Projects'}, {'link': '/projects/search', 'label': 'Search Projects'}]
     if request.method == 'GET':
@@ -429,6 +467,7 @@ def search():
         result, num_pages, errors = search_projects(query, limit, paginated, page, show_properties, sorting)
         if result == []:
             errors.append('No records were found matching your search criteria.')
+        # print(result['_id'])
         return json.dumps({'response': result, 'num_pages': num_pages, 'errors': errors}, default=JSON_UTIL)
 
 
@@ -517,6 +556,37 @@ def import_project():
         return json.dumps(response, indent=2, sort_keys=False, default=JSON_UTIL)
 
 
+@projects.route('/launch-notebook', methods=['GET', 'POST'])
+def launch_notebook():
+    """Create a project folder on the server.
+
+    Really simple test to create a project folder and save a file to it.
+    The project is saved to (e.g.)
+    we1s-wms/instance/workspace/topic-modeling/
+    followed by the manifest name + _id
+    """
+    errors = []
+    workflow = request.json['workflow']
+    manifest = request.json['manifest']
+    if '_id' in manifest:
+        project_dirname = manifest['name'] + '_' + manifest['_id']
+    else:
+        project_dirname = manifest['name'] + '_' + '1234'
+    workspace_path = os.path.join(current_app.instance_path, 'workspace')
+    workflow_path = os.path.join(workspace_path, workflow)
+    project_path = os.path.join(workflow_path, project_dirname)
+    print(project_path)
+    try:
+        if not os.path.exists(project_path):
+            os.makedirs(project_path)
+        filename = os.path.join(project_path, 'test.txt')
+        with open(filename, 'w') as f:
+            f.write('test')
+    except:
+        errors.append('Could not make project directory.')
+    return json.dumps({'errors': errors})
+
+
 @projects.route('/launch-jupyter', methods=['GET', 'POST'])
 def launch_jupyter():
     """Create a project folder on the server.
@@ -549,9 +619,10 @@ def launch_jupyter():
     # If the process has accumulated errors on the way, send the
     # error messages to the front end.
     if errors:
-        return json.dumps({'result': 'fail', 'errors': errors})
+        response = json.dumps({'result': 'fail', 'errors': errors})
     else:
-        return json.dumps({'result': 'success', 'errors': []})
+        response = json.dumps({'result': 'success', 'errors': []})
+    return response
 
 
 # ----------------------------------------------------------------------------#
@@ -563,10 +634,10 @@ def generate_key():
     """Generate a UUID to use as a workspace folder key."""
     uid = uuid.uuid4()
     dirlist = [item for item in os.listdir(WORKSPACE_TEMP) if os.path.isdir(os.path.join(WORKSPACE_TEMP, item))]
-    if uid.hex not in dirlist:
-        return uid.hex
-    else:
+    if uid.hex in dirlist:
         generate_key()
+    else:
+        return uid.hex
 
 
 def empty_tempfolder(key):
@@ -597,14 +668,15 @@ def search_projects(query, limit, paginated, page, show_properties, sorting):
                 pages = list(paginate(result, page_size=page_size))
                 num_pages = len(pages)
                 page = get_page(pages, page)
-                return page, num_pages, errors
+                response = page, num_pages, errors
             else:
-                return result, 1, errors
+                response = result, 1, errors
         else:
-            return [], 1, errors
+            response = [], 1, errors
     else:
         errors.append('The Projects database is empty.')
-        return [], 1, errors
+        response = [], 1, errors
+    return response
 
 
 def get_page(pages, page):
@@ -776,9 +848,10 @@ def testformat(s):
         except:
             error = 'Could not parse date "' + s + '" into a valid format.'
     if error == '':
-        return {'text': s, 'format': dateformat}
+        response = {'text': s, 'format': dateformat}
     else:
-        return {'text': s, 'format': 'unknown', 'error': error}
+        response = {'text': s, 'format': 'unknown', 'error': error}
+    return response
 
 
 def textarea2datelist(textarea):

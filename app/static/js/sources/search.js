@@ -1,3 +1,4 @@
+/* global bootbox, moment */
 $(document).ready(function () {
   var schema = [
     /* {
@@ -88,12 +89,12 @@ $(document).ready(function () {
       'type': 'string',
       'size': 30
     },
-    /* {
-    'id': 'metapath',
-    'label': 'metapath',
-    'type': 'string',
-    'size': 30
-}, */
+    {
+      'id': 'metapath',
+      'label': 'metapath',
+      'type': 'string',
+      'size': 30
+    },
     /* {
     'id': 'mediatype',
     'label': 'mediatype',
@@ -107,7 +108,7 @@ $(document).ready(function () {
       'size': 30,
       'validation': {
         'callback': function (value, rule) {
-          if (value != '') {
+          if (value !== '') {
             return true
           } else {
             return ('please enter name')
@@ -122,7 +123,7 @@ $(document).ready(function () {
       'size': 30,
       'validation': {
         'callback': function (value, rule) {
-          if (value != '') {
+          if (value !== '') {
             return true
           } else {
             return ('please enter namespace')
@@ -214,7 +215,7 @@ $(document).ready(function () {
       'size': 30,
       'validation': {
         'callback': function (value, rule) {
-          if (value != '') {
+          if (value !== '') {
             return true
           } else {
             return ('please enter title')
@@ -236,7 +237,7 @@ $(document).ready(function () {
         'callback': function (value, rule) {
           var d = moment(value, 'YYYY-MM-DD', true).isValid()
           var dt = moment(value, 'YYYY-MM-DDTHH:mm:ss', true).isValid()
-          if (d == true || dt == true) {
+          if (d === true || dt === true) {
             return true
           } else {
             return ['<code>{0}</code> is not a valid date format. Please use <code>YYYY-MM-DD</code> or <code>YYYY-MM-DDTHH:mm:ss</code>.', value]
@@ -252,7 +253,7 @@ $(document).ready(function () {
         'callback': function (value, rule) {
           var d = moment(value, 'YYYY-MM-DD', true).isValid()
           var dt = moment(value, 'YYYY-MM-DDTHH:mm:ss', true).isValid()
-          if (d == true || dt == true) {
+          if (d === true || dt === true) {
             return true
           } else {
             return ['<code>{0}</code> is not a valid date format. Please use <code>YYYY-MM-DD</code> or <code>YYYY-MM-DDTHH:mm:ss</code>.', value]
@@ -304,36 +305,36 @@ $(document).ready(function () {
 
     // If the form validates, build the querystring
     if ($('#builder').queryBuilder('validate')) {
-  	var querystring = JSON.stringify($('#builder').queryBuilder('getMongo'), undefined, 2)
+      var querystring = JSON.stringify($('#builder').queryBuilder('getMongo'), undefined, 2)
       var advancedOptions = JSON.stringify(serialiseAdvancedOptions(), undefined, 2)
       var outputQueryString = JSON.stringify($('#builder').queryBuilder('getMongo'))
       var outputAdvancedOptions = JSON.stringify(serialiseAdvancedOptions())
 
-  	// Perform the search or display the query
-  	switch ($(this).attr('id')) {
-  		case 'search-query':
-		 //  bootbox.alert({
+      // Perform the search or display the query
+      switch ($(this).attr('id')) {
+        case 'search-query':
+          //  bootbox.alert({
           // message: '<p>Ready to perform search.</p>'
           //  });
-		  sendQuery(querystring, advancedOptions)
-		  break
+          sendQuery(querystring, advancedOptions)
+          break
         case 'launch-jupyter':
           // Handle launch jupyter
           launchJupyter(querystring, advancedOptions)
           break
         default:
-          msg = '<p>Query:</p><pre><code>' + outputQueryString + '</code></pre>'
+          let msg = '<p>Query:</p><pre><code>' + outputQueryString + '</code></pre>'
           msg += '<p>Advanced Options:</p><pre><code>' + outputAdvancedOptions + '</code></pre>'
-		  bootbox.alert({
+          bootbox.alert({
             message: msg
-		  })
-		  break
-  	}
+          })
+          break
+      }
     } else {
-	  // Hack to display error messages.
-	  var message = $('.has-error').find('.error-container').attr('title')
-	  message = '<span class="error-message" style="margin-left:10px;">' + message + '</span>'
-	  $('.has-error').find('.rule-actions > button').parent().append(message)
+      // Hack to display error messages.
+      var message = $('.has-error').find('.error-container').attr('title')
+      message = '<span class="error-message" style="margin-left:10px;">' + message + '</span>'
+      $('.has-error').find('.rule-actions > button').parent().append(message)
     }
 
     /* Handles the Search Export feature */
@@ -341,7 +342,7 @@ $(document).ready(function () {
       e.preventDefault()
       var querystring = JSON.stringify($('#builder').queryBuilder('getMongo'), undefined, 2)
       var advancedOptions = JSON.stringify(serialiseAdvancedOptions(), undefined, 2)
-      data = {
+      let data = {
         'query': JSON.parse(querystring),
         'advancedOptions': JSON.parse(advancedOptions),
         'paginated': false
@@ -352,13 +353,13 @@ $(document).ready(function () {
 
   function sendQuery (query, advancedOptions, page = 1) {
     /* Searches the sources
-		   Input: Values from the search form
-		   Returns: An array containing results and errors for display
-       */
-		   data = {
-		   	'query': JSON.parse(query),
-		   	'page': page,
-		   	'advancedOptions': JSON.parse(advancedOptions)
+      Input: Values from the search form
+      Returns: An array containing results and errors for display
+      */
+    let data = {
+      'query': JSON.parse(query),
+      'page': page,
+      'advancedOptions': JSON.parse(advancedOptions)
     }
     $.ajax({
       method: 'POST',
@@ -369,17 +370,17 @@ $(document).ready(function () {
       .done(function (response) {
         $('#results').empty()
         response = JSON.parse(response)
-        if (response['errors'].length != 0) {
-          result = response['errors']
+        if (response['errors'].length !== 0) {
+          let result = response['errors']
           var message = ''
           $.each(result, function (i, item) {
             message += '<p>' + item + '</p>'
           })
-			    bootbox.alert({
-			        message: message
-			    })
+          bootbox.alert({
+            message: message
+          })
         } else {
-          result = response['response']
+          let result = response['response']
           // Make the result into a string
           var out = ''
           $.each(result, function (i, item) {
@@ -387,63 +388,65 @@ $(document).ready(function () {
             out += '<h4><a href="' + link + '">' + item['name'] + '</a></h4><br>'
             $.each(item, function (key, value) {
               value = JSON.stringify(value)
-              if (key == 'content' && value.length > 200) {
+              if (key === 'content' && value.length > 200) {
                 value = value.substring(0, 200) + '...'
               }
-				        out += '<code>' + key + '</code>: ' + value + '<br>'
-			        })
+              // eval() removes the quotes around the string, which may or may not be desirable
+              out += '<code>' + key + '</code>: ' + eval(value) + '<br>'
+            })
             out += '<hr>'
-			    })
+          })
           var $pagination = $('#pagination')
           // Get the limit value and make sure it's a number
           var limit = parseInt($('#limit').val())
           if (isNaN(limit)) {
             limit = 0
           }
-			    var defaultOpts = {
-			        visiblePages: 5,
-			        initiateStartPageClick: false,
-			        onPageClick: function (event, page) {
+          var defaultOpts = {
+            visiblePages: 5,
+            initiateStartPageClick: false,
+            onPageClick: function (event, page) {
               sendQuery(query, advancedOptions, page)
-			            $('#scroll').click()
-			        }
-			    }
-		        var totalPages = parseInt(response['num_pages'])
-		        var currentPage = $pagination.twbsPagination('getCurrentPage')
-		        $pagination.twbsPagination('destroy')
-		        $pagination.twbsPagination($.extend({}, defaultOpts, {
-		            startPage: currentPage,
-		            totalPages: totalPages
-		        }))
+              $('#scroll').click()
+            }
+          }
+          var totalPages = parseInt(response['num_pages'])
+          var currentPage = $pagination.twbsPagination('getCurrentPage')
+          $pagination.twbsPagination('destroy')
+          $pagination.twbsPagination($.extend({}, defaultOpts, {
+            startPage: currentPage,
+            totalPages: totalPages
+          }))
           $('#results').append(out)
+          $('#hideSearch').removeClass('hidden')
           $('#hideSearch').html('Show Form')
           $('#exportSearchResults').show()
           $('#search-form').hide()
-		        $('#results').show()
-		        $('#pagination').show()
+          $('#results').show()
+          $('#pagination').show()
         }
       })
       .fail(function (jqXHR, textStatus, errorThrown) {
-		    bootbox.alert({
-	        message: '<p>Sorry, mate! You\'ve got an error!</p>',
-	        callback: function () {
-	            ('Error: ' + textStatus + ': ' + errorThrown)
-	        }
-		    })
+        bootbox.alert({
+          message: '<p>Sorry, mate! You\'ve got an error!</p>',
+          callback: function () {
+            return 'Error: ' + textStatus + ': ' + errorThrown
+          }
+        })
       })
   }
 
   function launchJupyter (query, advancedOptions) {
     /* Sends the query to the code to launch a Jupyter notebook
-		   Input: Values from the search form
-		   Returns: An array containing results and errors for display
-        */
-		   var page = 1
-		   data = {
-		   	'query': JSON.parse(query),
-		   	'page': page,
-		   	'advancedOptions': JSON.parse(advancedOptions)
-		   }
+      Input: Values from the search form
+      Returns: An array containing results and errors for display
+      */
+    var page = 1
+    let data = {
+      'query': JSON.parse(query),
+      'page': page,
+      'advancedOptions': JSON.parse(advancedOptions)
+    }
     $.ajax({
       method: 'POST',
       url: '/sources/launch-jupyter',
@@ -451,19 +454,19 @@ $(document).ready(function () {
       contentType: 'application/json;charset=UTF-8'
     })
       .done(function (response) {
-        if (response == 'error') {
-			    bootbox.alert({
-			        message: '<p>Unknown Error: A Jupyter notebook could not be launched. Make sure you have a Jupyter server running.</p>'
-			    })
+        if (response === 'error') {
+          bootbox.alert({
+            message: '<p>Unknown Error: A Jupyter notebook could not be launched. Make sure you have a Jupyter server running.</p>'
+          })
         }
       })
       .fail(function (jqXHR, textStatus, errorThrown) {
-		    bootbox.alert({
-	        message: '<p>Sorry, mate! You\'ve got an error!</p>',
-	        callback: function () {
-	            ('Error: ' + textStatus + ': ' + errorThrown)
-	        }
-		    })
+        bootbox.alert({
+          message: '<p>Sorry, mate! You\'ve got an error!</p>',
+          callback: function () {
+            return 'Error: ' + textStatus + ': ' + errorThrown
+          }
+        })
       })
   }
 
@@ -479,13 +482,10 @@ $(document).ready(function () {
     })
       .done(function (response) {
         response = JSON.parse(response)
-        if (response['errors'].length != 0) {
-          result = JSON.stringify(response['errors'])
+        if (response['errors'].length !== 0) {
+          let result = JSON.stringify(response['errors'])
           bootbox.alert({
-            message: '<p>Sorry, mate! You\'ve got an error!</p><p>' + result + '</p>',
-            callback: function () {
-              ('Error: ' + textStatus + ': ' + errorThrown)
-            }
+            message: '<p>Sorry, mate! You\'ve got an error!</p><p>' + result + '</p>'
           })
         } else {
           window.location = '/sources/download-export/' + response['filename']
@@ -495,17 +495,11 @@ $(document).ready(function () {
         bootbox.alert({
           message: '<p>Sorry, mate! You\'ve got an error!</p>',
           callback: function () {
-            ('Error: ' + textStatus + ': ' + errorThrown)
+            return 'Error: ' + textStatus + ': ' + errorThrown
           }
         })
       })
   }
-
-  // Do some WE1S restyling
-  $('.btn').removeClass('btn-dangerr')
-  $('.btn').removeClass('btn-primaryy')
-  $('.btn').removeClass('btn-successs')
-  // $('.btn').addClass('btn-outline-editorial');
 
   /** ** Advanced Options Functions ****/
   // Make the table rows sortable
@@ -532,7 +526,6 @@ $(document).ready(function () {
   function serialiseAdvancedOptions () {
     // Declare an options object and helper variables
     var options = {'show_properties': [], 'sort': [], 'limit': 0}
-    var rows = []
     var props = []
     var sortList = []
 
@@ -545,16 +538,16 @@ $(document).ready(function () {
     // Gather data on all shown rows
     $.each($('tbody > tr'), function () {
       var show = $(this).attr('data-show')
-      if (show == 'true') {
-        var id = $(this).attr('data-id')
+      if (show === 'true') {
+        // var id = $(this).attr('data-id')
         var name = $(this).attr('data-name')
         var direction = $(this).attr('data-direction')
         // Append to the list of shown properties
         props.push(name)
         // Append name and direction to the list of sort criteria
         // Use an array that can be converted to a tuple
-        if (direction != 'none') {
-          tuplish = [name, direction]
+        if (direction !== 'none') {
+          let tuplish = [name, direction]
           sortList.push(tuplish)
         }
       }

@@ -1,3 +1,5 @@
+/* global bootbox, hideProcessing, moment, showProcessing */
+/* eslint no-undef: "error" */
 //
 // General Helper Functions
 //
@@ -29,7 +31,7 @@ function serialiseAdvancedOptions () {
       // Use an array that can be converted to a tuple
       if (direction !== 'none') {
         var tuplish = [name, direction]
-        sortList.push(tuplish)                      
+        sortList.push(tuplish)
       }
     }
   })
@@ -77,9 +79,10 @@ function sendQuery (query, advancedOptions, page = 1) {
         // Make the result into a string
         var out = ''
         $.each(result, function (i, item) {
-          out += '<div id="result-' + item['name'] + '">'
-          var link = '/projects/display/' + item['name']
-          var id = 'delete-' + item['name']
+          var itemId = item['_id']['$oid']
+          out += '<div id="result-' + itemId + '">'
+          var link = '/projects/display/' + itemId
+          var id = 'delete-' + itemId
           out += '<div style="margin-bottom:8px;"><h4 style="display: inline">' + item['name'] + '</h4> '
           out += '<a role="button" href="' + link + '" id="edit" class="btn btn-sm btn-outline-editorial" title="Edit Project" data-action="edit"><i class="fa fa-pencil"></i></a> '
           out += '<a role="button" id="' + id + '" class="btn btn-sm btn-outline-editorial delete-btn" title="Delete Project" data-action="delete"><i class="fa fa-trash"></i></a>'
@@ -322,8 +325,12 @@ $(document).ready(function () {
     }
   }
 
+  // Check whether the page is create, display, or search
+  var pageType = window.location.pathname.split('/')[2]
   // Instantiate the Query Builder
-  $('#builder').queryBuilder(options)
+  if (pageType !== 'display') {
+    $('#builder').queryBuilder(options)
+  }
   if (dbQuery !== '') {
     $('#builder').queryBuilder('setRulesFromMongo', dbQuery)
     $('#db-query').val(JSON.stringify(dbQuery))
@@ -338,13 +345,14 @@ $(document).ready(function () {
   // When the Test Query button is clicked, validate and create a querystring
   $('#test-query').click(function (e) {
     e.preventDefault()
-    // var requiredFields = ['name', 'metapath', 'namespace', 'title', 'contributors', 'created', 'db-query']
-    var formvals = validateQuery([])
-    if (formvals !== false) {
+    var query = $('#builder').queryBuilder('getMongo')
+    if (query == null) {
+      bootbox.alert('Please supply values for the fields indicated in order to form a valid query.')
+    } else {
       $.ajax({
         method: 'POST',
         url: '/projects/test-query',
-        data: JSON.stringify(formvals),
+        data: JSON.stringify(query),
         contentType: 'application/json;charset=UTF-8',
         beforeSend: showProcessing()
       })
@@ -454,10 +462,10 @@ $(document).ready(function () {
   $(document).on('click', '.delete-btn', function (e) {
     e.preventDefault()
     var id = $(this).attr('id')
-    var name = id.replace(/^delete-/, '')
-    // alert('remove ' + name)
+    var _id = id.replace(/^delete-/, '')
+    // alert('remove ' + _id)
     bootbox.confirm({
-      message: 'Are you sure you wish to permanently delete <code>' + name + '</code>?',
+      message: 'Are you sure you wish to permanently delete project <code>' + _id + '</code>?',
       buttons: {
         confirm: {label: 'Yes', className: 'btn-success'},
         cancel: {label: 'No', className: 'btn-danger'}
@@ -466,7 +474,7 @@ $(document).ready(function () {
         if (result === true) {
           var data = {}
           data['action'] = 'delete'
-          data['manifest'] = {'name': name, 'metapath': 'Projects'}
+          data['manifest'] = {'_id': _id, 'metapath': 'Projects'}
           data['query'] = JSON.stringify(data['manifest'])
           $.ajax({
             method: 'POST',
@@ -477,7 +485,7 @@ $(document).ready(function () {
           })
             .done(function (response) {
               hideProcessing()
-              if (JSON.parse(response)['result'] == 'fail') {
+              if (JSON.parse(response)['result'] === 'fail') {
                 var errors = JSON.parse(response)['errors']
                 var msg = '<p>Could not delete the project because of the following errors:</p><ul>'
                 $.each(errors, function (index, value) {
@@ -486,8 +494,8 @@ $(document).ready(function () {
                 msg += '</ul>'
                 bootbox.alert(msg)
               } else {
+                $('#result-' + _id).remove()
                 bootbox.alert('<p>The project was deleted.</p>')
-                $('#result-' + name).remove()
               }
             })
             .fail(function (jqXHR, textStatus, errorThrown) {

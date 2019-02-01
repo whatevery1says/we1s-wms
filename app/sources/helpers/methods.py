@@ -179,15 +179,25 @@ def reshape_query_props(temp_query, temp_show_properties):
     Takes strings for the query and show properties fields.
     Returns dicts of keywords and values for both.
     """
+    print('temp_query')
+    print(temp_query)
+    print('temp_show_properties')
+    print(temp_show_properties)
     query_props = {}
-    for item in temp_query.split('\n'):
-        prop, val = item.split(':')
-        prop = prop.strip().strip('"').strip("'")
-        val = val.strip().strip('"').strip("'")
-        query_props[prop] = val
+    for prop in temp_query:
+        for key, val in prop.items():
+            key = key.strip().strip('"').strip("'")
+            val = val.strip().strip('"').strip("'")
+            query_props[key] = val
+    # for item in temp_query.split('\n'):
+    #     prop, val = item.split(':')
+    #     prop = prop.strip().strip('"').strip("'")
+    #     val = val.strip().strip('"').strip("'")
+    #     query_props[prop] = val
     # Convert the properties to show to a list
     show_props = temp_show_properties.split('\n')
-    if show_props == ['']:
+    # if show_props == ['']:
+    if show_props == []:
         show_props = None
     return query_props, show_props
 
@@ -254,9 +264,10 @@ def delete_source(name, metapath):
     """
     result = sources_db.delete_one({'name': name, 'metapath': metapath})
     if result.deleted_count != 0:
-        return 'success'
+        response = 'success'
     else:
-        return 'Unknown error: The document could not be deleted.'
+        response = 'Unknown error: The document could not be deleted.'
+    return response
 
 
 def import_manifests(source_files):
@@ -350,8 +361,10 @@ def search_sources(options):
     page_size = 10
     errors = []
     if list(sources_db.find()):
-        query_properties, show_properties = reshape_query_props(options['query'], options['show_properties'])
-        if options['regex'] is True:
+        query_properties = options['query']
+        show_properties = options['show_properties']
+        # query_properties, show_properties = reshape_query_props(options['query'], options['show_properties'])
+        if 'regex' in options and options['regex'] is True:
             query = {}
             for k, v in query_properties.items():
                 REGEX = re.compile(v)
@@ -380,7 +393,8 @@ def update_record(manifest):
     if validate_manifest(manifest) is True:
         name = manifest.pop('name')
         metapath = manifest['metapath']
-        _id = manifest.pop('_id')
+        if '_id' in manifest:
+            _id = manifest.pop('_id')
         try:
             sources_db.update_one({'name': name, 'metapath': metapath}, {'$set': manifest}, upsert=False)
         except:
@@ -460,9 +474,10 @@ def testformat(s):
         except:
             error = 'Could not parse date "' + s + '" into a valid format.'
     if error == '':
-        return {'text': s, 'format': dateformat}
+        response = {'text': s, 'format': dateformat}
     else:
-        return {'text': s, 'format': 'unknown', 'error': error}
+        response = {'text': s, 'format': 'unknown', 'error': error}
+    return response
 
 
 def textarea2datelist(textarea):

@@ -19,20 +19,23 @@ collection-template:
     fieldtype: textarea
     required: true
     placeholder: List each source on a separate line. Use the format 'title, path, email' (in that order). Both the title and path properties are required.
+    cols: ['title']
   - name: contributors
     fieldtype: textarea
     required: true
     placeholder: List each contributor on a separate line. Use the format 'title, path, email, role, group, organization' (in that order). Only the title property is required.
+    cols: ['title']
   - name: created
     fieldtype: textarea
     required: true
     placeholder: List each date on a separate line. Date ranges should separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS.
+    cols: ['start']
 - optional:
   - name: workstation
     fieldtype: text
   - name: queryterms
-    fieldtype: textarea
-    placeholder: Separate multiple queryterm with commas.
+    fieldtype: text
+    placeholder: Separate multiple queryterms with commas.
   - name: processes
     placeholder: Separate multiple processes with commas.
     fieldtype: textarea
@@ -49,11 +52,11 @@ collection-template:
   - name: label
     fieldtype: text
   - name: notes
-    placeholder: Click the (+) button to add more notes
+    placeholder: Click the (+) button to add more notes.
     fieldtype: textarea
   - name: keywords
-    fieldtype: textarea
-    placeholder: List each keyword on a separate line.
+    fieldtype: text
+    placeholder: Separate multiple keywords with commas.
   - name: image
     fieldtype: text
   - name: updated
@@ -111,8 +114,8 @@ rawdata-template:
     placeholder: Click the (+) button to add more notes
     fieldtype: textarea
   - name: keywords
-    fieldtype: textarea
-    placeholder: List each keyword on a separate line.
+    fieldtype: text
+    placeholder: Separate multiple keywords with commas.
   - name: image
     fieldtype: text
   - name: updated
@@ -162,11 +165,11 @@ processeddata-template:
   - name: label
     fieldtype: text
   - name: notes
-    placeholder: Click the (+) button to add more notes
+    placeholder: Click the (+) button to add more notes.
     fieldtype: textarea
   - name: keywords
-    fieldtype: textarea
-    placeholder: List each keyword on a separate line.
+    fieldtype: text
+    placeholder: Separate multiple keywords with commas.
   - name: image
     fieldtype: text
   - name: updated
@@ -215,8 +218,8 @@ branch-template:
     placeholder: Click the (+) button to add more notes
     fieldtype: textarea
   - name: keywords
-    fieldtype: textarea
-    placeholder: List each keyword on a separate line.
+    fieldtype: text
+    placeholder: Separate multiple keywords with commas.
   - name: image
     fieldtype: text
   - name: updated
@@ -254,3 +257,7 @@ generic-template:
   - name: notes
     placeholder: Click the (+) button to add more notes
     fieldtype: textarea
+  - name: updated
+    fieldtype: textarea
+    placeholder: List each date on a separate line. Date ranges should separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS.
+

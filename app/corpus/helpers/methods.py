@@ -249,10 +249,10 @@ def create_record(manifest):
         # assert manifest['name'] not in corpus_db.distinct('name')
         corpus_db.insert_one(manifest)
     except:
-        """We need to add some code here that looks for a LexisNexis
-        `doc_id` and appends a portion of it to `manifest['name']`
-        until it is unique within the collection. Otherwise, add a
-        random number or display the error below."""
+        # We need to add some code here that looks for a LexisNexis
+        # `doc_id` and appends a portion of it to `manifest['name']`
+        # until it is unique within the collection. Otherwise, add a
+        # random number or display the error below.
         msg = 'The <code>name</code> <strong>' + manifest['name'] + '</strong> already exists along the metapath <code>' + manifest['metapath'] + '</code> in the database.'
         errors.append(msg)
     return errors
@@ -265,9 +265,10 @@ def delete_collection(name, metapath):
     """
     result = corpus_db.delete_one({'name': name, 'metapath': metapath})
     if result.deleted_count != 0:
-        return 'success'
+        response = 'success'
     else:
-        return 'Unknown error: The document could not be deleted.'
+        response = 'Unknown error: The document could not be deleted.'
+    return response
 
 
 def search_collections(values):
@@ -300,32 +301,31 @@ def search_collections(values):
             pages = list(paginate(result, page_size=page_size))
             num_pages = len(pages)
             page = get_page(pages, int(values['page']))
-            return page, num_pages, errors
+            response = page, num_pages, errors
         else:
-            return result, 1, errors
+            response = result, 1, errors
     else:
         errors.append('The Corpus database is empty.')
-        return [], 1, errors
+        response = [], 1, errors
+    return response
 
 
 def search_corpus(query, limit, paginated, page, show_properties, sorting):
     """Use the query generated in /search2 and returns the search results."""
     page_size = 10
     errors = []
-    """
-    # Check that the query has a valid path within the Corpus
-    # Good for testing
-    key = list(query.keys())[0]
-    is_path = next((item for item in query.get(key) if item.get('path')), False)
-    # False if the query does not have a path; set it to ',Corpus,' by default
-    if is_path == False:
-        query.get(key).append({'path': ',Corpus,'})
-    print(query.get(key))
-    is_corpus_path = next((item for item in query.get(key) if item.get('path') is not None and item.get('path').startswith(',Corpus,')), False)
-    # False if the path is not in the Corpus; return an error
-    if is_corpus_path == False:
-        errors.append('Please supply a valid path within the Corpus.')
-    """
+    # # Check that the query has a valid path within the Corpus
+    # # Good for testing
+    # key = list(query.keys())[0]
+    # is_path = next((item for item in query.get(key) if item.get('path')), False)
+    # # False if the query does not have a path; set it to ',Corpus,' by default
+    # if is_path == False:
+    #     query.get(key).append({'path': ',Corpus,'})
+    # print(query.get(key))
+    # is_corpus_path = next((item for item in query.get(key) if item.get('path') is not None and item.get('path').startswith(',Corpus,')), False)
+    # # False if the path is not in the Corpus; return an error
+    # if is_corpus_path == False:
+    #     errors.append('Please supply a valid path within the Corpus.')
     if list(corpus_db.find()):
         result = corpus_db.find(
             query,
@@ -344,28 +344,28 @@ def search_corpus(query, limit, paginated, page, show_properties, sorting):
                 pages = list(paginate(result, page_size=page_size))
                 num_pages = len(pages)
                 page = get_page(pages, page)
-                return page, num_pages, errors
+                response = page, num_pages, errors
             else:
-                return result, 1, errors
+                response = result, 1, errors
         else:
-            return [], 1, errors
+            response = [], 1, errors
     else:
         errors.append('The Corpus database is empty.')
-        return [], 1, errors
+        response = [], 1, errors
+    return response
 
 
-def update_record(manifest):
+def update_record(manifest, nodetype):
     """Update a manifest record in the database.
 
     Takes a manifest dict and returns a list of errors if any.
     """
     errors = []
-    # Need to set the nodetype
-    nodetype = 'collection'
     if validate_manifest(manifest, nodetype) is True:
         name = manifest.pop('name')
         metapath = manifest['metapath']
-        _id = manifest.pop('_id')
+        if '_id' in manifest:
+            _id = manifest.pop('_id')
         try:
             corpus_db.update_one({'name': name, 'metapath': metapath}, {'$set': manifest}, upsert=False)
         except pymongo.errors.OperationFailure as e:
@@ -374,7 +374,10 @@ def update_record(manifest):
             msg = 'Unknown Error: The record for <code>name</code> <strong>' + name + '</strong> could not be updated.'
             errors.append(msg)
     else:
-        errors.append('Unknown Error: Could not produce a valid manifest.')
+        msg = '''A valid manifest could not be created with the
+        data supplied. Please check your entries against the
+        <a href="/schema" target="_blank">manifest schema</a>.'''
+        errors.append(msg)
     return errors
 
 
@@ -471,9 +474,10 @@ def testformat(s):
         except:
             error = 'Could not parse date "' + s + '" into a valid format.'
     if error == '':
-        return {'text': s, 'format': dateformat}
+        response = {'text': s, 'format': dateformat}
     else:
-        return {'text': s, 'format': 'unknown', 'error': error}
+        response = {'text': s, 'format': 'unknown', 'error': error}
+    return response
 
 
 def textarea2datelist(textarea):

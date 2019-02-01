@@ -5,52 +5,150 @@
 <p>{{ error|safe }}</p>
 {% endfor %}
 {% else %}
+{% set fields = ['content', 'contributors', 'created', 'description', 'documentType', 'encoding', 'format', 'id', '_id', 'image', 'keywords', 'label', 'licenses', 'mediatype', 'metapath', 'name', 'namespace', 'notes', 'OCR', 'processes', 'queryterms', 'relationships', 'rights', 'shortTitle', 'sources', 'title', 'updated', 'version', 'workstation'] %}
+<style type="text/css">
+.hidden { display: none; }
+.query-builder .btn-primary.active, .query-builder .btn-primary.focus,
+.query-builder .btn-primary:active, .query-builder .btn-primary:focus,
+.query-builder .btn-primary:hover {
+    background-color: #f56a6a;
+    box-shadow: none;
+    color: #ffffff !important;
+}
+/* Advanced Options */
+body.dragging, body.dragging * { cursor: move !important; }      
+.dragged { position: absolute; opacity: 0.5; z-index: 2000; }
+td { cursor: move !important;}
+.custom-control {
+    position: relative;
+    display: block;
+    min-height: .5rem;
+    padding: .5rem !important;
+}
+.custom-control-input {
+    -moz-appearance: checkbox !important;
+    -webkit-appearance: checkbox !important;
+    -ms-appearance: checkbox !important;
+    appearance: checkbox !important;
+    opacity: 1 !important;
+    z-index: 1  !important;
+/*    clear: both;*/
+/*    margin-right: 0;*/
+/*    width: 1em;*/
+}
+</style>
 <br>
-    <div class="row">
+<div class="row">
         <div class="col-sm">
             <header class="major">
                 <h2>Search</h2>
             </header>
         </div>
         <div class="col-sm text-right">
-            <button id="hideSearch" class="btn btn-lg btn-outline-editorial">Hide Form</button>
-            <button id="exportSearchResults" class="btn btn-lg btn-outline-editorial" style="display:none;">Export</button>
+            <div class="btn-group">
+                <button id="hideSearch" class="btn btn-outline-editorial hidden">Show Results</button>
+                <button type="button" id="exportSearchResults" class="btn btn-lg btn-outline-editorial hidden" title="Export"><i class="fa fa-download"></i></button>
+            </div>
         </div>
     </div>
-<form method="POST">
 <div id="search-form">
     <div class="row">
-        <div class="col-md-6">
-            <label for="query">Query (required)</label>
-            <textarea name="query" id="query" placeholder="Enter property-value pairs (e.g. 'property1': 'value1') to search on separate lines." class="form-control query-box"></textarea>
+        <div class="col-md-12">
+            <button type="button" class="btn btn-sm btn-outline-editorial" data-toggle="modal" data-target="#advanced">Advanced Options</button>
         </div>
     </div>
-    <br>
-    <div class="row">
-        <div class="col-md-2" style="padding-top: 6px;">
-            <input name="regex" class="form-check-input" type="checkbox" id="regex">
-          <label class="form-check-label" for="regex">Use Regex</label>
-        </div>
-        <div class="col-md-10">
-            <span class="limit-results">Number of Results</span>
-            <input name="limit" id="limit" type="number" value="10" class="form-control" style="width: 80px; display: inline !important;">                        
-        </div>
-    </div>
-    <br>
-    <div class="row">
-        <div class="col-md-6">
-            <label for="properties">Properties to Show</label>
-            <textarea name="properies" id="properties" placeholder="List of properties to show on separate lines." class="form-control query-box"></textarea>
-        </div>
-    </div>
-    <br>
     <div class="row">
         <div class="col-md-12">
-            <input type="button" role="button" class="btn btn-sm btn-outline-editorial" value="Search" id="searchCorpus">
+            <div id="builder"></div>
+            <br>
+            <button id="view-query" class="btn btn-outline-editorial">View Query</button>
+            <button id="search-query" class="btn btn-outline-editorial">Search</button>
         </div>
     </div>
 </div>
-<div id="results" style="display:none;"></div>
+<div id="results" style="display:none;"></div> 
 <ul id="pagination" class="justify-content-center" style="display:none;"></ul>
+      
+<!-- Modal -->
+<div class="modal fade" id="advanced" tabindex="-1" role="dialog" aria-labelledby="advancedLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="advancedLabel">Advanced Options</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+<!-- Options Section -->
+<div class="container-fluid">
+<div class="form-group row form-inline">
+    <label for="limit" style="padding:0;">Limit Results</label>
+    <input class="form-control form-control-sm" type="number" id="limit" placeholder="None" min="0" style="width: 75px; margin-left:10px;">
+</div>
+<div class="form-group row">
+    <table class="table table-sm table-striped table-bordered sorted_table">
+        <thead>
+            <tr>
+            <th width="20">Show</th>
+            <th>Property</th>
+            <th width="125">Sort Direction</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% set shown = ['created', 'description', 'name', 'metapath', 'title'] %}
+            {% for item in fields %}
+            {% if item == 'name' %}
+            <tr data-id="{{loop.index}}" data-name="{{item}}" data-direction="ASC" data-show="{{'true' if item in shown}}">
+            {% else %}
+            <tr data-id="{{loop.index}}" data-name="{{item}}" data-direction="none" data-show="{{'true' if item in shown}}">
+            {% endif %}    
+                <td>
+                    <div class="custom-control custom-checkbox">
+                        {% if item in shown %}
+                        <input type="checkbox" class="custom-control-input show" checked="checked">
+                        {% else %}
+                        <input type="checkbox" class="custom-control-input show">
+                        {% endif %}
+                    </div>
+                </td>
+                <td>{{item}}</td>
+                <td>
+                    <select class="form-control form-control-sm direction" style="width: 75px;">
+                        <option value="none">None</option>
+                        <option value="ASC" {{ 'selected="selected"' if item == 'name' }}>ASC</option>
+                        <option value="DESC">DESC</option>
+                    </select>
+                </td>    
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+    <br>
+    <div class="row container-fluid">
+        <div class="col-md-12">
+            
+        </div>
+    </div>
+    <br>
+    <div class="row container-fluid">
+        <div class="col-md-12">
+            <div id="allOpts"></div>            
+        </div>
+    </div>
+<!-- -->
+            </div>
+            <div class="modal-footer">
+                <button id="serialise" class="btn btn-sm btn-outline-editorial">Serialise</button>
+                <button type="button" class="btn btn-sm btn-outline-editorial" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+    </div>
+
 {% endif %}
 {% endblock main %}

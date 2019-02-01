@@ -26,7 +26,6 @@ import yaml
 # import: app
 from app.corpus.helpers import methods
 
-
 JSON_UTIL = json_util.default
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
@@ -39,7 +38,6 @@ corpus = Blueprint('corpus', __name__, template_folder='corpus')
 # ----------------------------------------------------------------------------#
 # Constants.
 # ----------------------------------------------------------------------------#
-
 
 ALLOWED_EXTENSIONS = ['xlsx']
 # Horrible hack to get the instance path from out of context
@@ -58,7 +56,7 @@ TRASH_DIR = os.path.join(instance_path, 'trash')
 @corpus.route('/')
 def index():
     """Corpus index page."""
-    scripts = ['js/corpus/corpus.js', 'js/jquery-ui.js', 'js/dateformat-corpus.js']
+    scripts = ['js/parsley.min.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/corpus/corpus.js']
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}]
     return render_template('corpus/index.html', scripts=scripts, breadcrumbs=breadcrumbs)
 
@@ -66,11 +64,13 @@ def index():
 @corpus.route('/create', methods=['GET', 'POST'])
 def create():
     """Create manifest page."""
-    scripts = ['js/parsley.min.js', 'js/corpus/corpus.js', 'js/jquery-ui.js', 'js/dateformat-corpus.js', 'js/moment.min.js']
+    # , 'js/corpus/datehandler.js'
+    scripts = ['js/parsley.min.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/corpus/corpus.js']
+    styles = ['css/jquery-ui.css']
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/create', 'label': 'Create Collection'}]
     with open("app/templates/corpus/template_config.yml", 'r') as stream:
         templates = yaml.load(stream)
-    return render_template('corpus/create.html', scripts=scripts, templates=templates, breadcrumbs=breadcrumbs)
+    return render_template('corpus/create.html', scripts=scripts, styles=styles, templates=templates, breadcrumbs=breadcrumbs)
 
 
 @corpus.route('/create-manifest', methods=['GET', 'POST'])
@@ -78,7 +78,6 @@ def create_manifest():
     """Ajax route for creating manifests."""
     errors = []
     data = request.json
-    # data['namespace'] = 'we1sv2.0'
     # Set name and path by branch
     if data['nodetype'] == 'collection':
         try:
@@ -92,51 +91,17 @@ def create_manifest():
     if not data['metapath'].startswith('Corpus'):
         data['metapath'] = 'Corpus,' + data['metapath']
     data['metapath'] = data['metapath'].strip(',')
-    # if not data['metapath'].endswith(','):
-    #     data['path'] += ','
     # Remove empty values
     manifest = {}
     for key, value in data.items():
         if value != '':
             manifest[key] = value
-    # Handle dates
-    # if 'date' in manifest.keys():
-    #     dates = manifest['date'].splitlines()
-    #     dates = [x.strip() for x in dates]
-    #     new_dates, error_list = methods.check_date_format(dates)
-    #     errors = errors + error_list
-    #     if new_dates  != []:
-    #         manifest['date'] = dates
-    if 'created' in manifest.keys():
-        created = methods.flatten_datelist(methods.textarea2datelist(manifest['created']))
-        if isinstance(created, list) and len(created) == 1:
-            created = created[0]
-
-    if 'updated' in manifest.keys():
-        updated = methods.flatten_datelist(methods.textarea2datelist(manifest['updated']))
-        if isinstance(updated, list) and len(updated) == 1:
-            updated = updated[0]
-
-    # Handle other textarea strings
-    list_props = ['sources', 'contributors', 'queryterms', 'processes', 'notes', 'keywords', 'licenses']
-    prop_keys = {
-        'sources': {'main_key': 'title', 'valid_props': ['title', 'path', 'email']},
-        'contributors': {'main_key': 'title', 'valid_props': ['title', 'email', 'path', 'role', 'group', 'organization']},
-        'licenses': {'main_key': 'name', 'valid_props': ['name', 'path', 'title']},
-        'queryterms': {'main_key': '', 'valid_props': []},
-        'processes': {'main_key': '', 'valid_props': []},
-        'notes': {'main_key': '', 'valid_props': []},
-        'keywords': {'main_key': '', 'valid_props': []}
-    }
-    for item in list_props:
-        if item in manifest and manifest[item] != '':
-            all_lines = methods.textarea2dict(item, manifest[item], prop_keys[item]['main_key'], prop_keys[item]['valid_props'])
-            if all_lines[item] != []:
-                manifest[item] = all_lines[item]
-    nodetype = manifest.pop('nodetype', None)
     if 'OCR' in manifest.keys() and manifest['OCR'] == "on":
         manifest['OCR'] = True
+    nodetype = manifest.pop('nodetype', None)
+
     # Validate the resulting manifest
+    # print(json.dumps(manifest, indent=2, sort_keys=False))
     if methods.validate_manifest(manifest, nodetype) is True:
         database_errors = methods.create_record(manifest)
         errors = errors + database_errors
@@ -158,32 +123,42 @@ def create_manifest():
     return json.dumps(response)
 
 
+def get_default_property(template, prop):
+    """Return the first column key in the template for the specified property."""
+    for tab in [template['collection-template'][0]['required'], template['collection-template'][1]['optional']]:
+        for item in tab:
+            if item['name'] == prop:
+                return item['cols'][0]
+
+
+def reshape_list(key, value, template):
+    """Reshape a list for the UI.
+
+    Returns either a csv string or the name of the first
+    child for the specified property.
+    """
+    if len(value) > 1 and all(isinstance(item, str) for item in value):
+        new_value = ', '.join(value)
+    else:
+        default = get_default_property(template, key)
+        new_value = []
+        for item in value:
+            if isinstance(item, str):
+                new_value.append({default: item})
+            else:
+                new_value.append(item)
+    return new_value
+
+
 @corpus.route('/display/<name>')
 def display(name):
     """Page for displaying Corpus manifests."""
-    scripts = ['js/parsley.min.js', 'js/corpus/corpus.js']
+    scripts = ['js/parsley.min.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/corpus/corpus.js']
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/display', 'label': 'Display Collection'}]
     errors = []
     manifest = {}
     try:
-        result = corpus_db.find_one({'name': name})
-        assert result is not None
-        for key, value in result.items():
-            if isinstance(value, list):
-                textarea = methods.dict2textarea(value)
-                manifest[key] = textarea
-            # if isinstance(value, list):
-            #     manifest[key] = []
-            #     for element in value:
-            #         if isinstance(element, dict):
-            #             l = list(methods.NestedDictValues(element))
-            #             s = ', '.join(l)
-            #             manifest[key].append(s)
-            #         else:
-            #             manifest[key].append(element)
-            #     manifest[key] = '\n'.join(manifest[key])
-            else:
-                manifest[key] = str(value)
+        manifest = corpus_db.find_one({'name': name})
         if manifest['metapath'] == 'Corpus':
             nodetype = 'collection'
         elif manifest['name'] in ['RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results']:
@@ -192,14 +167,30 @@ def display(name):
             nodetype = 'branch'
         with open("app/templates/corpus/template_config.yml", 'r') as stream:
             templates = yaml.load(stream)
+        # Reshape Lists
+        for key, value in manifest.items():
+            # The property is a list
+            if isinstance(value, list):
+                manifest[key] = reshape_list(key, value, templates)
+
+        # Make sure the manifest has all template properties
+        templates = templates[nodetype + '-template']
+        opts = [templates[0]['required'], templates[1]['optional']]
+        for opt in opts:
+            for prop in opt:
+                if prop['name'] not in manifest and prop['fieldtype'] == 'text':
+                    manifest[prop['name']] = ''
+                if prop['name'] not in manifest and prop['fieldtype'] == 'textarea':
+                    manifest[prop['name']] = ['']
     except:
         nodetype = None
         templates = yaml.load('')
         errors.append('Unknown Error: The manifest does not exist or could not be loaded.')
+
     return render_template('corpus/display.html', scripts=scripts,
                            breadcrumbs=breadcrumbs, manifest=manifest,
                            errors=errors, nodetype=nodetype,
-                           templates=templates)
+                           template=templates)
 
 
 @corpus.route('/update-manifest', methods=['GET', 'POST'])
@@ -207,7 +198,6 @@ def update_manifest():
     """Ajax route for updating manifests."""
     errors = []
     data = request.json
-    # data['namespace'] = 'we1sv2.0'
     # Set name and path by branch
     if data['metapath'] == 'Corpus':
         data['nodetype'] = 'collection'
@@ -223,62 +213,15 @@ def update_manifest():
     for key, value in data.items():
         if value != '':
             manifest[key] = value
-    # Handle dates
-    # if 'date' in manifest.keys():
-    #     ls = manifest['date'].splitlines()
-    #     dates = [x.strip() for x in ls]
-    #     new_dates, error_list = methods.check_date_format(dates)
-    #     errors = errors + error_list
-    #     manifest['date'] = new_dates
-    if 'created' in manifest.keys():
-        created = methods.flatten_datelist(methods.textarea2datelist(manifest['created']))
-        if isinstance(created, list) and len(created) == 1:
-            created = created[0]
-        manifest['created'] = created
-
-    if 'updated' in manifest.keys():
-        updated = methods.flatten_datelist(methods.textarea2datelist(manifest['updated']))
-        if isinstance(updated, list) and len(updated) == 1:
-            updated = updated[0]
-        manifest['updated'] = created
-
-    # Handle other textarea strings
-    list_props = ['sources', 'contributors', 'queryterms', 'processes', 'notes', 'keywords', 'licenses']
-    prop_keys = {
-        'sources': {'main_key': 'title', 'valid_props': ['title', 'path', 'email']},
-        'contributors': {'main_key': 'title', 'valid_props': ['title', 'email', 'path', 'role', 'group', 'organization']},
-        'licenses': {'main_key': 'name', 'valid_props': ['name', 'path', 'title']},
-        'queryterms': {'main_key': '', 'valid_props': []},
-        'processes': {'main_key': '', 'valid_props': []},
-        'notes': {'main_key': '', 'valid_props': []},
-        'keywords': {'main_key': '', 'valid_props': []}
-    }
-    for item in list_props:
-        if item in manifest and manifest[item] != '':
-            all_lines = methods.textarea2dict(item, manifest[item], prop_keys[item]['main_key'], prop_keys[item]['valid_props'])
-            if all_lines[item] != []:
-                manifest[item] = all_lines[item]
-
-    # list_props = ['publications', 'collectors', 'queryterms', 'processes', 'notes']
-    # for item in list_props:
-    #     if item in manifest:
-    #         ls = manifest[item].splitlines()
-    #         manifest[item] = [x.strip() for x in ls]
     nodetype = manifest.pop('nodetype', None)
     if 'OCR' in manifest.keys() and manifest['OCR'] == "on":
         manifest['OCR'] = True
-
-    # Validate the resulting manifest
-    if methods.validate_manifest(manifest, nodetype) is True:
-        database_errors = methods.update_record(manifest)
-        errors = errors + database_errors
-    else:
-        msg = '''A valid manifest could not be created with the
-        data supplied. Please check your entries against the
-        <a href="/schema" target="_blank">manifest schema</a>.'''
-        errors.append(msg)
+    # Validate the resulting manifest and update the record
+    database_errors = methods.update_record(manifest, nodetype)
+    errors = errors + database_errors
 
     manifest = json.dumps(manifest, indent=2, sort_keys=False)
+    print(manifest)
     if errors:
         error_str = '<ul>'
         for item in errors:
@@ -294,6 +237,8 @@ def update_manifest():
 def send_export():
     """Ajax route to process user export options and write the export files to the temp folder."""
     data = request.json
+    print('FLUFFFFFFYYY')
+    print(data)
     # The user only wants to print the manifest
     if data['exportoptions'] == ['manifestonly']:
         query = {'name': data['name'], 'metapath': data['metapath']}
@@ -413,13 +358,10 @@ def download_export(filename):
 
 
 @corpus.route('/search1', methods=['GET', 'POST'])
-def search():
+def search1():
     """Page for searching Corpus manifests."""
-    scripts = ['js/parsley.min.js',
-               'js/jquery.twbsPagination.min.js',
-               'js/corpus/corpus.js',
-               'js/dateformat-corpus.js',
-               'js/jquery-ui.js']
+    scripts = ['js/parsley.min.js', 'js/jquery.twbsPagination.min.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/corpus/corpus.js']
+
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/search', 'label': 'Search Collections'}]
     if request.method == 'GET':
         return render_template('corpus/search.html', scripts=scripts, breadcrumbs=breadcrumbs)
@@ -431,20 +373,21 @@ def search():
 
 
 @corpus.route('/search', methods=['GET', 'POST'])
-def search2():
+def search():
     """Experimental Page for searching Corpus manifests."""
-    scripts = ['js/query-builder.standalone.js',
+    scripts = ['js/parsley.min.js',
+               'js/query-builder.standalone.js',
                'js/moment.min.js',
                'js/jquery.twbsPagination.min.js',
-               'js/corpus/corpus.js',
                'js/jquery-sortable-min.js',
-               'js/corpus/search.js',
-               'js/dateformat-corpus.js',
-               'js/jquery-ui.js']
+               'js/jquery-ui.js',
+               'js/corpus/corpus.js',
+               'js/corpus/search.js'
+               ]
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/search', 'label': 'Search Collections'}]
     if request.method == 'GET':
-        return render_template('corpus/search2.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
+        return render_template('corpus/search.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
     if request.method == 'POST':
         query = request.json['query']
         page = int(request.json['page'])
@@ -608,9 +551,10 @@ def import_server_data():
     else:
         errors.append('The filename could not be found on the server.')
     if errors:
-        return json.dumps({'result': 'fail', 'errors': errors})
+        response = json.dumps({'result': 'fail', 'errors': errors})
     else:
-        return json.dumps({'result': 'success', 'errors': []})
+        response = json.dumps({'result': 'success', 'errors': []})
+    return response
 
 
 @corpus.route('/refresh-server-imports', methods=['GET', 'POST'])
@@ -653,9 +597,10 @@ def remove_all_files():
             shutil.move(source, destination)
         # Delete the session import folder
         shutil.rmtree(session['IMPORT_DIR'])
-        return json.dumps({'response': 'success'})
+        response = json.dumps({'response': 'success'})
     else:
-        return json.dumps({'response': 'session is empty'})
+        response = json.dumps({'response': 'session is empty'})
+    return response
 
 
 @corpus.route('/save-upload', methods=['GET', 'POST'])
@@ -741,9 +686,10 @@ def save_upload():
         session['IMPORT_DIR'] = os.path.join(TEMP_DIR, token).replace('\\', '/')
 
         if not errors:
-            return json.dumps({'result': 'success', 'session_token': 'token'})
+            response = json.dumps({'result': 'success', 'session_token': 'token'})
         else:
-            return json.dumps({'errors': errors})
+            response = json.dumps({'errors': errors})
+        return response
 
 
 @corpus.route('/upload/', methods=['GET', 'POST'])

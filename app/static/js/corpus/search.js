@@ -1,3 +1,5 @@
+/* global bootbox, moment */
+/* eslint no-undef: "error" */
 function sendQuery (query, advancedOptions, page = 1) {
   /* Searches the Corpus
         Input: Values from the search form
@@ -36,7 +38,7 @@ function sendQuery (query, advancedOptions, page = 1) {
           $.each(item, function (key, value) {
             value = JSON.stringify(value)
             if (key === 'content' && value.length > 200) {
-              value = value.substring(0,200) + '...'
+              value = value.substring(0, 200) + '...'
             }
             out += '<code>' + key + '</code>: ' + value + '<br>'
           })
@@ -64,6 +66,7 @@ function sendQuery (query, advancedOptions, page = 1) {
           totalPages: totalPages
         }))
         $('#results').append(out)
+        $('#hideSearch').removeClass('hidden')
         $('#hideSearch').html('Show Form')
         $('#exportSearchResults').show()
         $('#search-form').hide()

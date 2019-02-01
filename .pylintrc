@@ -39,9 +39,9 @@ disable=duplicate-code,
         bare-except,
         # # CLEAN LOGIC
         inconsistent-return-statements,
-        no-else-return,
-        pointless-string-statement,
-        simplifiable-if-statement,
+        # no-else-return,
+        # pointless-string-statement,
+        # simplifiable-if-statement,
         unused-argument,
         # # SPACE
         line-too-long,

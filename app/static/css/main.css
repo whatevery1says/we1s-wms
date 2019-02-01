@@ -4073,3 +4073,41 @@
 			margin-top: 0;
 			padding-top: 0;
 		}
+
+    /* Make jQuery UI datepicker menus presentable */
+    .ui-datepicker select.ui-datepicker-month,
+    .ui-datepicker select.ui-datepicker-year {
+        display: inline;
+        font-size: 100%;
+        line-height: 1.5;
+        margin: 0 2px 2px 2px;
+        padding: .125rem 1.5rem;
+    }
+
+    .ui-datepicker .ui-datepicker-title {
+        text-align: center;
+    }
+
+    @media screen and (max-width: 1680px) {
+
+        .ui-datepicker select.ui-datepicker-month,
+        .ui-datepicker select.ui-datepicker-year {
+            font-size: 90%;
+        }
+    }
+
+    @media screen and (max-width: 1280px) {
+
+        .ui-datepicker select.ui-datepicker-month,
+        .ui-datepicker select.ui-datepicker-year {
+            font-size: 80%;
+        }
+    }
+
+    @media screen and (max-width: 360px) {
+
+        .ui-datepicker select.ui-datepicker-month,
+        .ui-datepicker select.ui-datepicker-year {
+            font-size: 70%;
+        }
+    }

@@ -37,9 +37,10 @@ def make_project_folder(project_dir, workspace_dir):
     if not os.path.isdir(project_dir):
         workspace_path = Path(project_dir) / workspace_dir
         Path(workspace_path).mkdir(parents=True, exist_ok=True)
-        return []
+        response = []
     else:
-        return ['<p>A project with this name already exists on the server.</p>']
+        response = ['<p>A project with this name already exists on the server.</p>']
+    return response
 
 
 def project_exists(name, location, WORKSPACE_PROJECTS):
@@ -51,13 +52,14 @@ def project_exists(name, location, WORKSPACE_PROJECTS):
     if location == 'database':
         result = list(projects_db.find({'name': name}))
         if result:
-            return True
-        return False
+            response = True
+        response = False
     else:
         dirlist = [item for item in os.listdir(WORKSPACE_PROJECTS) if os.path.isdir(os.path.join(WORKSPACE_PROJECTS, item))]
         if name not in dirlist:
-            return True
-        return False
+            response = True
+        response = False
+    return response
 
 
 def fetch_datapackage(manifest, zip_path, project_dir, workspace_projects, workspace_dir):
@@ -94,7 +96,7 @@ def validate_corpus_query(query):
     return False
 
 
-def make_datapackage(manifest, project_dir, workspace_dir, query):
+def make_datapackage(manifest, project_dir, query):
     """Create a new datapackage from a Corpus query."""
     errors = []
     try:
@@ -161,15 +163,14 @@ class Datapackage():
             # Get the project from the database
             result = fetch_datapackage(self.manifest, self.zip_path, self.project_dir, self.workspace_projects, self.workspace_dir)
             self.errors += result
-            """In case we need to write files to the workspace folder.
-            This probably could be moved to fetch_datapackage().
-            """
-            # if result == []:
-            #     populate_workspace(self.projects_dir, self.workspace_dir)
+            # In case we need to write files to the workspace folder.
+            # This probably could be moved to fetch_datapackage().
+            # # if result == []:
+            # #     populate_workspace(self.projects_dir, self.workspace_dir)
         else:
             # Otherwise, make a datapackage
             if validate_corpus_query(json.loads(self.manifest['db-query'])):
-                result = make_datapackage(self.manifest, self.project_dir, self.workspace_dir, self.manifest['db-query'])
+                result = make_datapackage(self.manifest, self.project_dir, self.manifest['db-query'])
                 # If there are any errors, delete the container folder
                 if result:
                     print('Erasing folder.')

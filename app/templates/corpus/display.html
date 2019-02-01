@@ -1,39 +1,1032 @@
 {% extends "base.html" %}
 {% block main %}
+<script>
+    var nodetype = '{{ nodetype|safe }}'
+</script>
+<!-- Clear session storage on page load -->
+<script>
+    sessionStorage.clear()
+</script>
+<style type="text/css">
+    /* Disabled Checkbox Styles */
+    .checkbox-disabled {
+        opacity: 0 !important;
+    }
+
+    .not-allowed {
+        cursor: not-allowed !important;
+    }
+</style>
 {% if errors %}
 {% for error in errors %}
 <p>{{ error|safe }}</p>
 {% endfor %}
 {% else %}
 <form id="manifestForm" method="POST">
-<br>
-<div class="row">
-    <div class="col-sm">
-        <header class="major">
-            <h2>Display a Corpus Manifest</h2>
-        </header>
-    </div>    
-    <div class="col-sm text-right">
-        <button id="preview" class="btn btn-lg btn-outline-editorial">Preview</button>
-        <button id="update" class="btn btn-lg  btn-outline-editorial">Edit</button>
-        <button id="delete" class="btn btn-lg  btn-outline-editorial">Delete</button>
-        <button id="export" class="btn btn-lg  btn-outline-editorial">Export</button>
+    <br>
+    <div class="row">
+        <div class="col-sm">
+            <header class="major">
+                <h2>Display a Corpus Manifest</h2>
+            </header>
+        </div>
+        <div class="col-sm text-right">
+            <div class="btn-group">
+                <button type="button" id="preview" class="btn btn-lg btn-outline-editorial" title="Preview"><i class="fa fa-search"></i></button>
+                <button type="button" id="update" class="btn btn-lg btn-outline-editorial" title="Edit" data-action="update"><i class="fa fa-pencil"></i></button>
+                <button type="button" id="delete" class="btn btn-lg btn-outline-editorial" title="Delete"><i class="fa fa-trash"></i></button>
+                <button type="button" id="export" class="btn btn-lg btn-outline-editorial" title="Export"><i class="fa fa-download"></i></button>  
+            </div>  
+        </div>
     </div>
-</div>
-<ul class="nav nav-tabs" id="corpusFormNav" role="tablist">
-    <li class="nav-item">
-        <a class="nav-link active" id="required-tab" data-toggle="tab" href="#required" role="tab" aria-controls="required" aria-selected="true">Required Properties</a>
-    </li>
-    <li class="nav-item">
-        <a class="nav-link" id="optional-tab" data-toggle="tab" href="#optional" role="tab" aria-controls="optional" aria-selected="false">Optional Properties</a>
-    </li>
-    {% if manifest['content'] %}
-    <li class="nav-item">
-        <a class="nav-link" id="manifest-content-tab" data-toggle="tab" href="#manifest-content" role="tab" aria-controls="manifest-content" aria-selected="false">Content</a>
-    </li>
+    <ul class="nav nav-tabs" id="publicationsFormNav" role="tablist">
+        <li class="nav-item">
+            <a class="nav-link active" id="required-tab" data-toggle="tab" href="#required" role="tab" aria-controls="required"
+                aria-selected="true">Required Properties</a>
+        </li>
+        <li class="nav-item">
+            <a class="nav-link" id="optional-tab" data-toggle="tab" href="#optional" role="tab" aria-controls="optional"
+                aria-selected="false">Optional Properties</a>
+        </li>
+        {% if nodetype == 'branch' %}
+        <li class="nav-item">
+                <a class="nav-link" id="manifestContent-tab" data-toggle="tab" href="#manifestContent" role="tab" aria-controls="manifestContent"
+                    aria-selected="false">Content</a>
+        </li>
+        {% endif %}    
+    </ul>
+    <br>
+
+    {# Generate a unique ID - Keep everything on one line to prevent extra white space #}
+    {% macro random_int(vals) %}{% for n in range(6) %}{{ vals|random }}{% endfor %}{% endmacro %}
+    {% macro unique_id(property_name) %}{% set vals = [0,1,2,3,4,5,6,7,8,9,'c','a','t'] %}{% set parts =
+    [random_int(vals), random_int(vals), random_int(vals), random_int(vals), random_int(vals), random_int(vals)]
+    %}{{property_name}}{{parts|join('')}}{% endmacro %}
+    {% if nodetype == 'collection' %}
+    <div id="manifestCard">
+        <div class="tab-content" id="collectionsForm">
+            {# set template = template['collection-template'] #}
+            {% set required_opts = template[0]['required'] %}
+            {% set optional_opts = template[1]['optional'] %}
+            <!-- Required Options Tab -->
+            <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+                <!-- Loop through Required Options -->
+                {% for opt in required_opts %}
+                <!-- Fields Containing Generic Strings -->
+                {% if manifest[opt.name] is string and not opt.skip %}
+                <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name }}</label>
+                    <div class="col-sm-10">
+                        <input name="{{ opt.name }}" id="{{ opt.name }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                            value="{{ manifest[opt.name]|safe if manifest[opt.name] }}" class="form-control"
+                            {{ 'required' if opt.required }} readonly disabled>
+                    </div>
+                    {% if 'repeatable' in required_opts[opt] %}
+                    <div class="col-sm-1" style="padding: 5px 0px;">
+                        <button type="button" class="btn btn-sm btn-outline-editorial add add-source" title="Add another source"><i
+                                class="fa fa-plus-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-editorial remove remove-source hidden"
+                            title="Remove source"><i class="fa fa-minus-circle"></i></button>
+                    </div>
+                    {% endif %}
+                </div>
+                <!-- Fields Containing Lists -->
+                {% elif manifest[opt.name]|is_list and not opt.skip %}
+                <!-- Loop through Each Row -->
+                {% for row in manifest[opt.name] %}
+                {% if row is mapping %}
+                {% if opt.name == 'sources' %}
+                <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                        }}</label>
+                    <input type="hidden" id="sources" name="sources" value="" disabled>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control source-field" id="sourceTitle{{ loop.index0 }}" name="sourceTitle"
+                            placeholder="Title" {{ 'required' if opt.required }} value="{{ row['title']|safe if manifest[opt.name] != [''] }}"
+                            readonly disabled>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control source-field" id="sourcePath{{ loop.index0 }}" name="sourcePath"
+                            placeholder="Path" value="{{ row['path']|safe if manifest[opt.name] != [''] }}" required readonly disabled>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control source-field" id="sourceEmail{{ loop.index0 }}" name="sourceEmail"
+                            placeholder="Email" value="{{ row['email']|safe if manifest[opt.name] != [''] }}" readonly disabled>
+                    </div>
+                    <div class="col-sm-1" style="padding: 5px 0px;">
+                        <button type="button" class="btn btn-sm btn-outline-editorial add add-source" title="Add another source"
+                            disabled><i class="fa fa-plus-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-editorial remove remove-source hidden"
+                            title="Remove source" disabled><i class="fa fa-minus-circle"></i></button>
+                    </div>
+                </div>
+                {% elif opt.name == 'contributors' %}
+                <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                        }}</label>
+                    <input type="hidden" id="contributors" name="contributors" value="" disabled>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control contributor-field" id="contributorTitle{{ loop.index0 }}"
+                            name="contributorTitle" placeholder="Title" {{ 'required' if opt.required }} value="{{ row['title']|safe if manifest[opt.name] != [''] }}"
+                            readonly disabled>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control contributor-field" id="contributorGroup{{ loop.index0 }}"
+                            name="contributorGroup" placeholder="Group" value="{{ row['group']|safe if row != [''] }}" required
+                            readonly disabled>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control contributor-field" id="contributorOrg{{ loop.index0 }}"
+                            name="contributorOrg" placeholder="Organization" value="{{ row['org']|safe if manifest[opt.name] != [''] }}"
+                            readonly disabled>
+                    </div>
+                    <div class="col-sm-1" style="padding: 5px 0px;">
+                        <button type="button" class="btn btn-sm btn-outline-editorial add add-contributor" title="Add another contributor"
+                            disabled><i class="fa fa-plus-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-editorial remove remove-contributor hidden"
+                            title="Remove contributor" disabled><i class="fa fa-minus-circle"></i></button>
+                    </div>
+                </div>
+                {% elif opt.name == 'created' %}
+                <div id="created{{ loop.index0 }}" class="form-group row created-row input-group daterange created0"
+                    data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="created-start{{ loop.index0 }}">{{ opt.name if
+                        loop.index0 == 0 }}</label>
+                    <div class="col-sm-4">
+                        <input data-parsley-dateformat="date" type="text" name="created-start{{ loop.index0 }}" id="created-start{{ loop.index0 }}"
+                            class="form-control datepicker" placeholder="Start Date" value="{{ row['start']|safe }}"
+                            readonly disabled>
+                    </div>
+                    <div class="col-sm-4">
+                        <input data-parsley-dateformat="date" type="text" name="created-end{{ loop.index0 }}" id="created-end{{ loop.index0 }}"
+                            class="form-control datepicker" placeholder="End Date" value="{{ row['end']|safe if row['end'] }}"
+                            readonly disabled>
+                    </div>
+                    <div class="col-sm-2" style="padding: 5px 0px;">
+                        <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="created"
+                            title="Add another date" disabled><i class="fa fa-plus-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="created"
+                            data-count="created{{ loop.index0 }}" title="Remove date" disabled><i class="fa fa-minus-circle"></i></button>
+                    </div>
+                </div>
+                {% endif %}
+                {% elif not opt.skip %}
+                <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                        }}</label>
+                    <div class="col-sm-10">
+                        <input name="{{ opt.name }}" id="{{ opt.name }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                            value="{{ manifest[opt.name]|safe if manifest[opt.name] != [''] }}" class="form-control"
+                            {{ 'required' if opt.required }} readonly disabled>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                <!-- /* Multiple Rows -->
+                {% endif %}
+                {% endfor %}
+            </div>
+            <!-- Optional -->
+            <div class="tab-pane fade show" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+                {% for opt in optional_opts %}
+                <!-- Single Field Row -->
+                {% if manifest[opt.name] is string and not opt.skip %}
+                <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name }}</label>
+                    <div class="col-sm-10">
+                        <input class="form-control" name="{{ opt.name }}" id="{{ opt.name }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                            value="{{ manifest[opt.name]|safe if manifest[opt.name] != [''] }}" class="form-control"
+                            {{ 'required' if opt.required }} readonly disabled>
+                    </div>
+                    {% if 'repeatable' in optional_opts[opt.name] %}
+                    <div class="col-sm-1" style="padding: 5px 0px;">
+                        <button type="button" class="btn btn-sm btn-outline-editorial add add-source" title="Add another source"
+                            disabled><i class="fa fa-plus-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-editorial remove remove-source hidden"
+                            title="Remove source" disabled><i class="fa fa-minus-circle"></i></button>
+                    </div>
+                    {% endif %}
+                </div>
+                <!-- Multiple Field Row -->
+                {% elif manifest[opt.name]|is_list and not opt.skip %}
+                {% for row in manifest[opt.name] %}
+                {% if opt.name == 'processes' %}
+                <input type="hidden" id="processes" name="processes" value="" disabled>
+                <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="processes" data-id="{{ opt.name + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="processName{{ loop.index0 }}">{{ opt.name if
+                        loop.index0 == 0 }}</label>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control process-field" id="processTitle{{ loop.index0 }}" name="processTitle"
+                            placeholder="Process title" value="{{ row['title']|safe if row is mapping }}" readonly
+                            disabled>
+                    </div>
+                    <div class="col-sm-4">
+                        <input type="text" class="form-control process-field" id="processPath{{ loop.index0 }}" name="processPath"
+                            placeholder="Path" value="{{ row['path']|safe if row is mapping }}" readonly disabled>
+                    </div>
+                    <div class="col-sm-2" style="padding: 5px 0px;">
+                        <button type="button" class="btn btn-sm btn-outline-editorial add add-process" title="Add another process"
+                            disabled><i class="fa fa-plus-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-editorial remove remove-process hidden"
+                            title="Remove process" disabled><i class="fa fa-minus-circle"></i></button>
+                    </div>
+                </div>
+                {% elif opt.name == 'licenses' %}
+                <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{opt.name if loop.index0 == 0
+                        }}</label>
+                    <input type="hidden" id="licenses" name="licences" value="" disabled>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control licence-field" id="licenceTitle{{ loop.index0 }}" name="licenceTitle"
+                            placeholder="Title" {{ 'required' if opt.required }} value="{{ row['title']|safe if row is mapping }}"
+                            readonly disabled>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control licence-field" id="licenceGroup{{ loop.index0 }}" name="licenceGroup"
+                            placeholder="Group" value="{{ row['group']|safe if row is mapping }}" required readonly
+                            disabled>
+                    </div>
+                    <div class="col-sm-3">
+                        <input type="text" class="form-control licence-field" id="licenceOrg{{ loop.index0 }}" name="licenceOrg"
+                            placeholder="Organization" value="{{ row['org']|safe if row is mapping }}" readonly
+                            disabled>
+                    </div>
+                    <div class="col-sm-1" style="padding: 5px 0px;">
+                        <button type="button" class="btn btn-sm btn-outline-editorial add add-license" title="Add another license"
+                            disabled><i class="fa fa-plus-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-editorial remove remove-contributor hidden"
+                            title="Remove license" disabled><i class="fa fa-minus-circle"></i></button>
+                    </div>
+                </div>
+                {% elif opt.name == 'updated' %}
+                <div id="updated0" class="form-group row updated-row input-group daterange updated0" data-fieldtype="{{ opt.name }}"
+                    data-id="{{ opt.name + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="updated-start0">{{opt.name if loop.index0 == 0 }}</label>
+                    <div class="col-sm-4">
+                        <input data-parsley-dateformat="date" type="text" name="updated-start0" id="updated-start{{ loop.index0 }}"
+                            class="form-control datepicker" placeholder="Start Date" value="{{ row['start']|safe if row is mapping }}"
+                            readonly disabled>
+                    </div>
+                    <div class="col-sm-4">
+                        <input data-parsley-dateformat="date" type="text" name="updated-end0" id="updated-end{{ loop.index0 }}"
+                            class="form-control datepicker" placeholder="End Date" value="{{ row['end']|safe if row is mapping }}"
+                            readonly disabled>
+                    </div>
+                    <div class="col-sm-2" style="padding: 5px 0px;">
+                        <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="updated"
+                            title="Add another date" disabled><i class="fa fa-plus-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="updated"
+                            data-count="updated0" title="Remove date" disabled><i class="fa fa-minus-circle"></i></button>
+                    </div>
+                </div>
+                {% elif opt.name == 'description' %}
+                <div id="descriptionRow" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                        }}</label>
+                    <div class="col-sm-10">
+                        <textarea name="description" id="description" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}"
+                            {{ 'required' if opt.required }} readonly disabled>{{ row|safe if manifest[opt.name] != [''] }}</textarea>
+                    </div>
+                </div>
+                {% elif opt.name == 'notes' %}
+                <div id="notesRow" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                    <input type="hidden" id="notes" name="notes" value="">
+                    <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                        }}</label>
+                    <div class="col-sm-9">
+                        <textarea name="notesField" id="note{{ loop.index0 }}" class="form-control note-field"
+                            placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly
+                            disabled>{{ row|safe if manifest[opt.name] != '' }}</textarea>
+                    </div>
+                    <div class="col-sm-1" style="padding: 15px 0px;">
+                        <button type="button" class="btn btn-sm btn-outline-editorial add add-note" disabled title="Add another note"
+                            disabled><i class="fa fa-plus-circle"></i></button>
+                        <button type="button" class="btn btn-sm btn-outline-editorial remove remove-note hidden"
+                            disabled title="Remove note" disabled><i class="fa fa-minus-circle"></i></button>
+                    </div>
+                </div>
+                {% elif not opt.skip %}
+                <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                    <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                        }}</label>
+                    <div class="col-sm-10">
+                        <input name="{{ opt.name }}" id="{{ opt.name }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                            value="{{ manifest[opt.name]|safe if manifest[opt.name] != '' }}" class="form-control"
+                            {{ 'required' if opt.required }} readonly disabled>
+                    </div>
+                </div>
+                {% endif %}
+                {% endfor %}
+                <!-- /* Multiple Rows -->
+                {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <!-- RawData -->
+    {% elif nodetype == 'rawdata' %}
+    <div class="tab-content" id="collectionsForm">
+        {# set template = template['rawdata-template'] #}
+        {% set required_opts = template[0]['required'] %}
+        {% set optional_opts = template[1]['optional'] %}
+        <!-- Required Options Tab -->
+        <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+            <!-- Loop through Required Options -->
+            {% for opt in required_opts %}
+            <!-- Fields Containing Generic Strings -->
+            {% if manifest[opt.name] is string and not opt.skip %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name }}</label>
+                <div class="col-sm-10">
+                    <input name="{{ opt.name }}" id="{{ opt.name }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                        value="{{ manifest[opt.name]|safe if manifest[opt.name] }}" class="form-control"
+                        {{ 'required' if opt.required }} readonly disabled>
+                </div>
+                {% if 'repeatable' in required_opts[opt] %}
+                <div class="col-sm-1" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-source" title="Add another source"><i
+                            class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-source hidden" title="Remove source"><i
+                            class="fa fa-minus-circle"></i></button>
+                </div>
+                {% endif %}
+            </div>
+            <!-- Fields Containing Lists -->
+            {% elif manifest[opt.name]|is_list and not opt.skip %}
+            <!-- Loop through Each Row -->
+            {% for row in manifest[opt.name] %}
+            {% if row is mapping %}
+            {% if opt.name == 'sources' %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <input type="hidden" id="sources" name="sources" value="" disabled>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control source-field" id="sourceTitle{{ loop.index0 }}" name="sourceTitle"
+                        placeholder="Title" {{ 'required' if opt.required }} value="{{ row['title']|safe if manifest[opt.name] != [''] }}" readonly
+                        disabled>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control source-field" id="sourcePath{{ loop.index0 }}" name="sourcePath"
+                        placeholder="Path" value="{{ row['path']|safe if manifest[opt.name] != [''] }}" required readonly disabled>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control source-field" id="sourceEmail{{ loop.index0 }}" name="sourceEmail"
+                        placeholder="Email" value="{{ row['email']|safe if manifest[opt.name] != [''] }}" readonly disabled>
+                </div>
+                <div class="col-sm-1" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-source" title="Add another source"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-source hidden" title="Remove source"
+                        disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% elif opt.name == 'contributors' %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <input type="hidden" id="contributors" name="contributors" value="" disabled>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control contributor-field" id="contributorTitle{{ loop.index0 }}"
+                        name="contributorTitle" placeholder="Title" {{ 'required' if opt.required }} value="{{ row['title']|safe if manifest[opt.name] != [''] }}"
+                        readonly disabled>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control contributor-field" id="contributorGroup{{ loop.index0 }}"
+                        name="contributorGroup" placeholder="Group" value="{{ row['group']|safe if manifest[opt.name] != [''] }}" required readonly
+                        disabled>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control contributor-field" id="contributorOrg{{ loop.index0 }}" name="contributorOrg"
+                        placeholder="Organization" value="{{ row['org']|safe if manifest[opt.name] != [''] }}" readonly disabled>
+                </div>
+                <div class="col-sm-1" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-contributor" title="Add another contributor"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-contributor hidden"
+                        title="Remove contributor" disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% elif opt.name == 'created' %}
+            <div id="created{{ loop.index0 }}" class="form-group row created-row input-group daterange created0"
+                data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="created-start{{ loop.index0 }}">{{ opt.name if
+                    loop.index0 == 0 }}</label>
+                <div class="col-sm-4">
+                    <input data-parsley-dateformat="date" type="text" name="created-start{{ loop.index0 }}" id="created-start{{ loop.index0 }}"
+                        class="form-control datepicker" placeholder="Start Date" value="{{ row['start']|safe }}"
+                        readonly disabled>
+                </div>
+                <div class="col-sm-4">
+                    <input data-parsley-dateformat="date" type="text" name="created-end{{ loop.index0 }}" id="created-end{{ loop.index0 }}"
+                        class="form-control datepicker" placeholder="End Date" value="{{ row['end']|safe if row['end'] }}"
+                        readonly disabled>
+                </div>
+                <div class="col-sm-2" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="created" title="Add another date"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="created"
+                        data-count="created{{ loop.index0 }}" title="Remove date" disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% endif %}
+            {% elif not opt.skip %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <div class="col-sm-10">
+                    <input name="{{ opt.name }}" id="{{ opt.name }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                        value="{{ manifest[opt.name]|safe if manifest[opt.name] != [''] }}" class="form-control"
+                        {{ 'required' if opt.required }} readonly disabled>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            <!-- /* Multiple Rows -->
+            {% endif %}
+            {% endfor %}
+        </div>
+        <!-- Optional -->
+        <div class="tab-pane fade show" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+            {% for opt in optional_opts %}
+            <!-- Single Field Row -->
+            {% if manifest[opt.name] is string and not opt.skip %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name }}</label>
+                <div class="col-sm-10">
+                    <input class="form-control" name="{{ opt.name }}" id="{{ opt.name }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                        value="{{ manifest[opt.name]|safe if manifest[opt.name] }}" class="form-control"
+                        {{ 'required' if opt.required }} readonly disabled>
+                </div>
+                {% if 'repeatable' in optional_opts[opt.name] %}
+                <div class="col-sm-1" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-source" title="Add another source"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-source hidden" title="Remove source"
+                        disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+                {% endif %}
+            </div>
+            <!-- Multiple Field Row -->
+            {% elif manifest[opt.name]|is_list and not opt.skip %}
+            {% for row in manifest[opt.name] %}
+            {% if opt.name == 'licenses' %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{opt.name if loop.index0 == 0
+                    }}</label>
+                <input type="hidden" id="licenses" name="licences" value="" disabled>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control licence-field" id="licenceTitle{{ loop.index0 }}" name="licenceTitle"
+                        placeholder="Title" {{ 'required' if opt.required }} value="{{ row['title']|safe if row is mapping }}"
+                        readonly disabled>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control licence-field" id="licenceGroup{{ loop.index0 }}" name="licenceGroup"
+                        placeholder="Group" value="{{ row['group']|safe if row is mapping }}" required readonly
+                        disabled>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control licence-field" id="licenceOrg{{ loop.index0 }}" name="licenceOrg"
+                        placeholder="Organization" value="{{ row['org']|safe if row is mapping }}" readonly disabled>
+                </div>
+                <div class="col-sm-1" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-license" title="Add another license"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-contributor hidden"
+                        title="Remove license" disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% elif opt.name == 'updated' %}
+            <div id="updated0" class="form-group row updated-row input-group daterange updated0" data-fieldtype="{{ opt.name }}"
+                data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="updated-start0">{{opt.name if loop.index0 == 0 }}</label>
+                <div class="col-sm-4">
+                    <input data-parsley-dateformat="date" type="text" name="updated-start0" id="updated-start{{ loop.index0 }}"
+                        class="form-control datepicker" placeholder="Start Date" value="{{ row['start']|safe if row is mapping }}"
+                        readonly disabled>
+                </div>
+                <div class="col-sm-4">
+                    <input data-parsley-dateformat="date" type="text" name="updated-end0" id="updated-end{{ loop.index0 }}"
+                        class="form-control datepicker" placeholder="End Date" value="{{ row['end']|safe if row is mapping }}"
+                        readonly disabled>
+                </div>
+                <div class="col-sm-2" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="updated" title="Add another date"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="updated"
+                        data-count="updated0" title="Remove date" disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% elif opt.name == 'description' %}
+            <div id="descriptionRow" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <div class="col-sm-10">
+                    <textarea name="description" id="description" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{{ row|safe if manifest[opt.name] != '' }}</textarea>
+                </div>
+            </div>
+            {% elif opt.name == 'relationships' %}
+            <div id="descriptionRow" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <div class="col-sm-10">
+                    <textarea name="relationships" id="relationships" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{{ row|safe if manifest[opt.name] != '' }}</textarea>
+                </div>
+            </div>
+            {% elif opt.name == 'notes' %}
+            <div id="notesRow" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <input type="hidden" id="notes" name="notes" value="">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <div class="col-sm-9">
+                    <textarea name="notesField" id="note{{ loop.index0 }}" class="form-control note-field" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{{ row|safe if manifest[opt.name] != [''] }}</textarea>
+                </div>
+                <div class="col-sm-1" style="padding: 15px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-note" disabled title="Add another note"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-note hidden" disabled
+                        title="Remove note" disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% elif not opt.skip %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <div class="col-sm-10">
+                    <input name="{{ opt.name }}" id="{{ opt.name }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                        value="{{ manifest[opt.name]|safe if manifest[opt.name] }}" class="form-control"
+                        {{ 'required' if opt.required }} readonly disabled>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            <!-- /* Multiple Rows -->
+            {% endif %}
+            {% endfor %}
+        </div> <!-- /tab-pane -->
+    </div> <!-- /collectionsForm -->
+    </div>
+    <!-- ProcessedData Form -->
+    {% elif nodetype == 'processeddata' %}
+    <div class="tab-content" id="collectionsForm">
+        {# set template = template['processeddata-template'] #}
+        {% set required_opts = template[0]['required'] %}
+        {% set optional_opts = template[1]['optional'] %}
+        <!-- Required Options Tab -->
+        <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+            <!-- Loop through Required Options -->
+            {% for opt in required_opts %}
+            <!-- Fields Containing Generic Strings -->
+            {% if manifest[opt.name] is string and not opt.skip %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name }}</label>
+                <div class="col-sm-10">
+                    <input name="{{ opt.name }}" id="{{ opt.name }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                        value="{{ manifest[opt.name]|safe if manifest[opt.name] }}" class="form-control"
+                        {{ 'required' if opt.required }} readonly disabled>
+                </div>
+                {% if 'repeatable' in required_opts[opt] %}
+                <div class="col-sm-1" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-source" title="Add another source"><i
+                            class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-source hidden" title="Remove source"><i
+                            class="fa fa-minus-circle"></i></button>
+                </div>
+                {% endif %}
+            </div>
+            <!-- Fields Containing Lists -->
+            {% elif manifest[opt.name]|is_list and not opt.skip %}
+            <!-- Loop through Each Row -->
+            {% for row in manifest[opt.name] %}
+            {% if row is mapping %}
+            {% if opt.name == 'sources' %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <input type="hidden" id="sources" name="sources" value="" disabled>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control source-field" id="sourceTitle{{ loop.index0 }}" name="sourceTitle"
+                        placeholder="Title" {{ 'required' if opt.required }} value="{{ row['title']|safe if manifest[opt.name] != [''] }}" readonly
+                        disabled>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control source-field" id="sourcePath{{ loop.index0 }}" name="sourcePath"
+                        placeholder="Path" value="{{ row['path']|safe if manifest[opt.name] != [''] }}" required readonly disabled>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control source-field" id="sourceEmail{{ loop.index0 }}" name="sourceEmail"
+                        placeholder="Email" value="{{ row['email']|safe if manifest[opt.name] != [''] }}" readonly disabled>
+                </div>
+                <div class="col-sm-1" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-source" title="Add another source"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-source hidden" title="Remove source"
+                        disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% elif opt.name == 'contributors' %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <input type="hidden" id="contributors" name="contributors" value="" disabled>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control contributor-field" id="contributorTitle{{ loop.index0 }}"
+                        name="contributorTitle" placeholder="Title" {{ 'required' if opt.required }} value="{{ row['title']|safe if manifest[opt.name] != [''] }}"
+                        readonly disabled>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control contributor-field" id="contributorGroup{{ loop.index0 }}"
+                        name="contributorGroup" placeholder="Group" value="{{ row['group']|safe if manifest[opt.name] != [''] }}" required readonly
+                        disabled>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control contributor-field" id="contributorOrg{{ loop.index0 }}" name="contributorOrg"
+                        placeholder="Organization" value="{{ row['org']|safe if manifest[opt.name] != [''] }}" readonly disabled>
+                </div>
+                <div class="col-sm-1" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-contributor" title="Add another contributor"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-contributor hidden"
+                        title="Remove contributor" disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% elif opt.name == 'created' %}
+            <div id="created{{ loop.index0 }}" class="form-group row created-row input-group daterange created0"
+                data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="created-start{{ loop.index0 }}">{{ opt.name if
+                    loop.index0 == 0 }}</label>
+                <div class="col-sm-4">
+                    <input data-parsley-dateformat="date" type="text" name="created-start{{ loop.index0 }}" id="created-start{{ loop.index0 }}"
+                        class="form-control datepicker" placeholder="Start Date" value="{{ row['start']|safe }}"
+                        readonly disabled>
+                </div>
+                <div class="col-sm-4">
+                    <input data-parsley-dateformat="date" type="text" name="created-end{{ loop.index0 }}" id="created-end{{ loop.index0 }}"
+                        class="form-control datepicker" placeholder="End Date" value="{{ row['end']|safe if row['end'] }}"
+                        readonly disabled>
+                </div>
+                <div class="col-sm-2" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="created" title="Add another date"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="created"
+                        data-count="created{{ loop.index0 }}" title="Remove date" disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% endif %}
+            {% elif not opt.skip %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <div class="col-sm-10">
+                    <input name="{{ opt.name }}" id="{{ opt.name }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                        value="{{ manifest[opt.name]|safe if manifest[opt.name] }}" class="form-control"
+                        {{ 'required' if opt.required }} readonly disabled>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            <!-- /* Multiple Rows -->
+            {% endif %}
+            {% endfor %}
+        </div>
+        <!-- Optional -->
+        <div class="tab-pane fade show" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+            {% for opt in optional_opts %}
+            <!-- Single Field Row -->
+            {% if manifest[opt.name] is string and not opt.skip %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name }}</label>
+                <div class="col-sm-10">
+                    <input class="form-control" name="{{ opt.name }}" id="{{ opt.name }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                        value="{{ manifest[opt.name]|safe if manifest[opt.name] }}" class="form-control"
+                        {{ 'required' if opt.required }} readonly disabled>
+                </div>
+                {% if 'repeatable' in optional_opts[opt.name] %}
+                <div class="col-sm-1" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-source" title="Add another source"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-source hidden" title="Remove source"
+                        disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+                {% endif %}
+            </div>
+            <!-- Multiple Field Row -->
+            {% elif manifest[opt.name]|is_list and not opt.skip %}
+            {% for row in manifest[opt.name] %}
+            {% if opt.name == 'licenses' %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{opt.name if loop.index0 == 0
+                    }}</label>
+                <input type="hidden" id="licenses" name="licences" value="" disabled>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control licence-field" id="licenceTitle{{ loop.index0 }}" name="licenceTitle"
+                        placeholder="Title" {{ 'required' if opt.required }} value="{{ row['title']|safe if row is mapping }}"
+                        readonly disabled>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control licence-field" id="licenceGroup{{ loop.index0 }}" name="licenceGroup"
+                        placeholder="Group" value="{{ row['group']|safe if row is mapping }}" required readonly
+                        disabled>
+                </div>
+                <div class="col-sm-3">
+                    <input type="text" class="form-control licence-field" id="licenceOrg{{ loop.index0 }}" name="licenceOrg"
+                        placeholder="Organization" value="{{ row['org']|safe if row is mapping }}" readonly disabled>
+                </div>
+                <div class="col-sm-1" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-license" title="Add another license"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-contributor hidden"
+                        title="Remove license" disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% elif opt.name == 'accessed' or opt.name == 'updated' or opt.name == 'created' %}
+            <div id="updated0" class="form-group row updated-row input-group daterange updated0" data-fieldtype="{{ opt.name }}"
+                data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="updated-start0">{{opt.name if loop.index0 == 0 }}</label>
+                <div class="col-sm-4">
+                    <input data-parsley-dateformat="date" type="text" name="updated-start0" id="updated-start{{ loop.index0 }}"
+                        class="form-control datepicker" placeholder="Start Date" value="{{ row['start']|safe if row is mapping }}"
+                        readonly disabled>
+                </div>
+                <div class="col-sm-4">
+                    <input data-parsley-dateformat="date" type="text" name="updated-end0" id="updated-end{{ loop.index0 }}"
+                        class="form-control datepicker" placeholder="End Date" value="{{ row['end']|safe if row is mapping }}"
+                        readonly disabled>
+                </div>
+                <div class="col-sm-2" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="updated" title="Add another date"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="updated"
+                        data-count="updated0" title="Remove date" disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% elif opt.name == 'description' %}
+            <div id="descriptionRow" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <div class="col-sm-10">
+                    <textarea name="description" id="description" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{{ row|safe if manifest[opt.name] }}</textarea>
+                </div>
+            </div>
+            {% elif opt.name == 'notes' %}
+            <div id="notesRow" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <input type="hidden" id="notes" name="notes" value="">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <div class="col-sm-9">
+                    <textarea name="notesField" id="note{{ loop.index0 }}" class="form-control note-field" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{{ row|safe if manifest[opt.name] != [''] }}</textarea>
+                </div>
+                <div class="col-sm-1" style="padding: 15px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-note" disabled title="Add another note"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-note hidden" disabled
+                        title="Remove note" disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% elif not opt.skip %}
+            <div id="{{unique_id(opt.name)}}" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <div class="col-sm-10">
+                    <input name="{{ opt.name }}" id="{{ opt.name }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                        value="{{ manifest[opt.name]|safe if manifest[opt.name] }}" class="form-control"
+                        {{ 'required' if opt.required }} readonly disabled>
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+            <!-- /* Multiple Rows -->
+            {% endif %}
+            {% endfor %}
+        </div> <!-- /tab-pane -->
+    </div> <!-- /collectionsForm -->
+    </div>
+    {% elif nodetype == 'branch' %}
+    <!-- Branch Form -->
+    <div class="tab-content" id="collectionsForm">
+        {# set template = template['branch-template'] #}
+        {% set required_opts = template[0]['required'] %}
+        {% set optional_opts = template[1]['optional'] %}
+        <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+            {% for opt in required_opts %}
+            {% if not opt.skip %}
+            <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                {% if opt.fieldtype == 'text' %}
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                    <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {% if manifest[opt.name] %}value="{{ manifest[opt.name]|safe }}" {% endif %} class="form-control"
+                        {{ 'required' if opt.required }} readonly disabled>
+                </div>
+                {% elif opt.fieldtype == 'textarea' %}
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                    <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{% if manifest[opt.name] %}{{ manifest[opt.name]|safe }}{% endif %}</textarea>
+                </div>
+                {% endif %}
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>    
+        <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+            {% for opt in optional_opts %}
+            {% if not opt.skip %}
+            {% if opt.fieldtype == 'text' %}
+            <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                    <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {% if manifest[opt.name] %}value="{{ manifest[opt.name]|safe }}" {% endif %} class="form-control"
+                        {{ 'required' if opt.required }} readonly disabled>
+                </div>
+            </div>
+            {% elif opt.fieldtype == 'textarea' %}
+            {% if opt.name == 'description' %}
+            <div id="descriptionRow" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name }}</label>
+                <div class="col-sm-10">
+                    <textarea name="description" id="description" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{{ manifest[opt.name]|safe if manifest[opt.name] != [''] }}</textarea>
+                </div>
+            </div>
+            {% elif opt.name == 'notes' %}
+            <div id="notesRow" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <input type="hidden" id="notes" name="notes" value="">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <div class="col-sm-9">
+                    <textarea name="notesField" id="note{{ loop.index0 }}" class="form-control note-field" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{{ row|safe if manifest[opt.name] != [''] }}</textarea>
+                </div>
+                <div class="col-sm-1" style="padding: 15px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-note" disabled title="Add another note"
+                        disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-note hidden" disabled
+                        title="Remove note" disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% elif opt.name == 'accessed' or opt.name == 'updated' or opt.name == 'created' %}
+            <div id="updated0" class="form-group row updated-row input-group daterange updated0">
+                <label class="col-sm-2 col-form-label" for="updated-start0">updated</label>
+                <div class="col-sm-4">
+                    <input data-parsley-dateformat="date" type="text" name="updated-start0" id="updated-start0" class="form-control datepicker"
+                        placeholder="Start Date" readonly disabled>
+                </div>
+                <div class="col-sm-4">
+                    <input data-parsley-dateformat="date" type="text" name="updated-end0" id="updated-end0" class="form-control datepicker"
+                        placeholder="End Date" readonly disabled>
+                </div>
+                <div class="col-sm-2" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="updated" title="Add another date" readonly disabled><i
+                            class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="updated"
+                        data-count="updated0" title="Remove date" readonly disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% else %}
+            <!-- Generic Textarea -->
+            <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                    <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{% if manifest[opt.name] %}{{ manifest[opt.name]|safe }}{% endif %}</textarea>
+                </div>
+            </div>
+            <!-- End Generic Textarea -->
+            {% endif %}
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </div> <!-- /tab-pane -->
+        <div class="tab-pane fade" id="manifestContent" role="tabpanel" aria-labelledby="manifestContent-tab">
+            <div id="manifestContentContainer" class="form-group row" data-fieldtype="textarea"
+            data-id="manifestContent">
+                <label class="col-sm-1 col-form-label" for="content">content</label>
+                <div class="col-sm-11">
+                    <textarea style="height: 400px;" name="content" id="content" class="form-control" placeholder="{{ optional_opts.placeholder|safe or '' }}"
+                        {{ 'required' if optional_opts.required }} readonly disabled>{% if manifest['content'] %}{{ manifest['content']|safe }}{% endif %}</textarea>
+                </div>
+            </div>
+        </div> <!-- /tab-pane -->    
+    </div> <!-- /collectionsForm -->
+    {% elif nodetype == 'generic' %}
+    <!-- Generic Form -->
+    <div class="tab-content" id="collectionsForm">
+        {% set template = template['branch-template'] %}
+        {% set required_opts = template[0]['required'] %}
+        {% set optional_opts = template[1]['optional'] %}
+        <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+            {% for opt in required_opts %}
+            {% if not opt.skip %}
+            <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                    {% if opt.fieldtype == 'text' %}
+                    <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {% if opt.value %}value="{{ opt.value|safe }}" {% endif %} class="form-control"
+                        {{ 'required' if opt.required }} readonly disabled>
+                    {% elif opt.fieldtype == 'textarea' %}
+                    <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{% if opt.value %}{{ opt.value|safe }}{% endif %}</textarea>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+        <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+            {% for opt in optional_opts %}
+            {% if not opt.skip %}
+            {% if opt.fieldtype == 'text' %}
+            <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                    <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {% if opt.value %}value="{{ opt.value|safe }}" {% endif %} class="form-control"
+                        {{ 'required' if opt.required }} readonly disabled>
+                </div>
+            </div>
+            {% elif opt.fieldtype == 'textarea' %}
+            {% if opt.name == 'description' %}
+            <div id="descriptionRow" class="form-group row" data-fieldtype="{{opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <div class="col-sm-10">
+                    <textarea name="description" id="description" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{{ manifest[opt.name]|safe if manifest[opt.name] != [''] }}</textarea>
+                </div>
+            </div>
+            {% elif opt.name == 'notes' %}
+            <div id="notesRow" class="form-group row" data-fieldtype="{{ opt.name }}" data-id="{{ opt.name + loop.index0|string or '' }}">
+                <input type="hidden" id="notes" name="notes" value="">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name }}">{{ opt.name if loop.index0 == 0
+                    }}</label>
+                <div class="col-sm-9">
+                    <textarea name="notesField" id="note{{ loop.index0 }}" class="form-control note-field" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{{ manifest[opt.name]|safe if manifest[opt.name] != ['']}}</textarea>
+                </div>
+                <div class="col-sm-1" style="padding: 15px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add add-note" disabled title="Add another note"
+                        readonly disabled><i class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove remove-note hidden" disabled
+                        title="Remove note" readonly disabled><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% elif opt.name == 'accessed' or opt.name == 'updated' or opt.name == 'created' %}
+            <div id="updated0" class="form-group row updated-row input-group daterange updated0">
+                <label class="col-sm-2 col-form-label" for="updated-start0">updated</label>
+                <div class="col-sm-4">
+                    <input type="text" name="updated-start0" id="updated-start0" class="form-control datepicker"
+                        placeholder="Start Date" readonly disabled>
+                </div>
+                <div class="col-sm-4">
+                    <input type="text" name="updated-end0" id="updated-end0" class="form-control datepicker"
+                        placeholder="End Date" readonly disabled>
+                </div>
+                <div class="col-sm-2" style="padding: 5px 0px;">
+                    <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="updated" title="Add another date"><i
+                            class="fa fa-plus-circle"></i></button>
+                    <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="updated"
+                        data-count="updated0" title="Remove date"><i class="fa fa-minus-circle"></i></button>
+                </div>
+            </div>
+            {% else %}
+            <!-- Generic Textarea -->
+            <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                <div class="col-sm-10">
+                    <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}"
+                        {{ 'required' if opt.required }} readonly disabled>{% if manifest[opt.name] %}{{ manifest[opt.name]|safe }}{% endif %}</textarea>
+                </div>
+            </div>
+            <!-- End Generic Textarea -->
+            {% endif %}
+            {% endif %}
+            {% endif %}
+            {% endfor %}
+        </div> <!-- /tab-pane -->
+    </div> <!-- /collectionsForm -->
+    {% else %}
+    <div id="manifestCard">
+        <div class="tab-content" id="collectionsForm">
+            <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+                Error: Node type is missing.
+            </div>
+        </div>
+    </div>
     {% endif %}
-</ul>
-<div id="manifestCard"></div>
 </form>
 
 <!-- Preview -->
@@ -42,326 +1035,86 @@
     <button id="hide" class="btn btn-lg btn-outline-editorial">Hide</button>
     <pre id="manifest"></pre>
 </div>
-<script>
-var nodetype = '{{ nodetype|safe }}';
-</script>
-<!-- include '/corpus/display-form-templates.html' -->
-<!-- Collection Form Template -->
-<script type="text/html" id="collection-template">
-  <div class="tab-content" id="collectionsForm">
-    {% set template = templates['collection-template'] %}
-    {% set required_opts = template[0]['required'] %}
-    {% set optional_opts = template[1]['optional'] %}
-      <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
-        {% for opt in required_opts %}
-        {% set prop = opt.name|safe %}
-        {% if not opt.skip %}
-        <div class="form-group row">
-          {% if opt.fieldtype == 'text' %}
-          <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-          <div class="col-sm-10">
-              <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" value="{{ manifest[prop]|safe or '' }}" class="form-control" {{ 'required' if opt.required }} readonly>
-          </div>
-          {% elif opt.fieldtype == 'textarea' %}
-          <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-          <div class="col-sm-10">
-            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly>{{ manifest[prop]|safe or '' }}</textarea>   
-          </div>
-          {% endif %}
-        </div> 
-        {% endif %}
-        {% endfor %}
-    </div>
-    <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
-      {% for opt in optional_opts %}
-      {% set prop = opt.name|safe %}
-      {% if not opt.skip %}
-      <div class="form-group row">
-        {% if opt.fieldtype == 'text' %}
-        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-        <div class="col-sm-10">
-            <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" value="{{ manifest[prop]|safe or '' }}" class="form-control" {{ 'required' if opt.required }} readonly>
-        </div>
-        {% elif opt.fieldtype == 'textarea' %}
-        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-        <div class="col-sm-10">
-          <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly>{{ manifest[prop]|safe or '' }}</textarea>
-        </div>
-        {% endif %}
-      </div> 
-      {% endif %}
-      {% endfor %}
-      </div> <!-- /tab-pane -->
-  </div> <!-- /collectionsForm -->
-</script>
-
-<!-- RawData Form Template -->
-<script type="text/html" id="rawdata-template">
-  <div class="tab-content" id="collectionsForm">
-    {% set template = templates['rawdata-template'] %}
-    {% set required_opts = template[0]['required'] %}
-    {% set optional_opts = template[1]['optional'] %}
-      <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
-        {% for opt in required_opts %}
-        {% set prop = opt.name|safe %}
-        {% if not opt.skip %}
-        <div class="form-group row">
-          {% if opt.fieldtype == 'text' %}
-          <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-          <div class="col-sm-10">
-              <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" value="{{ manifest[prop]|safe or '' }}" class="form-control" {{ 'required' if opt.required }} readonly>
-          </div>
-          {% elif opt.fieldtype == 'textarea' %}
-          <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-          <div class="col-sm-10">
-            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly>{{ manifest[prop]|safe or '' }}</textarea>   
-          </div>
-          {% endif %}
-        </div> 
-        {% endif %}
-        {% endfor %}
-    </div>
-    <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
-      {% for opt in optional_opts %}
-      {% set prop = opt.name|safe %}
-      {% if not opt.skip %}
-      <div class="form-group row">
-        {% if opt.fieldtype == 'text' %}
-        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-        <div class="col-sm-10">
-            <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" value="{{ manifest[prop]|safe or '' }}" class="form-control" {{ 'required' if opt.required }} readonly>
-        </div>
-        {% elif opt.fieldtype == 'textarea' %}
-        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-        <div class="col-sm-10">
-          <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly>{{ manifest[prop]|safe or '' }}</textarea>   
-        </div>
-        {% elif opt.fieldtype == 'checkbox' %}
-        <div class="col-sm-12">
-          {% if manifest[prop]|safe == 'True' %}
-          {% set checkval = 'on' %}
-          {% set checked = 'checked="checked"' %}
-          {% else %}
-          {% set checked = '' %}
-          {% endif %}
-          <input class="form-control form-check-input" id="{{ opt.name|safe }}" name="{{ opt.name|safe }}" type="checkbox" {{ 'required' if opt.required }} readonly value="{{ checkval|safe }}" {{ checked }}><label class="form-check-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-        </div>
-        {% endif %}
-      </div> 
-      {% endif %}
-      {% endfor %}
-      </div> <!-- /tab-pane -->
-  </div> <!-- /collectionsForm -->
-</script>
-
-<!-- ProcessedData Form Template -->
-<script type="text/html" id="processeddata-template">
-  <div class="tab-content" id="collectionsForm">
-    {% set template = templates['processeddata-template'] %}
-    {% set required_opts = template[0]['required'] %}
-    {% set optional_opts = template[1]['optional'] %}
-      <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
-        {% for opt in required_opts %}
-        {% set prop = opt.name|safe %}
-        {% if not opt.skip %}
-        <div class="form-group row">
-          {% if opt.fieldtype == 'text' %}
-          <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-          <div class="col-sm-10">
-              <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" value="{{ manifest[prop]|safe or '' }}" class="form-control" {{ 'required' if opt.required }} readonly>
-          </div>
-          {% elif opt.fieldtype == 'textarea' %}
-          <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-          <div class="col-sm-10">
-            <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly>{{ manifest[prop]|safe or '' }}</textarea>
-          </div>
-          {% endif %}
-        </div> 
-        {% endif %}
-        {% endfor %}
-    </div>
-    <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
-      {% for opt in optional_opts %}
-      {% set prop = opt.name|safe %}
-      {% if not opt.skip %}
-      <div class="form-group row">
-        {% if opt.fieldtype == 'text' %}
-        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-        <div class="col-sm-10">
-            <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" value="{{ manifest[prop]|safe or '' }}" class="form-control" {{ 'required' if opt.required }} readonly>
-        </div>
-        {% elif opt.fieldtype == 'textarea' %}
-        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-        <div class="col-sm-10">
-          <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly>{{ manifest[prop]|safe or '' }}</textarea>
-        </div>
-        {% endif %}
-      </div> 
-      {% endif %}
-      {% endfor %}
-      </div> <!-- /tab-pane -->
-  </div> <!-- /collectionsForm -->
-</script>
-
-<!-- Branch Form Template -->
-<script type="text/html" id="branch-template">
-  <div class="tab-content" id="collectionsForm">
-    {% set template = templates['branch-template'] %}
-    {% set required_opts = template[0]['required'] %}
-    {% set optional_opts = template[1]['optional'] %}
-      <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
-                {% for opt in required_opts %}
-                {% set prop = opt.name|safe %}
-                {% if not opt.skip %}
-                <div class="form-group row">
-                  {% if opt.fieldtype == 'text' %}
-                  <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-                  <div class="col-sm-10">
-                      <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" value="{{ manifest[prop]|safe or '' }}" class="form-control" {{ 'required' if opt.required }} readonly>
-                  </div>
-                  {% elif opt.fieldtype == 'textarea' %}
-                  <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-                  <div class="col-sm-10">
-                    <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly>{{ manifest[prop]|safe or '' }}</textarea>   
-                  </div>
-                  {% endif %}
-                </div> 
-                {% endif %}
-                {% endfor %}
-            </div>
-            <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
-              {% for opt in optional_opts %}
-              {% set prop = opt.name|safe %}
-              {% if not opt.skip %}
-              <div class="form-group row">
-                {% if opt.fieldtype == 'text' %}
-                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-                <div class="col-sm-10">
-                    <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" value="{{ manifest[prop]|safe or '' }}" class="form-control" {{ 'required' if opt.required }} readonly>
-                </div>
-                {% elif opt.fieldtype == 'textarea' %}
-                <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-                <div class="col-sm-10">
-                  <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly>{{ manifest[prop]|safe or '' }}</textarea>   
-                </div>
-                {% endif %}
-              </div> 
-              {% endif %}
-              {% endfor %}
-      </div> <!-- /tab-pane -->
-      <div class="tab-pane fade" id="manifest-content" role="tabpanel" aria-labelledby="manifest-content-tab">
-        <div class="form-group row">
-            <br>
-            <div class="col-sm-10">
-                    <textarea style="height: 375px;" name="content" id="manifest-content" placeholder="List each note on a separate line." class="form-control disabled" readonly>{{ manifest['content']|safe or '' }}</textarea>
-            </div>
-        </div>
-      </div> <!-- /tab-pane -->  
-  </div> <!-- /collectionsForm -->
-</script>
-
-<!-- Generic Form Template -->
-<script type="text/html" id="generic-template">
-  <div class="tab-content" id="collectionsForm">
-    {% set template = templates['branch-template'] %}
-    {% set required_opts = template[0]['required'] %}
-    {% set optional_opts = template[1]['optional'] %}
-      <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
-        {% for opt in required_opts %}
-        {% set prop = opt.name|safe %}
-        {% if not opt.skip %}
-        <div class="form-group row">
-            <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-            <div class="col-sm-10">
-                {% if opt.fieldtype == 'text' %}
-                <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" value="{{ manifest[prop]|safe or '' }}" class="form-control" {{ 'required' if opt.required }} readonly>
-                {% elif opt.fieldtype == 'textarea' %}
-                <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly>{{ manifest[prop]|safe or '' }}</textarea>   
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
-        {% endfor %}
-    </div>
-    <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
-        {% for opt in optional_opts %}
-        {% set prop = opt.name|safe %}
-        {% if not opt.skip %}
-        <div class="form-group row">
-            <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-            <div class="col-sm-10">
-                {% if opt.fieldtype == 'text' %}
-                <input name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" type="text" value="{{ manifest[prop]|safe or '' }}" class="form-control" {{ 'required' if opt.required }} readonly>
-                {% elif opt.fieldtype == 'textarea' %}
-                <textarea name="{{ opt.name|safe }}" id="{{ opt.name|safe }}" class="form-control" placeholder="{{ opt.placeholder|safe or '' }}" {{ 'required' if opt.required }} readonly>{{ manifest[prop]|safe or '' }}</textarea>   
-                {% endif %}
-            </div>
-        </div>
-        {% endif %}
-        {% endfor %}
-      </div> <!-- /tab-pane -->
-  </div> <!-- /collectionsForm -->
-</script>
 
 <!-- Export Modal -->
 <form id="modalform">
-<div id="exportModal" class="modal" tabindex="-1" role="dialog">
-  <div class="modal-dialog" role="document">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title">Select Items to Export</h5>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
-      <div class="modal-body">
-        {% if nodetype == 'collection' %}
-        <div class="form-check">
-            <input type="checkbox" name="selectall" id="selectall">
-            <label for="selectall">Select All</label>
+    <div id="exportModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Items to Export</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    {% if nodetype == 'collection' %}
+                    <div class="form-check">
+                        <input type="checkbox" name="selectall" id="selectall">
+                        <label for="selectall">Select All</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="exportchoice" name="manifestonly" id="manifestonly" value="manifestonly">
+                        <label for="manifestonly">Collection Manifest Only</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="exportchoice" name="exportrawdata" id="exportrawdata" value="exportrawdata">
+                        <label for="exportrawdata">RawData</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="exportchoice" name="exportprocesseddata" id="exportprocesseddata"
+                            value="exportprocesseddata">
+                        <label for="exportprocesseddata">ProcessedData</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="exportchoice" name="exportmetadata" id="exportmetadata" value="exportmetadata">
+                        <label for="exportmetadata">Metadata</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="exportchoice" name="exportoutputs" id="exportoutputs" value="exportoutputs">
+                        <label for="exportoutputs">Outputs</label>
+                    </div>
+                    <div class="form-check">
+                        <input type="checkbox" class="exportchoice" name="exportresults" id="exportresults" value="exportresults">
+                        <label for="exportresults">Results</label>
+                    </div>
+                    {% else %}
+                    <div class="form-check">
+                        <input type="radio" class="exportchoice" name="exportopt" id="manifestonly" value="manifestonly"
+                            checked="checked">
+                        <label for="manifestonly"">Collection Manifest Only</label>
+          </div>
+          <div class="
+                            form-check">
+                            <input type="radio" class="exportchoice" name="exportopt" id="manifestanddata" value="manifestanddata">
+                            <label for="manifestanddata">Manifest and Data</label>
+                    </div>
+                    {% endif %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="doExport" class="btn btn-outline-editorial">Export</button>
+                    <button type="button" class="btn btn-outline-editorial" data-dismiss="modal">Cancel</button>
+                </div>
+            </div>
         </div>
-        <div class="form-check">
-            <input type="checkbox" class="exportchoice" name="manifestonly" id="manifestonly" value="manifestonly">
-            <label for="manifestonly">Collection Manifest Only</label>
-        </div>
-        <div class="form-check">
-            <input type="checkbox" class="exportchoice" name="exportrawdata" id="exportrawdata" value="exportrawdata">
-            <label for="exportrawdata">RawData</label>
-        </div>
-        <div class="form-check">
-            <input type="checkbox" class="exportchoice" name="exportprocesseddata" id="exportprocesseddata" value="exportprocesseddata">
-            <label for="exportprocesseddata">ProcessedData</label>
-        </div>
-        <div class="form-check">
-            <input type="checkbox" class="exportchoice" name="exportmetadata" id="exportmetadata" value="exportmetadata">
-            <label for="exportmetadata">Metadata</label>
-        </div>
-        <div class="form-check">
-            <input type="checkbox" class="exportchoice" name="exportoutputs" id="exportoutputs" value="exportoutputs">
-            <label for="exportoutputs">Outputs</label>
-        </div>
-        <div class="form-check">
-            <input type="checkbox" class="exportchoice" name="exportresults" id="exportresults" value="exportresults">
-            <label for="exportresults">Results</label>
-        </div>
-        {% else %}
-        <div class="form-check">
-            <input type="radio" class="exportchoice" name="exportopt" id="manifestonly" value="manifestonly" checked="checked">
-            <label for="manifestonly"">Collection Manifest Only</label>
-        </div>
-        <div class="form-check">
-            <input type="radio" class="exportchoice" name="exportopt" id="manifestanddata" value="manifestanddata">
-            <label for="manifestanddata">Manifest and Data</label>
-        </div>
-        {% endif %}
-      </div>
-      <div class="modal-footer">
-        <button type="button" id="doExport" class="btn btn-outline-editorial">Export</button>
-        <button type="button" class="btn btn-outline-editorial" data-dismiss="modal">Cancel</button>
-      </div>
     </div>
-  </div>
-</div>
 </form>
+<!-- Date Template -->
+<div class="form-group row input-group date-template" style="display: none;">
+    <label class="col-sm-2 col-form-label"></label>
+    <div class="col-sm-4">
+        <input type="text" class="form-control datepicker" placeholder="Start Date">
+    </div>
+    <div class="col-sm-4">
+        <input type="text" class="form-control datepicker" placeholder="End Date">
+    </div>
+    <div class="col-sm-2" style="padding: 5px 0px;">
+        <button type="button" class="btn btn-sm btn-outline-editorial add-date" data-row="created" title="Add another date"><i
+                class="fa fa-plus-circle"></i></button>
+        <button type="button" class="btn btn-sm btn-outline-editorial remove-date" data-row="created" title="Remove date"><i
+                class="fa fa-minus-circle"></i></button>
+    </div>
+</div>
 {% endif %}
-{% endblock main %}
+<!-- No errors -->
+{% endblock %}

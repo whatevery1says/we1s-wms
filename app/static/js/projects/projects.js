@@ -1,16 +1,315 @@
+/* global bootbox, hideProcessing, moment, removeQueryBuilder, searchCorpus, showProcessing */
+/* eslint no-undef: "error" */
 //
 // General Helper Functions
 //
 
-function jsonifyForm () {
+function jsonifyForm (formObj) {
   /* Handles JSON form serialisation */
   var form = {}
-  $.each($('form *').not('.datepicker').serializeArray(), function (i, field) {
+  let getform = '#' + formObj.attr('id') + ' *'
+  $.each($(getform).not('.datepicker').serializeArray(), function (_, field) {
     form[field.name] = field.value || ''
   })
   return form
 }
 
+function getFormvals () {
+  /* Get all form values, even disabled ones */
+  let formvals = {}
+  $('#manifestForm input, textarea, select').each(function () {
+    let name = $(this).prop('name')
+    let val = $(this).val() || ''
+    formvals[name] = val
+  })
+  $('.datepicker').each(function () {
+    let name = $(this).prop('name')
+    let val = $(this).val() || ''
+    formvals[name] = val
+  })
+  return formvals
+}
+
+
+function uniqueId () {
+  /* Return a unique ID */
+  return Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36)
+}
+
+//
+// Ajax Functions
+//
+
+function saveProject (manifest, action) {
+  /* Creates a new manifest
+  Input: A JSON serialisation of the form values
+  Returns: A copy of the manifest and an array of errors for display */
+  let data = {'manifest': manifest, 'action': action}
+  // bootbox.alert(JSON.stringify(data))
+  $.ajax({
+    method: 'POST',
+    url: '/projects/save-project',
+    data: JSON.stringify(data),
+    contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
+  })
+    .done(function (response) {
+      hideProcessing()
+      var errors = JSON.parse(response)['errors']
+      if (errors.length === 0) {
+        console.log(response)
+        var manifest = JSON.parse(response)['manifest']
+        var msg = '<p>Saved the following manifest:</p>' + manifest
+        bootbox.alert({
+          message: msg,
+          callback: function () {
+            if (action === 'create') {
+              window.location = '/projects/display/' + manifest['_id']
+            } else {
+              removeQueryBuilder()
+            }
+          }
+        })
+      } else {
+        msg = '<p>Could not save the manifest because of the following errors:</p>' + errors
+        bootbox.alert(msg)
+      }
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      var msg = '<p>The manifest could not be saved because of the following errors:</p>'
+      msg += '<p>' + textStatus + ': ' + errorThrown + '</p>'
+      bootbox.alert(msg)
+    })
+}
+
+function deleteDatapackage (_id) {
+  /* Deletes a datapackage from a project
+   Input: A name value
+   Returns: An array of errors for display */
+  $.ajax({
+    method: 'POST',
+    url: '/projects/delete-datapackage',
+    data: JSON.stringify({ '_id': _id }),
+    contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
+  })
+    .done(function (response) {
+      hideProcessing()
+      var errors = JSON.parse(response)['errors']
+      if (errors.length > 0) {
+        bootbox.alert('<p>Could not delete the datapackage because of the following errors:</p>' + errors)
+      } else {
+        $('#delete-datapackage').remove()
+        bootbox.alert({
+          message: '<p>The datapackage was deleted.</p>',
+          callback: function () {
+            // Show the database query builder form
+          }
+        })
+      }
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      hideProcessing()
+      var msg = '<p>The datapackage could not be deleted because of the following errors:</p>'
+      msg += '<p>' + textStatus + ': ' + errorThrown + '</p>'
+      bootbox.alert(msg)
+    })
+}
+
+function deleteProject (name, metapath) {
+  /* Deletes a manifest
+   Input: A name value
+   Returns: An array of errors for display */
+  $.ajax({
+    method: 'POST',
+    url: '/projects/delete-manifest',
+    data: JSON.stringify({ 'name': name, 'metapath': metapath }),
+    contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
+  })
+    .done(function (response) {
+      hideProcessing()
+      var errors = JSON.parse(response)['errors']
+      if (errors !== '') {
+        var msg = '<p>Could not delete the manifest because of the following errors:</p>' + errors
+      } else {
+        msg = '<p>The manifest for <code>' + name + '</code> was deleted.</p>'
+      }
+      bootbox.alert({
+        message: msg,
+        callback: function () {
+          window.location = '/projects'
+        }
+      })
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      hideProcessing()
+      var msg = '<p>The manifest could not be saved because of the following errors:</p>'
+      msg += '<p>' + textStatus + ': ' + errorThrown + '</p>'
+      bootbox.alert(msg)
+    })
+}
+
+function exportSearch (data) {
+  /* Exports the results of a Projects search
+     Input: Values from the search form
+     Returns: An array containing results and errors for display */
+  $.ajax({
+    method: 'POST',
+    url: '/projects/export-search',
+    data: JSON.stringify(data),
+    contentType: 'application/json;charset=UTF-8'
+  })
+    .done(function (response) {
+      response = JSON.parse(response)
+      if (response['errors'].length !== 0) {
+        var result = JSON.stringify(response['errors'])
+        bootbox.alert('<p>Sorry, mate! You\'ve got an error!</p><p>' + result + '</p>')
+      } else {
+        window.location = '/projects/download-export/' + response['filename']
+      }
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      var msg = '<p>Sorry, mate! You\'ve got an error!</p>'
+      msg += '<p>' + textStatus + ': ' + errorThrown + '</p>'
+      bootbox.alert(msg)
+    })
+}
+
+// function searchProjects (data) {
+//   /* Searches the Projects database
+//      Input: Values from the search form
+//      Returns: An array containing results and errors for display */
+//   $.ajax({
+//     method: 'POST',
+//     url: '/projects/search',
+//     data: JSON.stringify(data),
+//     contentType: 'application/json;charset=UTF-8',
+//     beforeSend: showProcessing()
+//   })
+//     .done(function (response) {
+//       $('#results').empty()
+//       hideProcessing()
+//       response = JSON.parse(response)
+//       if (response['errors'].length !== 0) {
+//         var result = response['errors']
+//         var message = ''
+//         $.each(result, function (i, item) {
+//           message += '<p>' + item + '</p>'
+//         })
+//         bootbox.alert({
+//           message: message
+//         })
+//       } else {
+//         result = response['response']
+//         // Make the result into a string
+//         var out = ''
+//         $.each(result, function (i, item) {
+//           var link = '/projects/display/' + item['_id']
+//           out += '<h4><a href="' + link + '">' + item['name'] + '</a></h4><br>'
+//           $.each(item, function (key, value) {
+//             value = JSON.stringify(value)
+//             if (key === 'content' && value.length > 200) {
+//               value = value.substring(0, 200) + '...'
+//             }
+//             out += '<code>' + key + '</code>: ' + value + '<br>'
+//           })
+//           out += '<hr>'
+//         })
+//         var $pagination = $('#pagination')
+//         var defaultOpts = {
+//           visiblePages: 5,
+//           initiateStartPageClick: false,
+//           onPageClick: function (event, page) {
+//             var newdata = {
+//               'query': $('#query').val(),
+//               'regex': $('#regex').is(':checked'),
+//               'limit': $('#limit').val(),
+//               'properties': $('#properties').val(),
+//               'page': page
+//             }
+//             searchCorpus(newdata)
+//             $('#scroll').click()
+//           }
+//         }
+//         var totalPages = parseInt(response['num_pages'])
+//         var currentPage = $pagination.twbsPagination('getCurrentPage')
+//         $pagination.twbsPagination('destroy')
+//         $pagination.twbsPagination($.extend({}, defaultOpts, {
+//           startPage: currentPage,
+//           totalPages: totalPages
+//         }))
+//         $('#results').append(out)
+//         $('#hideSearch').removeClass('hidden')
+//         $('#hideSearch').html('Show Form')
+//         $('#exportSearchResults').show()
+//         $('#search-form').hide()
+//         $('#results').show()
+//         $('#pagination').show()
+//       }
+//     })
+//     .fail(function (jqXHR, textStatus, errorThrown) {
+//       hideProcessing()
+//       var msg = '<p>Sorry, mate! You\'ve got an error!</p>'
+//       msg += '<p>' + textStatus + ': ' + errorThrown + '</p>'
+//       bootbox.alert(msg)
+//     })
+// }
+
+function sendExport (jsonform) {
+  /* Sends the export options to the server
+     Input: A serialised set of form values from the export modal
+     Returns: The name of the file to download.
+     Automatically redirects to the download function. */
+  $.ajax({
+    method: 'POST',
+    url: '/projects/send-export',
+    data: JSON.stringify(jsonform),
+    contentType: 'application/json;charset=UTF-8'
+  })
+    .done(function (response) {
+      var filename = JSON.parse(response)['filename']
+      // $('.modal-body').html(filename)
+      $('#exportModal').modal('hide')
+      // bootbox.alert({
+      //   message: filename
+      // })
+      window.location = '/projects/download-export/' + filename
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      hideProcessing()
+      var msg = '<p>Sorry, mate! You\'ve got an error!</p>'
+      msg += '<p>' + textStatus + ': ' + errorThrown + '</p>'
+      bootbox.alert(msg)
+    })
+}
+
+function launchNotebook (workflow, manifest) {
+  /* Launches a new workflow in the Virtual Workspace
+  Input: The name of the workflow and the project manifest
+  Returns: An array of errors for display */
+  let data = {'workflow': workflow, 'manifest': manifest}
+  $.ajax({
+    method: 'POST',
+    url: '/projects/launch-notebook',
+    data: JSON.stringify(data),
+    contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
+  })
+    .done(function (response) {
+      hideProcessing()
+      var errors = JSON.parse(response)['errors']
+      if (errors.length > 0) {
+        var result = JSON.stringify(response['errors'])
+        bootbox.alert('<p>Sorry, mate! You\'ve got an error!</p><p>' + result + '</p>')
+      }
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      var msg = '<p>The project could not be launched because of the following errors:</p>'
+      msg += '<p>' + textStatus + ': ' + errorThrown + '</p>'
+      bootbox.alert(msg)
+    })
+}
 
 function serialiseTextareas (cls) {
   var values = []
@@ -22,584 +321,113 @@ function serialiseTextareas (cls) {
     }
   })
   return JSON.stringify(values)
-  }
-
-function cleanup () {
-  const form = jsonifyForm()
-  var create = JSON.parse(sessionStorage.getItem('updated'))
-  var update = JSON.parse(sessionStorage.getItem('created'))
-  form['created'] = create
-  form['updated'] = update
-  const newform = {}
-  const exclude = ['licenseName', 'licensePath', 'licenseTitle',
-                   'contributorTitle', 'contributorOrg', 'contributorGroup', 
-                   'contributorPath', 'contributorEmail', 'contributorRole', 'notesField']
-  // Clone the form values, ommitting empty fields and exclusions
-  $.each(form, function (key, value) {
-    if (value !== '' && value !== [] && $.inArray(key, exclude) === -1) {
-      newform[key] = value
-    }
-  })
-  // Convert comma-separated values to arrays
-  const csvs = ['keywords']
-  for (const property of csvs) {
-    // Only process defined properties
-    if (typeof newform[property] !== 'undefined') {
-      newform[property] = newform[property].trim().split(/\s*,\s*/)
-    }
-  }
-
-  // Convert arrays stored as hidden input string values
-  const arrays = ['notes']
-  for (const property of arrays) {
-    newform[property] = eval(newform[property])
-    // Only process defined properties
-    if (typeof newform[property] !== 'undefined') {
-      const list = []
-      $.each(newform[property], function (key, value) {
-        $.each(value, function (k, v) {
-          list.push(v)
-        })
-      })
-      newform[property] = list
-    }
-  }
-  const objects2 = ['contributors']
-  for (var property of objects2) {
-    newform[property] = eval(newform[property])
-    // Only process defined properties
-    if (typeof newform[property] !== 'undefined') {
-      // Convert evil properties from hidden fields to a list
-      let gD = {}
-      let gL = []
-      let eP = []
-      // Get the property keys
-      $.each(newform[property], function (key, value) {
-        $.each(value, function (k, v) {
-          eP.push(k)
-        })
-      })
-      // Build object for each ID
-      $.each(eP, function (key, item) {
-        item = item.replace(/[a-zA-Z]+/, '')
-        gD[item] = {}
-      })
-      // Add the values to the good dict by ID
-      $.each(newform[property], function (i, item) {
-        let obj = newform[property][i]
-        let k = Object.keys(obj)
-        let prop = k[0]
-        let id = prop.replace(/[a-zA-Z]+/, '')
-        let val = item[prop]
-        if (prop.startsWith('contributorTitle')) {
-          prop = 'title'
-          gD[id][prop] = val
-        }
-        if (prop.startsWith('contributorGroup')) {
-          prop = 'group'
-          gD[id][prop] = val
-        }
-        if (prop.startsWith('contributorOrg')) {
-          prop = 'organization'
-          gD[id][prop] = val
-        }
-        if (prop.startsWith('contributorPath')) {
-          prop = 'path'
-          gD[id][prop] = val
-        }
-        if (prop.startsWith('contributorEmail')) {
-          prop = 'email'
-          gD[id][prop] = val
-        }
-        if (prop.startsWith('contributorRole')) {
-          prop = 'role'
-          gD[id][prop] = val
-        }
-      })
-      // Convert any contributor names to strings and add the good_dict values to the list
-      $.each(gD, function (k, v) {
-        if (gD[k].length === 1) {
-          v = gD[k]['title']
-        } else {
-          gL.push(v)
-        }
-      })
-      newform[property] = gL
-    }
-  }
-
-  const objects = ['licenses']
-  for (var property of objects) {
-    newform[property] = eval(newform[property])
-    // Only process defined properties
-    if (typeof newform[property] !== 'undefined') {
-      // Convert evil properties from hidden fields to a list
-      let goodDict = {}
-      let goodList = []
-      let evilProps = []
-      // Get the property keys
-      $.each(newform[property], function (key, value) {
-        $.each(value, function (k, v) {
-          evilProps.push(k)
-        })
-      })
-      // Build object for each ID
-      $.each(evilProps, function (key, item) {
-        item = item.replace(/[a-zA-Z]+/, '')
-        goodDict[item] = {}
-      })
-      // Add the values to the good dict by ID
-      $.each(newform[property], function (i, item) {
-        let obj = newform[property][i]
-        let k = Object.keys(obj)
-        let prop = k[0]
-        let id = prop.replace(/[a-zA-Z]+/, '')
-        let val = item[prop]
-        if (prop.startsWith('licenseName')) {
-          prop = 'name'
-          goodDict[id][prop] = val
-        }
-        if (prop.startsWith('licenseTitle')) {
-          prop = 'title'
-          goodDict[id][prop] = val
-        }
-        if (prop.startsWith('licensePath')) {
-          prop = 'path'
-          goodDict[id][prop] = val
-        }
-      })
-      // Convert any license names to strings and add the good_dict values to the list
-      $.each(goodDict, function (k, v) {
-        if (goodDict[k].length === 1) {
-          v = goodDict[k]['name']
-        } else {
-          goodList.push(v)
-        }
-      })
-      newform[property] = goodList
-    }
-  }
-  return newform
 }
 
-// contributors start
+/*
+    This should handle all cloneable fields in create, except for dates.
+*/
 
-  $(document).on('click', '.add-contributor', function () {
-    // Keep count of the number of fields in session storage
-    if ('contributorCount' in sessionStorage) {
-      var count = parseInt(sessionStorage.getItem('contributorCount')) + 1
-      sessionStorage.setItem('contributorCount', count.toString())
-    } else {
-      count = 0
-      sessionStorage.setItem('contributorCount', '0')
-    }
-    // Show the remove icon
-    $(this).next().removeClass('hidden')
-    // Clone the template
-    var $template = $('#contributors-template').clone()
-    $(this).closest('.row').after($template.html())
-    $('.contributorTitle').last().attr('id', 'contributorTitle' + count).removeClass('.contributorTitle')
-    $('.contributorGroup').last().attr('id', 'contributorGroup' + count).removeClass('.contributorGroup')
-    $('.contributorOrg').last().attr('id', 'contributorOrg' + count).removeClass('.contributorOrg')
-    $('.contributorPath').last().attr('id', 'contributorPath' + count).removeClass('.contributorPath')
-    $('.contributorEmail').last().attr('id', 'contributorEmail' + count).removeClass('.contributorEmail')
-    $('.contributorRole').last().attr('id', 'contributorRole' + count).removeClass('.contributorRole')
-    // Serialise the textareas and save the string to the hidden contributors field
-    var serialisedTextareas = serialiseTextareas('.contributor-field')
-    $('#contributors').val(serialisedTextareas)
-    // console.log($('#contributors').val())
-  })
+// Define all add buttons here
+const addBtns = ['add-contributor', 'add-license', 'add-note']
+const removeBtns = ['remove-contributor', 'remove-license', 'remove-note']
+const assignments = {
+  'contributor': {'elementName': 'contributors', 'classes': ['contributorTitle', 'contributorGroup', 'contributorOrg', 'contributorPath', 'contributorEmail', 'contributorRole']},
+  'license': {'elementName': 'licenses', 'classes': ['licenseName', 'licensePath', 'licenseTitle']},
+  'note': {'elementName': 'notes', 'classes': ['note-field']}
+}
 
-  $(document).on('click', '.remove-contributor', function () {
-    // If the field to remove is the only one, clone a new one
-    // NB. There are three sub-fields
-    if ($('.contributor-field').length === 6) {
-      var count = parseInt(sessionStorage.getItem('contributorCount')) + 1
-      sessionStorage.setItem('contributorCount', count.toString())
-      var $template = $('#contributors-template').clone()
-      $(this).closest('.row').after($template.html())
-      $('.contributorTitle').last().attr('id', 'contributorTitle' + count).removeClass('.contributorTitle')
-      $('.contributorGroup').last().attr('id', 'contributorGroup' + count).removeClass('.contributorGroup')
-      $('.contributorOrg').last().attr('id', 'contributorOrg' + count).removeClass('.contributorOrg')
-      $('.contributorPath').last().attr('id', 'contributorPath' + count).removeClass('.contributorPath')
-      $('.contributorEmail').last().attr('id', 'contributorEmail' + count).removeClass('.contributorEmail')
-      $('.contributorRole').last().attr('id', 'contributorRole' + count).removeClass('.contributorRole')
-    }
-    // Remove the contributor field
-    $(this).parent().parent().remove()
-    // Display the "contributors" label
-    $('.contributor-field').eq(0).parent().prev().text('contributors')
-    // Serialise the textareas and save the string to the hidden contributors field
-    var serialisedTextareas = serialiseTextareas('.contributor-field')
-    $('#contributors').val(serialisedTextareas)
-    // console.log($('#contributors').val())
-  })
+// Add Field Function
+function addField (fieldType, id) {
+  let previousRow = $('#' + id)
+  // Clone the previous row with a unique id
+  let uniqueId = Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36)
+  let clone = previousRow.clone().attr('id', fieldType + uniqueId)
+  clone.attr('data-id', uniqueId)
+  // Clear the values and the label
+  clone.find('label').html('&nbsp;')
+  clone.find('input:text').val('')
+  clone.find('textarea').val('')
+  clone.find('textarea').empty()
+  // Insert the clone and remove the old row
+  clone.insertAfter(previousRow)
+}
 
-  $(document).on('blur', '.contributor-field', function () {
-    // Re-serialise the text areas when the user clicks on another element
-    var serialisedTextareas = serialiseTextareas('.contributor-field')
-    $('#contributors').val(serialisedTextareas)
-    // console.log($('#contributors').val())
-  })
-
-  $(document).on('click', '.add-note', function () {
-    if ('noteCount' in sessionStorage) {
-      var count = parseInt(sessionStorage.getItem('noteCount')) + 1
-      sessionStorage.setItem('noteCount', count.toString())
-    } else {
-      count = 0
-      sessionStorage.setItem('noteCount', '0')
-    }
-    $(this).next().removeClass('hidden')
-    var $template = $('#notes-template').clone()
-    $(this).closest('.row').after($template.html())
-    $('.note-field').last().attr('id', 'note' + count)
-    var serialisedTextareas = serialiseTextareas('.note-field')
-    $('#notes').val(serialisedTextareas)
-    // console.log($('#notes').val())
-  })
-
-  $(document).on('click', '.remove-note', function () {
-    if ($('.note-field').length === 1) {
-      var count = parseInt(sessionStorage.getItem('noteCount')) + 1
-      sessionStorage.setItem('noteCount', count.toString())
-      var $template = $('#notes-template').clone()
-      $(this).closest('.row').after($template.html())
-      $('.note-field').last().attr('id', 'note' + count)
-    }
-    $(this).parent().parent().remove()
-    $('.note-field').eq(0).parent().prev().text('notes')
-    var serialisedTextareas = serialiseTextareas('.note-field')
-    $('#notes').val(serialisedTextareas)
-    // console.log($('#notes').val())
-  })
-
-  $(document).on('blur', '.note-field', function () {
-    var serialisedTextareas = serialiseTextareas('.note-field')
-    $('#notes').val(serialisedTextareas)
-    // console.log($('#notes').val())
-  })
-  // End Property Cloning
-// contributors end
-
-
-  $(document).on('click', '.add-license', function () {
-    // Keep count of the number of fields in session storage
-    if ('licenseCount' in sessionStorage) {
-      var count = parseInt(sessionStorage.getItem('licenseCount')) + 1
-      sessionStorage.setItem('licenseCount', count.toString())
-    } else {
-      count = 0
-      sessionStorage.setItem('licenseCount', '0')
-    }
-    // Show the remove icon
-    $(this).next().removeClass('hidden')
-    // Clone the template
-    var $template = $('#licenses-template').clone()
-    $(this).closest('.row').after($template.html())
-    $('.licenseName').last().attr('id', 'licenseName' + count).removeClass('.licenseName')
-    $('.licensePath').last().attr('id', 'licensePath' + count).removeClass('.licensePath')
-    $('.licenseTitle').last().attr('id', 'licenseTitle' + count).removeClass('.licenseTitle')
-    // Serialise the textareas and save the string to the hidden licenses field
-    var serialisedTextareas = serialiseTextareas('.license-field')
-    $('#licenses').val(serialisedTextareas)
-    // console.log($('#licenses').val())
-  })
-
-  $(document).on('click', '.remove-license', function () {
-    // If the field to remove is the only one, clone a new one
-    // NB. There are three sub-fields
-    if ($('.license-field').length === 3) {
-      var count = parseInt(sessionStorage.getItem('licenseCount')) + 1
-      sessionStorage.setItem('licenseCount', count.toString())
-      var $template = $('#licenses-template').clone()
-      $(this).closest('.row').after($template.html())
-      $('.licenseName').last().attr('id', 'licenseName' + count).removeClass('.licenseName')
-      $('.licensePath').last().attr('id', 'licensePath' + count).removeClass('.licensePath')
-      $('.licenseTitle').last().attr('id', 'licenseTitle' + count).removeClass('.licenseTitle')
-    }
-    // Remove the license field
-    $(this).parent().parent().remove()
-    // Display the "licenses" label
-    $('.license-field').eq(0).parent().prev().text('licenses')
-    // Serialise the textareas and save the string to the hidden licenses field
-    var serialisedTextareas = serialiseTextareas('.license-field')
-    $('#licenses').val(serialisedTextareas)
-    // console.log($('#licenses').val())
-  })
-  //can probably give all
-  $(document).on('blur', '.license-field', function () {
-    // Re-serialise the text areas when the user clicks on another element
-    var serialisedTextareas = serialiseTextareas('.license-field')
-    $('#licenses').val(serialisedTextareas)
-    // console.log($('#licenses').val())
-  })
-
-
-  $(document).on('click', '.add-note', function () {
-    if ('noteCount' in sessionStorage) {
-      var count = parseInt(sessionStorage.getItem('noteCount')) + 1
-      sessionStorage.setItem('noteCount', count.toString())
-    } else {
-      count = 0
-      sessionStorage.setItem('noteCount', '0')
-    }
-    $(this).next().removeClass('hidden')
-    var $template = $('#notes-template').clone()
-    $(this).closest('.row').after($template.html())
-    $('.note-field').last().attr('id', 'note' + count)
-    var serialisedTextareas = serialiseTextareas('.note-field')
-    $('#notes').val(serialisedTextareas)
-    // console.log($('#notes').val())
-  })
-
-  $(document).on('click', '.remove-note', function () {
-    if ($('.note-field').length === 1) {
-      var count = parseInt(sessionStorage.getItem('noteCount')) + 1
-      sessionStorage.setItem('noteCount', count.toString())
-      var $template = $('#notes-template').clone()
-      $(this).closest('.row').after($template.html())
-      $('.note-field').last().attr('id', 'note' + count)
-    }
-    $(this).parent().parent().remove()
-    $('.note-field').eq(0).parent().prev().text('notes')
-    var serialisedTextareas = serialiseTextareas('.note-field')
-    $('#notes').val(serialisedTextareas)
-    // console.log($('#notes').val())
-  })
-
-  $(document).on('blur', '.note-field', function () {
-    var serialisedTextareas = serialiseTextareas('.note-field')
-    $('#notes').val(serialisedTextareas)
-    // console.log($('#notes').val())
-  })
-  // End Property Cloning
-
-function validateQuery (requiredFields) {
-  // Remove previous error messages
-  $('.has-error').find('.rule-actions > .error-message').remove()
-
-  // Serialise and validate the form values
-  var formvals = jsonifyForm()
-
-  // Make sure a query has been entered, then submit the query
-  if (formvals['db-query'] === '') {
-    bootbox.alert('Please enter a query.')
-    return false
+// Remove Field Function
+function removeField (fieldType, id) {
+  let row = $('#' + id)
+  let numFields = $('[data-fieldtype="' + fieldType + '"]').length
+  // If only one row is left
+  if (numFields <= 1) {
+    // Clone the template with a unique id
+    let clone = row.clone().attr('id', fieldType + uniqueId())
+    // Clear the values
+    clone.find('input:text').val('')
+    clone.find('textarea').val('')
+    clone.find('textarea').empty()
+    // Insert the clone and remove the old row
+    clone.insertAfter(row)
+    row.remove()
   } else {
-    // Make sure all required fields are present
-    var valid = true
-    var invalid = []
-    $.each(requiredFields, function (index, value) {
-      if (formvals[value] === '') {
-        valid = false
-        invalid.push(value)
-      }
-    })
-    if (valid === false) {
-      var msg = '<p>Please enter values for the following fields:</p>'
-      msg += '<ul>'
-      $.each(invalid, function (index, value) {
-        msg += '<li>' + value + '</li>'
-      })
-      msg += '</ul>'
-      bootbox.alert(msg)
-      return false
-    } else {
-      return formvals
+    row.remove()
+    numFields = $('[data-fieldtype="' + fieldType + '"]').length
+    // Make sure the label is displayed if the first row is deleted
+    if (numFields <= 1) {
+      $('[data-fieldtype="' + fieldType + '"]').find('label').html(fieldType)
     }
   }
 }
 
-//
-// Project Methods
-//
-
-// General Save Function
-function saveProject (action) {
-  // Get the manifest, query, and action
-  var manifest = validateQuery([]) // Returns form vals or false
-  console.log(manifest)
-  if (manifest !== false) {
-    var data = {'action': action, 'query': manifest['db-query'], 'manifest': manifest}
-    data = JSON.stringify(data)
-    $.ajax({
-      method: 'POST',
-      url: '/projects/save-project',
-      data: data,
-      contentType: 'application/json;charset=UTF-8',
-      beforeSend: showProcessing()
-    })
-      .done(function (response) {
-        hideProcessing()
-        if (JSON.parse(response)['result'] === 'fail') {
-          var errors = JSON.parse(response)['errors']
-          var msg = '<p>Could not save the project because of the following errors:</p><ul>'
-          $.each(errors, function (index, value) {
-            msg += '<li>' + value + '</li>'
-          })
-          msg += '</ul>'
-        } else {
-          $('#save').attr('title', 'Update Project')
-          $('#save').attr('data-action', 'update')
-          msg = '<p>The project was saved.</p>'
-        }
-        bootbox.alert({
-          message: msg
-        })
-      })
-      .fail(function (jqXHR, textStatus, errorThrown) {
-        hideProcessing()
-        bootbox.alert({
-          message: '<p>The project could not be updated because of the following errors:</p>'+response,
-          callback: function () {
-            return 'Error: ' + textStatus + ': ' + errorThrown
-          }
-        })
-      })
-  } else {
-    bootbox.alert('Your form input could not be validated.')
+// Handle the Add Field Click Button
+$(document).on('click', '.add', function (e) {
+  e.preventDefault()
+  let fieldtype = $(this).closest('.row').attr('data-fieldtype')
+  let id = $(this).closest('.row').attr('id')
+  // Match add- in the button's classes
+  for (const cls of this.classList) {
+    if ($.inArray(cls, addBtns) !== -1) {
+      // Call addField on the suffix of the add- class
+      addField(fieldtype, id)
+    }
   }
-}
+})
 
-// General Delete Function
-function deleteProject (name) {
-  var manifest = jsonifyForm()
-  var data = {
-    'action': 'delete',
-    'manifest': manifest,
-    'query': "{'name': name, 'metapath': 'Projects'}"
+// Handle the Remove Field Click Button
+$(document).on('click', '.remove', function (e) {
+  e.preventDefault()
+  let fieldtype = $(this).closest('.row').attr('data-fieldtype')
+  let id = $(this).closest('.row').attr('id')
+  // Match remove- in the button's classes
+  for (const cls of this.classList) {
+    if ($.inArray(cls, removeBtns) !== -1) {
+      // Call removeField on the suffix of the remove- class
+      removeField(fieldtype, id)
+    }
   }
-  $.ajax({
-    method: 'POST',
-    url: '/projects/delete-project',
-    data: JSON.stringify(data),
-    contentType: 'application/json;charset=UTF-8',
-    beforeSend: showProcessing()
-  })
-    .done(function (response) {
-      hideProcessing()
-      if (JSON.parse(response)['result'] === 'fail') {
-        var errors = JSON.parse(response)['errors']
-        var msg = '<p>Could not delete the project because of the following errors:</p><ul>'
-        $.each(errors, function (index, value) {
-          msg += '<li>' + value + '</li>'
-        })
-        msg += '</ul>'
-        bootbox.alert(msg)
-      } else {
-        bootbox.alert('<p>The project was deleted.</p>')
-        alert('Go home')
-      }
-    })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-      hideProcessing()
-      bootbox.alert({
-        message: '<p>The project could not be deleted because of the following errors:</p>'+response,
-        callback: function () {
-          return 'Error: ' + textStatus + ': ' + errorThrown
-        }
-      })
-    })
-}
+})
 
-// General Export Function
-function exportProject () {
-  // Get the manifest, query, and action
-  var manifest = validateQuery(['name']) // Returns form vals or false
-  if (manifest !== false) {
-    var data = {'action': 'export', 'query': manifest['db-query'], 'manifest': manifest}
-    data = JSON.stringify(data)
-    $.ajax({
-      method: 'POST',
-      url: '/projects/export-project',
-      data: data,
-      contentType: 'application/json;charset=UTF-8',
-      beforeSend: showProcessing()
-    })
-      .done(function (response) {
-        hideProcessing()
-        if (JSON.parse(response)['result'] === 'fail') {
-          var errors = JSON.parse(response)['errors']
-          var msg = '<p>Could not save the project because of the following errors:</p><ul>'
-          $.each(errors, function (index, value) {
-            msg += '<li>' + value + '</li>'
-          })
-          msg += '</ul>'
-        } else {
-          var downloadPath = JSON.parse(response)['key'] + '#' + manifest['name'] + '.zip'
-          window.location = '/projects/download-export/' + downloadPath
-        }
-        bootbox.alert({
-          message: msg
-        })
-      })
-      .fail(function (jqXHR, textStatus, errorThrown) {
-        hideProcessing()
-        bootbox.alert({
-          message: '<p>The project could not be updated because of the following errors:</p>'+response,
-          callback: function () {
-            return 'Error: ' + textStatus + ': ' + errorThrown
-          }
-        })
-      })
-  } else {
-    bootbox.alert('Your form input could not be validated.')
-  }
-}
-
-// Launch Jupyter Function
-function launchJupyter (btnId, formvals) {
-  /* Sends the information needed to launch a Jupyter notebook
-  Input: The notebook to launch and the values from the search form
-  Returns: An array containing results and errors for display
-  */
-  var data = {
-    'notebook': btnId,
-    'manifest': formvals
-  }
-  console.log('Sending')
-  $.ajax({
-    method: 'POST',
-    url: '/projects/launch-jupyter',
-    data: JSON.stringify(data),
-    contentType: 'application/json;charset=UTF-8',
-    beforeSend: showProcessing()
-  })
-    .done(function (response) {
-      hideProcessing()
-      console.log('Done')
-      console.log(response)
-      response = JSON.parse(response)
-      if (response.result === 'fail') {
-        var msg = '<p>Could not launch the virtual workspace because of the following errors:</p>'
-        msg += '<ul>'
-        $.each(response.errors, function (index, value) {
-          msg += '<li>' + value + '</li>'
-        })
-        msg += '</ul>'
-        bootbox.alert({
-          message: msg
-        })
-      }
-    })
-    .fail(function (jqXHR, textStatus, errorThrown) {
-      hideProcessing()
-      bootbox.alert({
-        message: '<p>Sorry, mate! You\'ve got an error!</p>',
-        callback: function () {
-          return 'Error: ' + textStatus + ': ' + errorThrown
-        }
-      })
-    })
-}
+// Blur from the field
+$(document).on('blur', '.contributor-field, .license-field, .note-field', function () {
+  // Re-serialise the text areas when the user clicks on another element
+  let classes = this.className.split(' ')
+  let cls = classes.find(item => /-field$/.test(item))
+  let serialisedTextareas = serialiseTextareas('.' + cls)
+  let key = cls.replace('-field', '')
+  let el = assignments[key]['elementName']
+  $('#' + el).val(serialisedTextareas)
+  // console.log($('#' + el).val())
+})
+// End Property Cloning
 
 //
-// $(document).ready()
+// $(function () { Event Handling
 //
 
-$(document).ready(function () {
-  // Handle the Display form on the index page
+$(function () {
+  //
+  // Index Page Functions
+  //
+
+  /* Handles the Display form on the index page */
   $('#go').click(function (e) {
     var name = $('#display').val()
     window.location = '/projects/display/' + name
@@ -611,10 +439,368 @@ $(document).ready(function () {
     }
   })
 
-  $('#updated').dateformat()
-  $('#created').dateformat()
+  //
+  // Create and Display Page Functions
+  //
 
-  // Preview Show and Hide Buttons
+  // Configure datepickers
+  // Currently does not accept datetime. Need to install the datetimepicker plugin
+  var dateFormat = 'yy-mm-dd'
+  var options = {
+    dateFormat: dateFormat,
+    constrainInput: false,
+    changeMonth: true,
+    changeYear: true,
+    minDate: null,
+    maxDate: null,
+    onClose: function (date) {
+      let isValid = checkDateFormat(date)
+      //console.log('Date is valid: ' + isValid)
+      // Check date range
+      var container = $(this).closest('.form-group')
+      var startField = container.children().find('input').eq(0)
+      var endField = container.children().find('input').eq(1)
+      var startDate = $.datepicker.parseDate('yy-mm-dd', startField.val())
+      var endDate = $.datepicker.parseDate('yy-mm-dd', endField.val())
+      // Valid date range
+      if (endField.val().length === 0 || startDate <= endDate) {
+        startField.attr('data-parsley-daterange', 'valid')
+        endField.attr('data-parsley-daterange', 'valid')
+      // Invalid date range
+      } else {
+        startField.attr('data-parsley-daterange', 'invalid')
+        endField.attr('data-parsley-daterange', 'invalid')
+      }
+      startField.parsley().validate()
+      endField.parsley().validate()
+    }
+  }
+  // Set the row counters to 0
+  sessionStorage.setItem('createdCounter', '0')
+  sessionStorage.setItem('updatedCounter', '0')
+
+  // Force datepickers below the input field
+  // $.extend($.datepicker, {_checkOffset: function (inst, offset, isFixed) {return offset}})
+  // Fine control for the datepicker location
+  //  $.extend($.datepicker,{_checkOffset: function(inst, offset, isFixed) {offset.top = offset.top - 402; offset.left = offset.left - 240; return offset;}})
+
+  // Get the date from a datepicker
+  function getDate (element) {
+    var date
+    try {
+      date = $.datepicker.parseDate(dateFormat, element.value)
+    } catch (error) {
+      date = null
+    }
+    return date
+  }
+
+  // Initialise all the datepickers on the page
+  $('.datepicker').each(function () {
+    let start
+    let end
+    start = $(this).datepicker(options)
+      .on('change', function () {
+        end.datepicker('option', 'minDate', getDate(this))
+        $(this).datepicker('refresh')
+      })
+    end = $(this).datepicker(options)
+      .on('change', function () {
+        start.datepicker('option', 'maxDate', getDate(this))
+        $(this).datepicker('refresh')
+      })
+  })
+
+  // Deprecated - Validate a single date for use when a single datepicker is closed
+  function checkDateFormat (date) {
+    // If the field is not empty
+    let valid
+    if (date !== '' && date !== null) {
+      if (moment(date, ['YYYY-MM-DD', moment.ISO_8601], true).isValid()) {
+        valid = true
+      } else {
+        valid = false
+      }
+    }
+    return valid
+  }
+
+  function clones2Lists (str, prefix, prefixes, lists) {
+    // Takes a string of cloned (or cloneable) fields and converts it to a schema-valid object.
+    // The prefix is something like 'source', which appears in 'sourceTitle, sourcePath', etc.
+    let propertyArray = []
+    let clonedObj = []
+    let obj = JSON.parse(str)
+    $.each(obj, function (key, value) {
+      let prop = Object.keys(value)[0].replace(/\d+/, '').replace(prefixes[prefix], '').toLowerCase()
+      let id = Object.keys(value)[0].replace(/\D+/, '').toString()
+      let val = value[Object.keys(value)[0]]
+      // Serialise as simple array
+      if ($.inArray(prefix, lists) !== -1) {
+        propertyArray.push(val)
+      // Serialise as an array of objects
+      } else {
+        // Add id to clonedObj
+        if (!(id in clonedObj)) {
+          let d = {}
+          d[prop] = val
+          clonedObj.push({'id': id, 'properties': d})
+        // Add new property to pre-existing id
+        } else {
+          clonedObj[id]['properties'][prop] = val
+        }
+      }
+      // console.log('clonedObj ' + key)
+      // console.log(clonedObj)
+    })
+    // This might be problematic for notes.
+    $.each(clonedObj, function (_, value) {
+      propertyArray.push(value['properties'])
+    })
+    return propertyArray
+  }
+
+  // Validate a date range row
+  function validateDates (startField, endField, property) {
+    let errors = []
+    let start = startField.val()
+    let end = ''
+    if (endField.length > 0) {
+      end = endField.val()
+    }
+    let numRows = $('.' + property + '-row').length
+    switch (true) {
+      case start.length === 0 && end.length === 0 && numRows > 1:
+        errors.push('Please delete the empty date row for the ' + property + ' property.')
+        break
+      case start.length > 0 && end.length === 0:
+        if (!moment(start, ['YYYY-MM-DD', moment.ISO_8601], true).isValid()) {
+          errors.push('A start field in the ' + property + ' property contains an invalid date type. Valid formats are <code>YYYY-MM-DD</code> and <code>YYYY-MM-DDTHH:MM:SS</code>.')
+        }
+        break
+      case start.length === 0 && end.length > 0:
+        errors.push('Please enter a date in the empty ' + property + ' start field . Dates that are not date ranges should be entered in the start field, and the end field should be left empty.')
+        break
+      default:
+        if (!moment(start, ['YYYY-MM-DD', moment.ISO_8601], true).isValid()) {
+          if (numRows !== 1) {
+            errors.push('A start field in the ' + property + ' property contains an invalid date type. Valid formats are <code>YYYY-MM-DD</code> and <code>YYYY-MM-DDTHH:MM:SS</code>.')
+          }
+        }
+        if (!moment(end, ['YYYY-MM-DD', moment.ISO_8601], true).isValid()) {
+          if (numRows !== 1 && end.length !== 0) {
+            errors.push('An end field in the ' + property + ' property contains an invalid date type. Valid formats are <code>YYYY-MM-DD</code> and <code>YYYY-MM-DDTHH:MM:SS</code>.')
+          }
+        }
+    }
+    // Make sure the start date precedes the end date
+    if (end.length > 0 && !moment(start).isBefore(moment(end))) {
+      errors.push('The ' + property + ' property contains an end date earlier than the start date in the same row.')
+    }
+    return errors
+  }
+
+  // Serialise all dates for insertion in the manifest
+  function serialiseDates () {
+    var dates = {
+      'created': [],
+      'updated': []
+    }
+    $('.daterange').each(function () {
+      var date
+      if ($(this).attr('id') === 'created0') {
+        var fieldType = 'created'
+      } else {
+        fieldType = $(this).find('button').first().data('row')
+      }
+      let startDate = $(this).find('input').eq(0).val()
+      let endDate = $(this).find('input').eq(1).val()
+      // Format the date values from the input field
+      if (startDate.length > 0) {
+        if (moment(startDate, 'YYYY-MM-DDTHH:mm:ss', true).isValid()) {
+          startDate = moment(startDate).toISOString()
+        } else {
+          startDate = moment(startDate).format('YYYY-MM-DD')
+        }
+      }
+      if (endDate !== undefined) {
+        if (moment(endDate, 'YYYY-MM-DDTHH:mm:ss', true).isValid()) {
+          endDate = moment(endDate).toISOString()
+        } else {
+          endDate = moment(endDate).format('YYYY-MM-DD')
+        }
+      }
+      if (endDate === 'Invalid date') {
+        endDate = null
+      }
+      // Set the date value to pass to the serialiser
+      if (startDate === '' || startDate === null) {
+        date = null
+      } else if (endDate === '' || endDate === null) {
+        date = startDate
+      } else {
+        date = {
+          'start': startDate,
+          'end': endDate
+        }
+      }
+      // Push the date to the dates object to pass to the serialsier
+      if (date !== null) {
+        dates[fieldType].push(date)
+      }
+      // Delete empty properties from the dates object
+      if (dates[fieldType][0] === null) {
+        delete dates[fieldType]
+      }
+    })
+    return dates
+  }
+
+  function processDates () {
+    let dates = []
+    let errors = []
+    $('.daterange').each(function () {
+      // Validate all dates
+      let property = $(this).find('button').first().data('row')
+      let startDateField = $(this).find('input').eq(0)
+      let endDateField = $(this).find('input').eq(1)
+      if (endDateField.length === 0) {
+        endDateField = ''
+      }
+      let result = validateDates(startDateField, endDateField, property)
+      errors = errors.concat(result)
+    })
+    // If the dates are valid, serialise them
+    if (errors.length === 0) {
+      dates = serialiseDates()
+    }
+    return {'dates': dates, 'errors': errors}
+  }
+
+  function cleanup () {
+    /* Serialises the form values and converts strings in hidden fields and 
+    session storage to proper JSON format. */
+    const form = jsonifyForm($('#manifestForm'))
+    $.extend(form, {'name': $('#name').val(), 'metapath': $('#metapath').val()})
+    const newform = {}
+    const clones = ['contributors', 'licenses', 'notes']
+    let prefixes = {
+      'contributors': 'contributor',
+      'licenses': 'license'
+    }
+    const csvs = ['keywords']
+    const checkboxes = []
+    const lists = ['notes']
+    const exclude = [
+      'contributorTitle', 'contributorOrg', 'contributorGroup', 'contributorPath',
+      'contributorEmail', 'contributorRole', 'licenseName', 'licensePath',
+      'licenseTitle', 'notesField'
+    ]
+    // Use pipes for multiple patterns
+    const excludePatterns = new RegExp('^builder_rule_')
+    // NB. Relationships are not yet handled because they may be erroneously assigned to
+    // RawData in the schema.
+    // Copy the form values, ommitting empty fields and exclusions
+    $.each(form, function (key, value) {
+      if (value !== '' && value !== [] && !key.match(excludePatterns) && $.inArray(key, exclude) === -1) {
+        // Reformat cloneable fields
+        if ($.inArray(key, clones) !== -1) {
+          value = clones2Lists(value, key, prefixes, lists)
+        }
+        newform[key] = value
+      }
+    })
+    // Convert comma-separated values to arrays
+    for (const property of csvs) {
+      // Only process defined properties
+      if (typeof newform[property] !== 'undefined') {
+        newform[property] = newform[property].trim().split(/\s*,\s*/)
+      }
+    }
+    // Convert check boxes to Boolean values
+    for (const property of checkboxes) {
+      if (newform[property] === 'on') {
+        newform[property] = true
+      } else {
+        delete newform[property]
+      }
+    }
+    // Handle dates
+    let result = processDates()
+    if (result['errors'].length !== 0) {
+      var msg = '<p>Please correct the following errors</p><ul>'
+      $.each(result['errors'], function (_, value) {
+        msg += '<li>' + value + '</li>'
+      })
+      msg += '</ul>'
+      bootbox.alert(msg)
+    }
+    if (result['dates'].hasOwnProperty('created') && result['dates']['created'] !== null && result['dates']['created'].length > 0) {
+      newform['created'] = result['dates']['created']
+    } else {
+      delete newform['created']
+    }
+    if (result['dates'].hasOwnProperty('updated') && result['dates']['updated'] !== null && result['dates']['updated'].length > 0) {
+      newform['updated'] = result['dates']['updated']
+    } else {
+      delete newform['updated']
+    }
+    return newform
+    /* Needs to be logic here to return errors so that the save function can be invoked only
+       if there are no errors. */
+  }
+
+  // Add a date row by cloning the date template and setting its field names
+  $(document).on('click', '.add-date', function () {
+    let container = $(this).closest('.row')
+    let rowType = $(this).data('row')
+    let counter = parseInt(sessionStorage.getItem(rowType + 'Counter')) + uniqueId()
+    sessionStorage.setItem(rowType + 'Counter', uniqueId())
+    let $template = $('.date-template').clone()
+    $template.attr('id', rowType + counter)
+    $template.addClass('daterange')
+    $template.addClass(rowType + '-row')
+    $template.addClass(rowType + counter)
+    $template.find('label').html(rowType).css('visibility', 'hidden')
+    $template.find('.add-date').attr('data-row', rowType)
+    $template.find('.remove-date').attr('data-row', rowType)
+    $template.find('.remove-date').attr('data-count', rowType + counter)
+    $template.find('input').eq(0).attr('id', rowType + '-start' + counter)
+    $template.find('input').eq(0).attr('name', rowType + '-start' + counter)
+    $template.find('input').eq(1).attr('id', rowType + '-end' + counter)
+    $template.find('input').eq(1).attr('name', rowType + '-end' + counter)
+    $template.find('input').removeClass('hasDatepicker')
+    $template.removeClass('date-template').show().insertAfter(container)
+  })
+
+  // Trigger dynamically generated datepickers
+  $(document).on('focus', '.datepicker', function () {
+    if ($(this).hasClass('hasDatepicker') === false) {
+      $(this).datepicker(options)
+    } else {
+      $(this).datepicker('destroy')
+      $(this).datepicker(options)
+    }
+  })
+
+  // Remove a date row
+  $(document).on('click', '.remove-date', function () {
+    let rowType = $(this).data('row')
+    let id = $(this).data('count')
+    let numRows = $('.' + rowType + '-row').length
+    if (numRows > 1) {
+      $('#' + id).remove()
+      numRows = numRows - 1
+      // Make sure the label is visible
+      if (numRows === 1) {
+        $('.' + rowType + '-row').find('label').css('visibility', 'visible')
+      }
+    } else {
+      $('#' + id).find('.datepicker').datepicker('setDate', null)
+    }
+  })
+
+  /* Handles the manifest preview and hide buttons */
   $('#preview').click(function (e) {
     e.preventDefault()
     $('form').hide()
@@ -622,59 +808,226 @@ $(document).ready(function () {
     var jsonform = cleanup()
     $('#manifest').html(JSON.stringify(jsonform, null, '  '))
   })
+
   $('#hide').click(function (e) {
     e.preventDefault()
     $('#previewDisplay').hide()
     $('form').show()
   })
-  
 
-  
-
-
-  // Save Button
   $('#save').click(function (e) {
     e.preventDefault()
-    var outputQueryString = JSON.stringify($('#builder').queryBuilder('getMongo'))
-    $('#db-query').val(outputQueryString)
-    saveProject($(this).attr('data-action'))
+    // Show validation errors
+    $('#manifestForm').parsley().validate({force: false})
+    if ($('#manifestForm').parsley().isValid()) {
+      saveProject(cleanup(), $(this).attr('data-action'))
+    }
   })
 
-  // Delete Button
-  $('#delete').click(function (e) {
+  $('.dropdown-item').click(function (e) {
     e.preventDefault()
-    var name = $('#name').val()
-    if (name !== '') {
+    let workflow = $(this).attr('id').replace('-btn', '')
+    launchNotebook(workflow, getFormvals())
+  })
+
+  //
+  // Create Page Functions
+  //
+
+
+  //
+  // Display Page Functions
+  //
+
+  /* Makes the global template available to scripts for the display page */
+  var globalTemplate = $('#global-template').html()
+
+  /* If this is the display page, use the correct form for the 
+     manifest's nodetype */
+  // var pageUrl = document.URL.split('/')
+  // if (pageUrl[pageUrl.length - 2] === 'display') {
+  //   var template = $('#' + nodetype + '-template').html()
+  //   $('#manifestCard').html(template).append(globalTemplate)
+  // }
+
+  /* Toggles the Edit/Update button and field disabled property */
+  $('#update').click(function (e) {
+    e.preventDefault()
+    if ($('#update').attr('title') === 'Edit Project') {
+      $('.form-check-label').removeClass('not-allowed')
+      $('form').find('button, input, textarea, select, checkbox').each(function () {
+        let fieldId = $(this).attr('id')
+        if (fieldId !== 'name' && fieldId !== 'manifest-content' && fieldId !== 'created') {
+          $(this).prop('readonly', false)
+          $(this).prop('disabled', false)
+          $(this).removeClass('disabled')
+        }
+        if (fieldId === 'metapath' || fieldId === '_id') {
+          $(this).prop('readonly', true)
+          $(this).prop('disabled', true)
+          $(this).addClass('disabled')
+        }
+      })
+      if (!$('#datapackageRow').length) {
+        $('#query-builder-row').show()
+      }
+      $('#update').attr('title', 'Update Project')
+      $('#update > i').removeClass('fa-pencil').addClass('fa-save')
+    } else {
+      var name = $('#name').val()
       bootbox.confirm({
-        message: 'Are you sure you wish to delete <code>' + name + '</code>?',
+        message: 'Are you sure you wish to update the record for <code>' + name + '</code>?',
         buttons: {
-          confirm: {label: 'Yes', className: 'btn-success'},
-          cancel: {label: 'No', className: 'btn-danger'}
+          confirm: { label: 'Yes', className: 'btn-success' },
+          cancel: { label: 'No', className: 'btn-danger' }
         },
         callback: function (result) {
           if (result === true) {
-            deleteProject(name)
+            saveProject(cleanup(), 'update')
           }
         }
       })
-    } else {
-      bootbox.alert('Please enter a value for <code>name</code>.')
     }
   })
 
-  // Export Button
+  /* Handles the Delete button */
+  $('#delete').click(function (e) {
+    e.preventDefault()
+    var name = $('#name').val()
+    var metapath = $('#metapath').val()
+    bootbox.confirm({
+      message: 'Are you sure you wish to delete <code>' + name + '</code>?',
+      buttons: {
+        confirm: { label: 'Yes', className: 'btn-success' },
+        cancel: { label: 'No', className: 'btn-danger' }
+      },
+      callback: function (result) {
+        if (result === true) {
+          deleteProject(name, metapath)
+        }
+      }
+    })
+  })
+
+  /* Handles the Delete Datapackage button */
+  $('#delete-datapackage').click(function (e) {
+    e.preventDefault()
+    var _id = $('#_id').val()
+    bootbox.confirm({
+      message: 'Are you sure you wish to delete the datapackage for this project?',
+      buttons: {
+        confirm: { label: 'Yes', className: 'btn-success' },
+        cancel: { label: 'No', className: 'btn-danger' }
+      },
+      callback: function (result) {
+        if (result === true) {
+          deleteDatapackage(_id)
+        }
+      }
+    })
+  })
+
+  /* Handles the Export feature */
   $('#export').click(function (e) {
     e.preventDefault()
-    exportProject()
-  })
-
-  // Rocket Buttons
-  $('.dropdown-item').click(function () {
-    var btnId = $(this).attr('id').replace('-btn', '')
-    var requiredFields = ['name', 'metapath', 'namespace', 'title', 'contributors', 'created', 'db-query']
-    var formvals = validateQuery(requiredFields)
-    if (formvals !== false) {
-      launchJupyter(btnId, formvals)
+    if ($('#update').html() === 'Update') {
+      bootbox.alert('Make sure you have saved your updates before exporting.')
+    } else {
+      $('#exportModal').modal()
     }
   })
-}) /* End $(document).ready() */
+
+  /* Handles behaviour when Select All is changed */
+  $('#selectall').change(function (e) {
+    if ($(this).is(':checked')) {
+      $('.exportchoice').prop('checked', true)
+      $('#manifestonly').prop('checked', false)
+    } else {
+      $('.exportchoice').prop('checked', false)
+    }
+  })
+
+  /* Handles behaviour when Manifest Only is changed */
+  $('#manifestonly').change(function (e) {
+    if ($(this).is(':checked')) {
+      $('.exportchoice').prop('checked', false)
+      $('#selectall').prop('checked', false)
+    }
+    $(this).prop('checked', true)
+  })
+
+  /* Serialises the export options and initiates the export */
+  $('#doExport').click(function (e) {
+    // Get an array of export options
+    var opts = { 'exportoptions': [] }
+    $('.exportchoice:checked').each(function () {
+      opts['exportoptions'].push(this.value)
+    })
+    // Doesn't work on disabled fields
+    // var jsonform = jsonifyForm($('#manifestForm'))
+    // $.extend(jsonform, opts)
+    // Works on disabled fields
+    let formvals = {}
+    $('#manifestForm input, textarea, select').each(function () {
+      let name = $(this).prop('name')
+      let val = $(this).val() || ''
+      formvals[name] = val
+    })
+    $('.datepicker').each(function () {
+      let name = $(this).prop('name')
+      let val = $(this).val() || ''
+      formvals[name] = val
+    })
+    $.extend(formvals, opts)
+    sendExport(formvals)
+  })
+
+  //
+  // Search Page Functions
+  //
+
+  /* Handles the Search feature */
+  $('#searchCorpus').click(function (e) {
+    e.preventDefault()
+    var data = {
+      'query': $('#query').val(),
+      'regex': $('#regex').is(':checked'),
+      'limit': $('#limit').val(),
+      'properties': $('#properties').val(),
+      'page': 1
+    }
+    searchCorpus(data)
+  })
+
+  /* Toggles the search form */
+  $('#hideSearch').click(function () {
+    if ($('#hideSearch').html() === 'Show Results') {
+      $('#search-form').hide()
+      $('#exportSearchResults').show()
+      $('#results').show()
+      $('#pagination').show()
+      $('#hideSearch').html('Show Form')
+    } else {
+      $('#hideSearch').html('Show Results')
+      $('#exportSearchResults').hide()
+      $('#results').hide()
+      $('#pagination').hide()
+      $('#search-form').show()
+    }
+  })
+
+  /* Handles the pagination buttons */
+  $('.page-link').click(function (e) {
+    e.preventDefault()
+    var data = {
+      'query': $('#query').val(),
+      'regex': $('#regex').is(':checked'),
+      'limit': $('#limit').val(),
+      'properties': $('#properties').val(),
+      'page': $(this).html()
+    }
+    searchCorpus(data)
+  })
+
+  $('#manifestForm').parsley()
+}) /* End of $(document).ready() Event Handling */

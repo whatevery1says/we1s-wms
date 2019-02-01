@@ -41,7 +41,7 @@ source-template:
     fieldtype: text
   - name: authors
     fieldtype: textarea
-  - name: date
+  - name: updated
     fieldtype: textarea
     placeholder: List each date on a separate line. Date ranges should separate start and end dates with commas. Valid formats are YYYY-MM-DD and YYYY-MM-DDTHH:MM:SS.
   - name: edition
@@ -55,4 +55,5 @@ source-template:
     fieldtype: select
     default: eng
   - name: citation
-    fieldtype: text
+    fieldtype: textarea
+    placeholder: Enter a fully-formatted citation in Markdown format or a Citation Style Language JSON string.

@@ -272,9 +272,10 @@ def delete_project(name, metapath):
     """
     result = projects_db.delete_one({'name': name, 'metapath': metapath})
     if result.deleted_count != 0:
-        return 'success'
+        response = 'success'
     else:
-        return 'Unknown error: The document could not be deleted.'
+        response = 'Unknown error: The document could not be deleted.'
+    return response
 
 
 def search_collections(values):
@@ -307,32 +308,31 @@ def search_collections(values):
             pages = list(paginate(result, page_size=page_size))
             num_pages = len(pages)
             page = get_page(pages, int(values['page']))
-            return page, num_pages, errors
+            response = page, num_pages, errors
         else:
-            return result, 1, errors
+            response = result, 1, errors
     else:
         errors.append('The Corpus database is empty.')
-        return [], 1, errors
+        response = [], 1, errors
+    return response
 
 
 def search_corpus(query, limit, paginated, page, show_properties, sorting):
     """Use the query generated in /search2 and returns the search results."""
     page_size = 10
     errors = []
-    """
-    # Check that the query has a valid path within the Corpus
-    # Good for testing
-    key = list(query.keys())[0]
-    is_path = next((item for item in query.get(key) if item.get('path')), False)
-    # False if the query does not have a path; set it to ',Corpus,' by default
-    if is_path == False:
-        query.get(key).append({'path': ',Corpus,'})
-    print(query.get(key))
-    is_corpus_path = next((item for item in query.get(key) if item.get('path') is not None and item.get('path').startswith(',Corpus,')), False)
-    # False if the path is not in the Corpus; return an error
-    if is_corpus_path == False:
-        errors.append('Please supply a valid path within the Corpus.')
-    """
+    # # Check that the query has a valid path within the Corpus
+    # # Good for testing
+    # key = list(query.keys())[0]
+    # is_path = next((item for item in query.get(key) if item.get('path')), False)
+    # # False if the query does not have a path; set it to ',Corpus,' by default
+    # if is_path == False:
+    #     query.get(key).append({'path': ',Corpus,'})
+    # print(query.get(key))
+    # is_corpus_path = next((item for item in query.get(key) if item.get('path') is not None and item.get('path').startswith(',Corpus,')), False)
+    # # False if the path is not in the Corpus; return an error
+    # if is_corpus_path == False:
+    #     errors.append('Please supply a valid path within the Corpus.')
     if list(corpus_db.find()):
         result = corpus_db.find(
             query,
@@ -349,14 +349,15 @@ def search_corpus(query, limit, paginated, page, show_properties, sorting):
                 pages = list(paginate(result, page_size=page_size))
                 num_pages = len(pages)
                 page = get_page(pages, page)
-                return page, num_pages, errors
+                response = page, num_pages, errors
             else:
-                return result, 1, errors
+                response = result, 1, errors
         else:
-            return [], 1, errors
+            response = [], 1, errors
     else:
         errors.append('The Corpus database is empty.')
-        return [], 1, errors
+        response = [], 1, errors
+    return response
 
 
 def update_record(manifest):
@@ -471,9 +472,10 @@ def testformat(s):
         except:
             error = 'Could not parse date "' + s + '" into a valid format.'
     if error == '':
-        return {'text': s, 'format': dateformat}
+        response = {'text': s, 'format': dateformat}
     else:
-        return {'text': s, 'format': 'unknown', 'error': error}
+        response = {'text': s, 'format': 'unknown', 'error': error}
+    return response
 
 
 def textarea2datelist(textarea):
