@@ -14,6 +14,23 @@ function jsonifyForm (formObj) {
   return form
 }
 
+function getFormvals () {
+  /* Get all form values, even disabled ones */
+  let formvals = {}
+  $('#manifestForm input, textarea, select').each(function () {
+    let name = $(this).prop('name')
+    let val = $(this).val() || ''
+    formvals[name] = val
+  })
+  $('.datepicker').each(function () {
+    let name = $(this).prop('name')
+    let val = $(this).val() || ''
+    formvals[name] = val
+  })
+  return formvals
+}
+
+
 function uniqueId () {
   /* Return a unique ID */
   return Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36)
@@ -262,6 +279,33 @@ function sendExport (jsonform) {
     .fail(function (jqXHR, textStatus, errorThrown) {
       hideProcessing()
       var msg = '<p>Sorry, mate! You\'ve got an error!</p>'
+      msg += '<p>' + textStatus + ': ' + errorThrown + '</p>'
+      bootbox.alert(msg)
+    })
+}
+
+function launchNotebook (workflow, manifest) {
+  /* Launches a new workflow in the Virtual Workspace
+  Input: The name of the workflow and the project manifest
+  Returns: An array of errors for display */
+  let data = {'workflow': workflow, 'manifest': manifest}
+  $.ajax({
+    method: 'POST',
+    url: '/projects/launch-notebook',
+    data: JSON.stringify(data),
+    contentType: 'application/json;charset=UTF-8',
+    beforeSend: showProcessing()
+  })
+    .done(function (response) {
+      hideProcessing()
+      var errors = JSON.parse(response)['errors']
+      if (errors.length > 0) {
+        var result = JSON.stringify(response['errors'])
+        bootbox.alert('<p>Sorry, mate! You\'ve got an error!</p><p>' + result + '</p>')
+      }
+    })
+    .fail(function (jqXHR, textStatus, errorThrown) {
+      var msg = '<p>The project could not be launched because of the following errors:</p>'
       msg += '<p>' + textStatus + ': ' + errorThrown + '</p>'
       bootbox.alert(msg)
     })
@@ -778,6 +822,12 @@ $(function () {
     if ($('#manifestForm').parsley().isValid()) {
       saveProject(cleanup(), $(this).attr('data-action'))
     }
+  })
+
+  $('.dropdown-item').click(function (e) {
+    e.preventDefault()
+    let workflow = $(this).attr('id').replace('-btn', '')
+    launchNotebook(workflow, getFormvals())
   })
 
   //
