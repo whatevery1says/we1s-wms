@@ -289,7 +289,7 @@ def display(_id):
         # manifest = {'content': ''}
         try:
             if 'db-query' not in manifest:
-                manifest['db-query'] = json.dumps({'$and':[{'name': ' '}]})
+                manifest['db-query'] = json.dumps({'$and': [{'name': ' '}]})
             if '_id' in manifest:
                 manifest['_id'] = str(manifest['_id'])
             manifest['metapath'] = 'Projects'
@@ -374,17 +374,19 @@ def save_project():
     # Return a success/fail flag and a list of errors to the browser
     return json.dumps(response)
 
+
 @projects.route('/delete-datapackage', methods=['GET', 'POST'])
 def delete_datapackage():
     """Delete a project datapackage."""
     try:
         projects_db.update_one({'_id': ObjectId(request.json['_id'])},
-                {'$unset': {'content': ''}}, upsert=False)
+                    {'$unset': {'content': ''}}, upsert=False)
         response = json.dumps({'result': 'success', 'errors': []})
     except:
         errors = ['<p>Unknown error: The document could not be deleted.</p>']
         response = json.dumps({'result': 'fail', 'errors': errors})
     return response
+
 
 @projects.route('/delete-project', methods=['GET', 'POST'])
 def delete_project():
