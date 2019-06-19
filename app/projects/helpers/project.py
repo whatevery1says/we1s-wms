@@ -163,31 +163,31 @@ class Project():
         self.reduced_manifest['content'] = [version_dict]
         # Save the manifest
         try:
-            projects_db.insert_one(self.reduced_manifest) # pylint: disable=undefined-variable
+            projects_db.insert_one(self.reduced_manifest)  # pylint: disable=undefined-variable
             return json.dumps(
-                {'result': 'success',
-                 'project_dir': version_dict['version_name'],
-                 'errors': []
+                {
+                    'result': 'success',
+                    'project_dir': version_dict['version_name'],
+                    'errors': []
                 }
             )
         except mongoerrors.OperationFailure as err:
             print(err.code)
             print(err.details)
             return json.dumps(
-                {'result': 'fail',
-                 'errors': ['Unknown error: Could not insert the new project from the database.']
+                {
+                    'result': 'fail',
+                    'errors': ['Unknown error: Could not insert the new project from the database.']
                 }
             )
 
     def copy_templates(self, templates, project_dir):
         """Copy the workflow templates from the templates folder to the a project folder."""
         try:
-            copytree(templates,
-                     project_dir,
-                     ignore=ignore_patterns(
-                        '.ipynb_checkpoints',
-                        '__pycache__'
-                    )
+            copytree(templates, project_dir, ignore=ignore_patterns(
+                    '.ipynb_checkpoints',
+                    '__pycache__'
+                )
             )
             return []
         except IOError:
@@ -275,13 +275,15 @@ class Project():
                 for index, item in enumerate(self.reduced_manifest['content']):
                     if item['version_number'] == version:
                         del self.reduced_manifest['content'][index]
-                        projects_db.update_one({'_id': ObjectId(self._id)},  # pylint: disable=undefined-variable
-                                               {'$set': {
-                                                   'content': self.reduced_manifest['content']
-                                                   }
-                                               },
-                                               upsert=False
-                                               )
+                        projects_db.update_one(  # pylint: disable=undefined-variable
+                                                {'_id': ObjectId(self._id)},
+                                                {
+                                                    '$set': {
+                                                        'content': self.reduced_manifest['content']
+                                                    }
+                                                },
+                                                upsert=False
+                                                )
             except mongoerrors.OperationFailure as err:
                 print(err.code)
                 print(err.details)
@@ -292,7 +294,7 @@ class Project():
 
     def exists(self):
         """Test whether the project already exists in the database."""
-        test = projects_db.find_one({'_id': ObjectId(self._id)}) # pylint: disable=undefined-variable
+        test = projects_db.find_one({'_id': ObjectId(self._id)})  # pylint: disable=undefined-variable
         if test is not None:
             return True
         return False
@@ -333,11 +335,12 @@ class Project():
             result = corpus_db.find(self.reduced_manifest['db_query'])  # pylint: disable=undefined-variable
             try:
                 with open(os.path.join(project_dir, 'datapackage.json'), 'w') as f:
-                    f.write(json.dumps(
-                        self.reduced_manifest,
-                        indent=2,
-                        sort_keys=False,
-                        default=JSON_UTIL
+                    f.write(
+                        json.dumps(
+                            self.reduced_manifest,
+                            indent=2,
+                            sort_keys=False,
+                            default=JSON_UTIL
                         )
                     )
                 json_caches = os.path.join(project_dir, 'project_data/json')
@@ -355,10 +358,12 @@ class Project():
         if len(errors) > 0:
             return json.dumps({'result': 'fail', 'errors': errors})
         return json.dumps(
-            {'result': 'success',
+            {
+                'result': 'success',
                 'filename': zipname,
                 'errors': errors
-            })
+            }
+        )
 
     def get_latest_version_number(self):
         """Get the latest version number from the versions dict.
@@ -504,14 +509,14 @@ class Project():
                 json_caches = os.path.join(project_dir, 'caches/json')
                 os.makedirs(json_caches, exist_ok=True)
                 with open(os.path.join(project_dir, 'datapackage.json'), 'w') as f:
-                    f.write(json.dumps(
-                        self.reduced_manifest,
-                        indent=2,
-                        sort_keys=False,
-                        default=JSON_UTIL
+                    f.write(
+                        json.dumps(
+                            self.reduced_manifest,
+                            indent=2,
+                            sort_keys=False,
+                            default=JSON_UTIL
                         )
                     )
-
                 for item in result:
                     filename = os.path.join(json_caches, item['name'] + '.json')
                     with open(filename, 'w') as f:

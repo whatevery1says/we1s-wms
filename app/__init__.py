@@ -39,6 +39,7 @@ app.config.from_pyfile('config.py')
 # print(app.instance_path)
 # print(app.config)
 
+
 def register_blueprints(application):
     """Prevent circular imports."""
     application.register_blueprint(sources, url_prefix='/sources')
