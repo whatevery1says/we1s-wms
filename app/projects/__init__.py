@@ -65,6 +65,7 @@ WORKSPACE_TEMPLATES = os.path.join(workspace_dir, 'templates')
 # Controllers.
 # ----------------------------------------------------------------------------#
 
+
 @projects.route('/')
 def index():
     """Projects index page."""
@@ -189,6 +190,7 @@ def save():
         return project.save()
     except:
         return {'result': 'fail', 'errors': ['Could not create Project object.']}
+
 
 @projects.route('/save-as', methods=['GET', 'POST'])
 def save_as():
@@ -448,12 +450,11 @@ def parse_version(s, output=''):
     version = re.search('(.+)_v([0-9]+)_(.+)', s)
     if output == 'date':
         return version.group(1)
-    elif output == 'number':
+    if output == 'number':
         return version.group(2)
-    elif output == 'name':
+    if output == 'name':
         return version.group(3)
-    else:
-        return version.group(1), version.group(2), version.group(3)
+    return version.group(1), version.group(2), version.group(3)
 
 
 def generate_key():
@@ -495,13 +496,10 @@ def search_projects(query, limit, paginated, page, show_properties, sorting):
                 num_pages = len(pages)
                 page = get_page(pages, page)
                 return page, num_pages, errors
-            else:
-                return result, 1, errors
-        else:
-            return [], 1, errors
-    else:
-        errors.append('The Projects database is empty.')
+            return result, 1, errors
         return [], 1, errors
+    errors.append('The Projects database is empty.')
+    return [], 1, errors
 
 
 def get_page(pages, page):
