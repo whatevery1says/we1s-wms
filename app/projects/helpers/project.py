@@ -19,10 +19,10 @@ from collections import defaultdict
 from datetime import datetime
 from io import BytesIO
 from shutil import copytree, ignore_patterns, rmtree
-import nbformat
 from bson import Binary, json_util, ObjectId
 from pymongo import errors as mongoerrors
 from pymongo import ReturnDocument
+import nbformat
 
 # For the Workspace, configure the MongoDB client and databases
 # Uncomment if using in the Workspace
@@ -35,6 +35,7 @@ from pymongo import ReturnDocument
 
 # Constants
 JSON_UTIL = json_util.default
+
 
 class Project():
     """Model a project.
@@ -89,7 +90,7 @@ class Project():
         freq = defaultdict(int)  # number of cleanings
         # delete notebook (global) metadata fields
         if isinstance(clean_notebook_metadata_fields, list) \
-            and len(clean_notebook_metadata_fields) > 0:
+                and len(clean_notebook_metadata_fields) > 0:
             for field in clean_notebook_metadata_fields:
                 if field in nb.metadata:
                     del nb.metadata[field]
@@ -167,22 +168,27 @@ class Project():
                 {'result': 'success',
                  'project_dir': version_dict['version_name'],
                  'errors': []
-                })
+                }
+            )
         except mongoerrors.OperationFailure as err:
             print(err.code)
             print(err.details)
             return json.dumps(
                 {'result': 'fail',
                  'errors': ['Unknown error: Could not insert the new project from the database.']
-                })
+                }
+            )
 
     def copy_templates(self, templates, project_dir):
         """Copy the workflow templates from the templates folder to the a project folder."""
         try:
             copytree(templates,
                      project_dir,
-                     ignore=ignore_patterns('.ipynb_checkpoints', '__pycache__')
+                     ignore=ignore_patterns(
+                        '.ipynb_checkpoints',
+                        '__pycache__'
                     )
+            )
             return []
         except IOError:
             return '<p>Error: The templates could not be copied to the project directory.</p>'
@@ -250,38 +256,39 @@ class Project():
         """Delete a project or a project version, if the number is supplied."""
         if version is None:
             try:
-                result = projects_db.delete_one({'_id': ObjectId(self._id)}) # pylint: disable=undefined-variable
+                result = projects_db.delete_one({'_id': ObjectId(self._id)})  # pylint: disable=undefined-variable
                 if result.deleted_count > 0:
                     return {'result': 'success', 'errors': []}
                 return {
                     'result': 'fail',
                     'errors': ['Unknown error: Could not delete the project from the database.']
-                    }
+                }
             except mongoerrors.OperationFailure as err:
                 print(err.code)
                 print(err.details)
                 return {
                     'result': 'fail',
                     'errors': ['Unknown error: Could not delete the project from the database.']
-                    }
+                }
         else:
             try:
                 for index, item in enumerate(self.reduced_manifest['content']):
                     if item['version_number'] == version:
                         del self.reduced_manifest['content'][index]
-                        projects_db.update_one({'_id': ObjectId(self._id)}, # pylint: disable=undefined-variable
+                        projects_db.update_one({'_id': ObjectId(self._id)},  # pylint: disable=undefined-variable
                                                {'$set': {
                                                    'content': self.reduced_manifest['content']
                                                    }
                                                },
-                                               upsert=False)
+                                               upsert=False
+                                               )
             except mongoerrors.OperationFailure as err:
                 print(err.code)
                 print(err.details)
                 return {
                     'result': 'fail',
                     'errors': ['Unknown error: Could not delete the project from the database.']
-                    }
+                }
 
     def exists(self):
         """Test whether the project already exists in the database."""
@@ -323,7 +330,7 @@ class Project():
             project_dir = exports_dir + '/' + version_dict['version_name']
             os.makedirs(project_dir, exist_ok=True)
             # Get the data and put a manifest in it and write data to the caches/json folder
-            result = corpus_db.find(self.reduced_manifest['db_query']) # pylint: disable=undefined-variable
+            result = corpus_db.find(self.reduced_manifest['db_query'])  # pylint: disable=undefined-variable
             try:
                 with open(os.path.join(project_dir, 'datapackage.json'), 'w') as f:
                     f.write(json.dumps(
@@ -331,7 +338,8 @@ class Project():
                         indent=2,
                         sort_keys=False,
                         default=JSON_UTIL
-                        ))
+                        )
+                    )
                 json_caches = os.path.join(project_dir, 'project_data/json')
                 os.makedirs(json_caches, exist_ok=True)
                 for item in result:
@@ -378,7 +386,6 @@ class Project():
                 if version['version_number'] == _latest_version_number:
                     _latest_version = version['version_number']
         return self.get_version(_latest_version)
-
 
     def get_version(self, value, key='number'):
         """Get the dict for a specific version.
@@ -484,7 +491,7 @@ class Project():
         # If the there is a db_query, get the data
         if 'db_query' in self.reduced_manifest:
             try:
-                result = list(corpus_db.find(self.reduced_manifest['db_query'])) # pylint: disable=undefined-variable
+                result = list(corpus_db.find(self.reduced_manifest['db_query']))  # pylint: disable=undefined-variable
                 if len(result) == 0:
                     errors.append('<p>The database query returned no results.</p>')
             except mongoerrors.OperationFailure as err:
@@ -502,7 +509,8 @@ class Project():
                         indent=2,
                         sort_keys=False,
                         default=JSON_UTIL
-                        ))
+                        )
+                    )
 
                 for item in result:
                     filename = os.path.join(json_caches, item['name'] + '.json')
@@ -556,16 +564,16 @@ class Project():
         """
         try:
             if action == 'update':
-                result = projects_db.find_one_and_update( # pylint: disable=undefined-variable
+                result = projects_db.find_one_and_update(  # pylint: disable=undefined-variable
                     {'_id': ObjectId(self._id)},
                     {'$set': self.reduced_manifest},
                     upsert=False,
                     projection={'_id': True},
                     return_document=ReturnDocument.AFTER
-                    )
+                )
                 _id = result['_id']
             else:
-                result = projects_db.insert_one(self.reduced_manifest) # pylint: disable=undefined-variable
+                result = projects_db.insert_one(self.reduced_manifest)  # pylint: disable=undefined-variable
                 _id = result.inserted_id
             return {'result': 'success', '_id': _id, 'errors': []}
         except mongoerrors.OperationFailure as err:
@@ -583,7 +591,7 @@ class Project():
             return {'result': 'fail', 'errors': ['No name has been supplied for the new project.']}
         # If a path is supplied, zip the folder and create a version 1
         if path is not None:
-        # Create a new project folder
+            # Create a new project folder
             try:
                 path_parts = path.split('/')
                 path_parts[-1] = datetime.today().strftime('%Y%m%d%H%M%S_') + new_name
@@ -593,7 +601,7 @@ class Project():
                 return {
                     'result': 'fail',
                     'errors': ['A project folder with that name already exists. Please try another name.']
-                    }
+                }
             # Clear Outputs on a glob of all ipynb files
             try:
                 for filename in glob.iglob(path + '/**', recursive=True):
@@ -606,7 +614,7 @@ class Project():
                 return {
                     'result': 'fail',
                     'errors': ['Could not clear the notebook variables in the new project folder.']
-                    }
+                }
             # Change the manifest name and delete the _id
             self.reduced_manifest['name'] = new_name
             if '_id' in self.reduced_manifest:
@@ -645,7 +653,6 @@ class Project():
             return {'result': 'success', 'output_path': output_path, 'errors': []}
         except RuntimeError:
             return {'result': 'fail', 'errors': ['Could not unzip the file at ' + source + '.']}
-
 
     def zip(self, filename, source_dir, destination_dir):
         """Create a zip archive of the project folder and writes it to the destination folder."""
