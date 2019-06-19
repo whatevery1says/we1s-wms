@@ -279,16 +279,16 @@ class Project():
                     if item['version_number'] == version:
                         del self.reduced_manifest['content'][index]
                         projects_db.update_one(  # pylint: disable=undefined-variable
-                                                {
-                                                    '_id': ObjectId(self._id)
-                                                },
-                                                {
-                                                    '$set': {
-                                                        'content': self.reduced_manifest['content']
-                                                    }
-                                                },
-                                                upsert=False
-                                            )
+                            {
+                                '_id': ObjectId(self._id)
+                            },
+                            {
+                                '$set': {
+                                    'content': self.reduced_manifest['content']
+                                }
+                            },
+                            upsert=False
+                        )
             except mongoerrors.OperationFailure as err:
                 print(err.code)
                 print(err.details)
