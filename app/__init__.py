@@ -39,38 +39,20 @@ app.config.from_pyfile('config.py')
 # print(app.instance_path)
 # print(app.config)
 
-# Register blueprints
-def register_blueprints(app):
-    # Prevents circular imports
-    app.register_blueprint(sources, url_prefix='/sources')
-    app.register_blueprint(corpus, url_prefix='/corpus')
-    app.register_blueprint(projects, url_prefix='/projects')
-    app.register_blueprint(scripts, url_prefix='/scripts')
-    app.register_blueprint(tasks, url_prefix='/tasks')
+def register_blueprints(application):
+    """Prevent circular imports."""
+    application.register_blueprint(sources, url_prefix='/sources')
+    application.register_blueprint(corpus, url_prefix='/corpus')
+    application.register_blueprint(projects, url_prefix='/projects')
+    application.register_blueprint(scripts, url_prefix='/scripts')
+    application.register_blueprint(tasks, url_prefix='/tasks')
+
 
 register_blueprints(app)
 
 # ----------------------------------------------------------------------------#
 # Controllers.
 # ----------------------------------------------------------------------------#
-
-@app.route('/project-start/<name>', methods=['GET', 'POST'])
-def projectstart(name):
-    """Load Project Start page."""
-    # start_config_file = 'home/jovyan/write/dev/' + name + '/start_config.json'
-    start_config_file = 'app/static/' + name + '/start_config.json'
-    with open(start_config_file, 'r') as f:
-        start_config = json.loads(f.read())
-    return render_template('project_start.html', start_config=start_config)
-
-
-@app.route('/dummy')
-def project_start():
-    """Removing this route disables /project-start.
-
-    Possibly some weird browser caching issue.
-    """
-    print('For testing')
 
 
 @app.route('/todo')
