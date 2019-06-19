@@ -30,7 +30,6 @@ function getFormvals () {
   return formvals
 }
 
-
 function uniqueId () {
   /* Return a unique ID */
   return Math.random().toString(36).substring(2) + (new Date()).getTime().toString(36)
@@ -40,15 +39,21 @@ function uniqueId () {
 // Ajax Functions
 //
 
-function saveProject (manifest, action) {
+function saveProject (manifest, action, newName = null, version = null) {
   /* Creates a new manifest
   Input: A JSON serialisation of the form values
   Returns: A copy of the manifest and an array of errors for display */
   let data = {'manifest': manifest, 'action': action}
-  // bootbox.alert(JSON.stringify(data))
+  let url = '/projects/save'
+  if ($('#update').html() === 'Update' || newName !== null) {
+    url = '/projects/save-as'
+    data['path'] = null
+    data['new_name'] = newName
+    data['version'] = version
+  }
   $.ajax({
     method: 'POST',
-    url: '/projects/save-project',
+    url: url,
     data: JSON.stringify(data),
     contentType: 'application/json;charset=UTF-8',
     beforeSend: showProcessing()
@@ -82,14 +87,15 @@ function saveProject (manifest, action) {
     })
 }
 
-function deleteDatapackage (_id) {
-  /* Deletes a datapackage from a project
-   Input: A name value
+function deleteProject (manifest, versionNumber = null) {
+  /* Deletes a project or project version
+   Input: A manifest and a version_number
    Returns: An array of errors for display */
+  let data = {'manifest': manifest, 'version': versionNumber}
   $.ajax({
     method: 'POST',
-    url: '/projects/delete-datapackage',
-    data: JSON.stringify({ '_id': _id }),
+    url: '/projects/delete',
+    data: JSON.stringify(data),
     contentType: 'application/json;charset=UTF-8',
     beforeSend: showProcessing()
   })
@@ -97,63 +103,64 @@ function deleteDatapackage (_id) {
       hideProcessing()
       var errors = JSON.parse(response)['errors']
       if (errors.length > 0) {
-        bootbox.alert('<p>Could not delete the datapackage because of the following errors:</p>' + errors)
+        bootbox.alert('<p>Could not delete the version because of the following errors:</p>' + errors)
       } else {
-        $('#delete-datapackage').remove()
-        bootbox.alert({
-          message: '<p>The datapackage was deleted.</p>',
-          callback: function () {
-            // Show the database query builder form
-          }
-        })
+        // Delete the row in the UI
+        $('#workflow' + versionNumber).remove()
+        // Get the hidden content value as an object
+        let dataStr = $('#versions').val().replace(/'/g, '"')
+        let data = JSON.parse(dataStr)
+        // Find the index of the object to remove and delete it
+        let index = data.findIndex(x => x.version_number === versionNumber)
+        data.splice(index, 1)
+        // Update the hidden content value
+        $('#versions').val(JSON.stringify(data))
+        // Just for testing
+        // console.log(JSON.stringify(data))
+        bootbox.alert('<p>The version was deleted.</p>')
       }
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
       hideProcessing()
-      var msg = '<p>The datapackage could not be deleted because of the following errors:</p>'
+      var msg = '<p>The version could not be deleted because of the following errors:</p>'
       msg += '<p>' + textStatus + ': ' + errorThrown + '</p>'
       bootbox.alert(msg)
     })
 }
 
-function deleteProject (name, metapath) {
-  /* Deletes a manifest
-   Input: A name value
+function exportProject (manifest, version = null) {
+  /* Exports a version datapackage from a project
+   Input: A manifest and a version_number
    Returns: An array of errors for display */
+  let data = {'manifest': manifest, 'version_number': version}
   $.ajax({
     method: 'POST',
-    url: '/projects/delete-manifest',
-    data: JSON.stringify({ 'name': name, 'metapath': metapath }),
+    url: '/projects/export',
+    data: JSON.stringify(data),
     contentType: 'application/json;charset=UTF-8',
     beforeSend: showProcessing()
   })
     .done(function (response) {
       hideProcessing()
       var errors = JSON.parse(response)['errors']
-      if (errors !== '') {
-        var msg = '<p>Could not delete the manifest because of the following errors:</p>' + errors
+      if (errors.length > 0) {
+        bootbox.alert('<p>Could not export the version because of the following errors:</p>' + errors)
       } else {
-        msg = '<p>The manifest for <code>' + name + '</code> was deleted.</p>'
+        window.location = '/projects/download-export/' + response['filename']
       }
-      bootbox.alert({
-        message: msg,
-        callback: function () {
-          window.location = '/projects'
-        }
-      })
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
       hideProcessing()
-      var msg = '<p>The manifest could not be saved because of the following errors:</p>'
+      var msg = '<p>The version could not be exported because of the following errors:</p>'
       msg += '<p>' + textStatus + ': ' + errorThrown + '</p>'
       bootbox.alert(msg)
     })
 }
 
-function exportSearch (data) {
-  /* Exports the results of a Projects search
+/* function exportSearch (data) {
+   Exports the results of a Projects search
      Input: Values from the search form
-     Returns: An array containing results and errors for display */
+     Returns: An array containing results and errors for display
   $.ajax({
     method: 'POST',
     url: '/projects/export-search',
@@ -174,7 +181,7 @@ function exportSearch (data) {
       msg += '<p>' + textStatus + ': ' + errorThrown + '</p>'
       bootbox.alert(msg)
     })
-}
+} */
 
 // function searchProjects (data) {
 //   /* Searches the Projects database
@@ -284,14 +291,16 @@ function sendExport (jsonform) {
     })
 }
 
-function launchNotebook (workflow, manifest) {
+function launch (workflow, manifest, version = null, newProject = true) {
   /* Launches a new workflow in the Virtual Workspace
-  Input: The name of the workflow and the project manifest
+  Input: The name of the workflow, the project manifest,
+         an optional version number, and a Boolean indicating 
+         a new project
   Returns: An array of errors for display */
-  let data = {'workflow': workflow, 'manifest': manifest}
+  let data = {'workflow': workflow, 'manifest': manifest, 'version': version, 'new': newProject}
   $.ajax({
     method: 'POST',
-    url: '/projects/launch-notebook',
+    url: '/projects/launch',
     data: JSON.stringify(data),
     contentType: 'application/json;charset=UTF-8',
     beforeSend: showProcessing()
@@ -300,8 +309,14 @@ function launchNotebook (workflow, manifest) {
       hideProcessing()
       var errors = JSON.parse(response)['errors']
       if (errors.length > 0) {
-        var result = JSON.stringify(response['errors'])
-        bootbox.alert('<p>Sorry, mate! You\'ve got an error!</p><p>' + result + '</p>')
+        var msg = '<p>The project could not be launched because of the following errors:</p><ul>'
+        $.each(errors, function (_, value) {
+          msg += '<li>' + value + '</li>'
+        })
+        msg += '</ul>'
+        bootbox.alert(msg)
+      } else {
+        window.open(JSON.parse(response)['filepath'], '_blank')
       }
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
@@ -454,8 +469,8 @@ $(function () {
     minDate: null,
     maxDate: null,
     onClose: function (date) {
-      let isValid = checkDateFormat(date)
-      //console.log('Date is valid: ' + isValid)
+      // let isValid = checkDateFormat(date)
+      // console.log('Date is valid: ' + isValid)
       // Check date range
       var container = $(this).closest('.form-group')
       var startField = container.children().find('input').eq(0)
@@ -511,7 +526,7 @@ $(function () {
       })
   })
 
-  // Deprecated - Validate a single date for use when a single datepicker is closed
+  /* Deprecated - Validate a single date for use when a single datepicker is closed
   function checkDateFormat (date) {
     // If the field is not empty
     let valid
@@ -523,7 +538,7 @@ $(function () {
       }
     }
     return valid
-  }
+  } */
 
   function clones2Lists (str, prefix, prefixes, lists) {
     // Takes a string of cloned (or cloneable) fields and converts it to a schema-valid object.
@@ -815,6 +830,7 @@ $(function () {
     $('form').show()
   })
 
+  /* Handles Save Button */
   $('#save').click(function (e) {
     e.preventDefault()
     // Show validation errors
@@ -824,31 +840,35 @@ $(function () {
     }
   })
 
+  /* Handles the Launch button */
   $('.dropdown-item').click(function (e) {
     e.preventDefault()
     let workflow = $(this).attr('id').replace('-btn', '')
-    launchNotebook(workflow, getFormvals())
+    var query = $('#builder').queryBuilder('getMongo')
+    if (query == null) {
+      bootbox.alert('To launch the project you must first supply a database query in the Data Resources tab.')
+    } else {
+      launch(workflow, getFormvals())
+    }
+  })
+
+  /* Handles the Version Launch button */
+  $('.export-version').click(function (e) {
+    e.preventDefault()
+    var versionNumber = $(this).attr('id').replace('launch', '')
+    launch(cleanup(), versionNumber)
   })
 
   //
   // Create Page Functions
   //
 
-
   //
   // Display Page Functions
   //
 
   /* Makes the global template available to scripts for the display page */
-  var globalTemplate = $('#global-template').html()
-
-  /* If this is the display page, use the correct form for the 
-     manifest's nodetype */
-  // var pageUrl = document.URL.split('/')
-  // if (pageUrl[pageUrl.length - 2] === 'display') {
-  //   var template = $('#' + nodetype + '-template').html()
-  //   $('#manifestCard').html(template).append(globalTemplate)
-  // }
+  var globalTemplate = $('#global-template').html() // eslint-disable-line no-unused-vars
 
   /* Toggles the Edit/Update button and field disabled property */
   $('#update').click(function (e) {
@@ -890,6 +910,53 @@ $(function () {
     }
   })
 
+  /* Handles the Clone Button */
+  $('#clone').click(function (e) {
+    e.preventDefault()
+    bootbox.prompt({
+      title: 'Enter the name of the new project.',
+      buttons: {
+        confirm: { label: 'Save', className: 'btn-success' },
+        cancel: { label: 'Cancel', className: 'btn-danger' }
+      },
+      callback: function (result) {
+        var regex = RegExp('[^a-z0-9_-]')
+        if (regex.test(result)) {
+          let msg = '<p class="text-danger">Project names must contain only lower-case alphanumeric characters, plus "-" and "_".</p>'
+          $('.modal-body').append(msg)
+        } else {
+          saveProject(cleanup(), 'create', result)
+          bootbox.hideAll()
+        }
+        return false
+      }
+    })
+  })
+
+  /* Handles the Clone Version Button */
+  $('.clone-version').click(function (e) {
+    e.preventDefault()
+    var versionNumber = $(this).attr('id').replace('clone', '')
+    bootbox.prompt({
+      title: 'Enter the name of the new project.',
+      buttons: {
+        confirm: { label: 'Save', className: 'btn-success' },
+        cancel: { label: 'Cancel', className: 'btn-danger' }
+      },
+      callback: function (result) {
+        var regex = RegExp('[^a-z0-9_-]')
+        if (regex.test(result)) {
+          let msg = '<p class="text-danger">Project names must contain only lower-case alphanumeric characters, plus "-" and "_".</p>'
+          $('.modal-body').append(msg)
+        } else {
+          saveProject(cleanup(), 'create', result, versionNumber)
+          bootbox.hideAll()
+        }
+        return false
+      }
+    })
+  })
+
   /* Handles the Delete button */
   $('#delete').click(function (e) {
     e.preventDefault()
@@ -909,22 +976,29 @@ $(function () {
     })
   })
 
-  /* Handles the Delete Datapackage button */
-  $('#delete-datapackage').click(function (e) {
+  /* Handles the Version Delete button */
+  $('.delete-version').click(function (e) {
     e.preventDefault()
-    var _id = $('#_id').val()
+    var versionNumber = $(this).attr('id').replace('delete', '')
     bootbox.confirm({
-      message: 'Are you sure you wish to delete the datapackage for this project?',
+      message: 'Are you sure you wish to delete version' + versionNumber + '?',
       buttons: {
         confirm: { label: 'Yes', className: 'btn-success' },
         cancel: { label: 'No', className: 'btn-danger' }
       },
       callback: function (result) {
         if (result === true) {
-          deleteDatapackage(_id)
+          deleteProject(cleanup(), versionNumber)
         }
       }
     })
+  })
+
+  /* Handles the Version Export button */
+  $('.export-version').click(function (e) {
+    e.preventDefault()
+    var versionNumber = $(this).attr('id').replace('export', '')
+    exportProject(cleanup(), versionNumber)
   })
 
   /* Handles the Export feature */
@@ -933,7 +1007,7 @@ $(function () {
     if ($('#update').html() === 'Update') {
       bootbox.alert('Make sure you have saved your updates before exporting.')
     } else {
-      $('#exportModal').modal()
+      exportProject(cleanup(), null)
     }
   })
 

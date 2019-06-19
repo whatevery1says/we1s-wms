@@ -1,5 +1,8 @@
 """Projects __init.py__."""
 
+# pylint: disable=C1801
+# pylint: disable=wrong-import-position
+
 # import: standard
 from datetime import datetime
 import itertools
@@ -8,13 +11,16 @@ import os
 from pathlib import Path
 import re
 import shutil
+from shutil import copytree, ignore_patterns
 import subprocess
+import sys
 import uuid
 import zipfile
 # import: third-party
+from io import BytesIO
 from bson import BSON, Binary, json_util, ObjectId
 import dateutil.parser
-from flask import Blueprint, render_template, request, url_for, current_app, send_file
+from flask import Blueprint, render_template, request, url_for, current_app, send_file, make_response
 from jsonschema import validate, FormatChecker
 import pymongo
 from pymongo import MongoClient
@@ -22,225 +28,57 @@ import requests
 import tabulator
 from werkzeug.utils import secure_filename
 import yaml
+
 # import: app
 from app.projects.helpers import workspace
+from app.projects.helpers import project as p
 
+# Instantiate the projects Blueprint
+projects = Blueprint('projects', __name__, template_folder='projects')
 
-JSON_UTIL = json_util.default
-
-# Set up the MongoDB client, configure the databases, and assign variables to the "collections"
-client = MongoClient('mongodb://localhost:27017')
+# import: config
+root = projects.root_path.replace('\\', '/')
+instance = '/'.join(root.split('/')[:-2]) + '/instance'
+from instance import config
+client = MongoClient(config.MONGO_CLIENT)
 db = client.we1s
 projects_db = db.Projects
 corpus_db = db.Corpus
 
-projects = Blueprint('projects', __name__, template_folder='projects')
-
 # ----------------------------------------------------------------------------#
 # Constants.
 # ----------------------------------------------------------------------------#
-
-
+# Assign variables from outside application context
+JSON_UTIL = json_util.default
 ALLOWED_EXTENSIONS = ['zip']
-# Horrible hack to get the instance path from out of context
-root_path = projects.root_path.replace('\\', '/').split('/')
-del root_path[-2:]
-instance_path = '/'.join(root_path) + '/instance'
-WORKSPACE_DIR = os.path.join(instance_path, 'workspace')
-WORKSPACE_TEMP = os.path.join(WORKSPACE_DIR, 'temp')
-WORKSPACE_PROJECTS = os.path.join(WORKSPACE_DIR, 'projects')
-WORKSPACE_TEMPLATES = os.path.join(WORKSPACE_DIR, 'templates')
-
-# ----------------------------------------------------------------------------#
-# Model.
-# ----------------------------------------------------------------------------#
-
-
-class Project():
-    """Model a project.
-
-    Parameters:
-    - manifest: dict containing form data for the project manifest.
-    - query: dict containing the database query.
-    - action: the database action to be taken: "insert" or "update".
-
-    Returns a JSON object with the format `{'response': 'success|fail', 'errors': []}`.
-
-    """
-
-    def __init__(self, manifest, query, action):
-        """Initialize the object."""
-        self.action = action
-        self.manifest = self.clean(manifest)
-        self.query = json.loads(query)
-        self.name = manifest['name']
-        self.filename = manifest['name'] + '.zip'
-
-    def clean(self, manifest):
-        """Remove empty form values and form builder parameters."""
-        data = {}
-        for k, v in manifest.items():
-            if v not in ['', [], ['']] and not k.startswith('builder_'):
-                data[k] = v
-        return data
-
-    def exists(self):
-        """Test whether the project already exists in the database."""
-        test = projects_db.find_one({'name': self.name})
-        if test is not None:
-            return True
-        return False
-
-    def insert(self):
-        """Insert a project in the database."""
-        unknown_error_msg = 'An unknown error occurred when trying to insert the project into the database.'
-        self.manifest['created'] = datetime.today().strftime('%Y-%m-%dT%H:%M:%SZ')
-        if self.query != {}:
-            # Create the datapackage and add it to the manifest with the datetime
-            content, errors, key = self.make_datapackage()
-            self.manifest['content'] = content
-            try:
-                # Insert the manifest into the database
-                projects_db.insert_one(self.manifest)
-                empty_tempfolder(key)
-                return {'result': 'success', 'manifest': str(self.manifest['_id']), 'errors': errors}
-            except:
-                return {'result': 'fail', 'errors': [unknown_error_msg]}
-        else:
-            self.manifest['content'] = ''
-            try:
-                # Insert the manifest into the database
-                projects_db.insert_one(self.manifest)
-                return {'result': 'success', 'manifest': str(self.manifest['_id']), 'errors': []}
-            except:
-                return {'result': 'fail', 'errors': [unknown_error_msg]}
-
-    def update(self):
-        """Update an existing project in the database."""
-        saved_project = projects_db.find_one({'name': self.name})
-        # The query has not been edited, just update the metadata
-        if saved_project['db-query'] == self.manifest['db-query']:
-            updated_manifest = {}
-            for k, v in self.manifest.items():
-                if k not in ['name', '_id', 'content']:
-                    updated_manifest[k] = v
-            try:
-                projects_db.update_one({'_id': ObjectId(saved_project['_id'])},
-                                       {'$set': updated_manifest}, upsert=False)
-                return {'result': 'success', 'errors': []}
-            except pymongo.errors.OperationFailure as e:
-                print(e.code)
-                print(e.details)
-                msg = 'Unknown Error: The record for <code>name</code> <strong>' + \
-                    self.name + '</strong> could not be updated.'
-                return {'result': 'fail', 'errors': [msg]}
-        # The query has been changed, so a new zip archive must be created
-        else:
-            content, errors, key = self.make_datapackage()
-            self.manifest['content'] = content
-            _id = self.manifest.pop('_id')
-            try:
-                projects_db.update_one({'_id': ObjectId(saved_project['_id'])},
-                                       {'$set': self.manifest}, upsert=False)
-                empty_tempfolder(key)
-                return {'result': 'success', 'errors': []}
-            except pymongo.errors.OperationFailure as e:
-                print(e.code)
-                print(e.details)
-                msg = 'Unknown Error: The record for <code>name</code> <strong>' + self.name + '</strong> could not be updated.'
-                errors.append(msg)
-                return {'result': 'fail', 'errors': errors}
-
-    def make_datapackage(self):
-        """Create a project folder and zip archive folder containing a data package.
-
-        Returns a binary of the zip archive, a list of errors, and the key to the
-        location of the archive in the temp folder.
-        """
-        errors = []
-        # Remove empty form values and form builder parameters
-        data = self.manifest
-
-        # Add the resources property -- we're making a datapackage
-        resources = []
-        for folder in ['Sources', 'Corpus', 'Processes', 'Scripts']:
-            resources.append({'path': '/' + folder})
-        data['resources'] = resources
-
-        # Create a unique folder in /workspace/temp and save the datapackage to it
-        key = generate_key()
-        temp_folder = os.path.join(WORKSPACE_TEMP, key)
-        Path(temp_folder).mkdir(parents=True, exist_ok=True)
-        # Make a folder with the project name and the standard subfolders
-        project_dir = os.path.join(temp_folder, self.name)
-        Path(project_dir).mkdir(parents=True, exist_ok=True)
-        for folder in ['Sources', 'Corpus', 'Processes', 'Scripts']:
-            new_folder = Path(project_dir) / folder
-            Path(new_folder).mkdir(parents=True, exist_ok=True)
-        # Write the datapackage file to the project folder
-        datapackage = os.path.join(project_dir, 'datapackage.json')
-        with open(datapackage, 'w') as f:
-            f.write(json.dumps(data, indent=2, sort_keys=False, default=JSON_UTIL))
-
-        # Query the database
-        result = list(corpus_db.find(self.query))
-        if not result:
-            errors.append('No records were found matching your search criteria.')
-        else:
-            for item in result:
-                # Make sure every metapath is a directory
-                path = Path(project_dir) / item['metapath'].replace(',', '/')
-                Path(path).mkdir(parents=True, exist_ok=True)
-
-                # Write a file for every manifest -- only handles json
-                if 'content' in item:
-                    filename = item['name'] + '.json'
-                    filepath = path / filename
-                    with open(filepath, 'w') as f:
-                        f.write(json.dumps(item, indent=2, sort_keys=False, default=JSON_UTIL))
-            # Zip the project_dir to the temp folder and send the file
-            self.zipfolder(project_dir, temp_folder, self.name)
-            # Read the zip file to a variable and return it
-            project_zip = os.path.join(temp_folder, self.filename)
-            with open(project_zip, 'rb') as f:
-                content = f.read()
-            return content, errors, key
-
-    def zipfolder(self, source_dir, temp_folder, output_filename):
-        """Create a zip archive of a source directory.
-
-        Takes file paths for both the source directory and the output file.
-
-        Note that the output filename should not have the .zip extension; it is added here.
-        """
-        output_filepath = os.path.join(temp_folder, output_filename + '.zip')
-        zipobj = zipfile.ZipFile(output_filepath, 'w', zipfile.ZIP_DEFLATED)
-        rootlen = len(source_dir) + 1
-        for base, _, files in os.walk(source_dir):
-            for file in files:
-                fn = os.path.join(base, file)
-                zipobj.write(fn, fn[rootlen:])
-
+templates_dir = config.TEMPLATES_DIR
+workspace_dir = config.WORKSPACE_DIR
+temp_dir = config.TEMP_DIR
+exports_dir = os.path.join(workspace_dir, 'exports')
+WORKSPACE_TEMP = os.path.join(workspace_dir, 'temp')
+WORKSPACE_PROJECTS = os.path.join(workspace_dir, 'projects')
+WORKSPACE_TEMPLATES = os.path.join(workspace_dir, 'templates')
+# # Deprecated?
+# # WORKSPACE_DIR = os.path.join(instance, 'workspace')
 
 # ----------------------------------------------------------------------------#
 # Controllers.
 # ----------------------------------------------------------------------------#
 
-
 @projects.route('/')
 def index():
     """Projects index page."""
     scripts = ['js/corpus/dropzone.js', 'js/projects/projects.js', 'js/projects/upload.js', 'js/jquery-ui.js', 'js/dateformat.js']
-    breadcrumbs = [{'link': '/corpus', 'label': 'Scripts'}]
+    breadcrumbs = [{'link': '/projects', 'label': 'Projects'}]
     return render_template('projects/index.html', scripts=scripts, breadcrumbs=breadcrumbs)
 
 
 @projects.route('/create', methods=['GET', 'POST'])
 def create():
-    """Create/update project page."""
+    """Create project page."""
     scripts = ['js/parsley.min.js', 'js/query-builder.standalone.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/projects/projects.js', 'js/projects/search.js']
     styles = ['css/query-builder.default.css']
-    breadcrumbs = [{'link': '/projects', 'label': 'Projects'}, {'link': '/projects/create', 'label': 'Create/Update Project'}]
+    breadcrumbs = [{'link': '/projects', 'label': 'Projects'}, {'link': '/projects/create', 'label': 'Create Project'}]
     with open('app/templates/projects/template_config.yml', 'r') as stream:
         templates = yaml.load(stream)
     return render_template('projects/create.html', scripts=scripts, styles=styles, templates=templates, breadcrumbs=breadcrumbs)
@@ -340,103 +178,71 @@ def test_query():
     return response
 
 
-@projects.route('/save-project', methods=['GET', 'POST'])
-def save_project():
+@projects.route('/save', methods=['GET', 'POST'])
+def save():
     """Handle Ajax request data and instantiate the project class.
 
     Returns a dict containing a result (success or fail) and a list of errors.
     """
-    # Get manifest, query, and action from request
-    manifest = request.json['manifest']
-    query = json.dumps({})
-    # if 'db-query' in manifest:
-    #     query = manifest.pop(['db-query'])
-    action = request.json['action']  # insert or update
-
-    # Instantiate a project object
-    project = Project(manifest, query, action)
-
-    # Reject an insert where the project name already exists
-    if project.exists() and action == 'insert':
-        msg = 'This project name already exists in the database. Please choose another value for <code>name</code>.'
-        response = {'result': 'fail', 'errors': [msg]}
-
-    # Update the project
-    elif project.exists() and action == 'update':
-        response = project.update()
-        # empty_tempfolder()
-
-    # Insert a new project
-    else:
-        response = project.insert()
-        # empty_tempfolder()
-
-    # Return a success/fail flag and a list of errors to the browser
-    return json.dumps(response)
-
-
-@projects.route('/delete-datapackage', methods=['GET', 'POST'])
-def delete_datapackage():
-    """Delete a project datapackage."""
     try:
-        projects_db.update_one({'_id': ObjectId(request.json['_id'])},
-                               {'$unset': {'content': ''}}, upsert=False)
-        response = json.dumps({'result': 'success', 'errors': []})
+        project = p.Project(request.json['manifest'], templates_dir, workspace_dir, temp_dir)
+        return project.save()
     except:
-        errors = ['<p>Unknown error: The document could not be deleted.</p>']
-        response = json.dumps({'result': 'fail', 'errors': errors})
-    return response
+        return {'result': 'fail', 'errors': ['Could not create Project object.']}
 
-
-@projects.route('/delete-project', methods=['GET', 'POST'])
-def delete_project():
-    """Delete a project."""
-    manifest = request.json['manifest']
-    result = projects_db.delete_one({'_id': ObjectId(manifest['_id'])})
-    if result.deleted_count == 1:
-        response = json.dumps({'result': 'success', 'errors': []})
-    else:
-        errors = ['<p>Unknown error: The document could not be deleted.</p>']
-        response = json.dumps({'result': 'fail', 'errors': errors})
-    return response
-
-
-@projects.route('/export-project', methods=['GET', 'POST'])
-def export_project():
+@projects.route('/save-as', methods=['GET', 'POST'])
+def save_as():
     """Handle Ajax request data and instantiate the project class.
 
     Returns a dict containing a result (success or fail) and a list of errors.
     """
-    manifest = request.json['manifest']
-    query = request.json['query']
-    action = request.json['action']  # export
-    # Instantiate a project object and make a data pacakge
-    project = Project(manifest, query, action)
-    _, errors, key = project.make_datapackage()
-    if not errors:
-        response = {'result': 'success', 'key': key, 'errors': []}
-    else:
-        response = {'result': 'fail', 'errors': errors}
-        empty_tempfolder(key)
-    # Return a success/fail flag and a list of errors to the browser
-    return json.dumps(response)
+    try:
+        project = p.Project(request.json['manifest'], templates_dir, workspace_dir, temp_dir)
+        if version is not None:
+            return project.copy(request.json['new_name'], request.json['version'])
+        return project.save_as(new_name=request.json['new_name'])
+    except:
+        return {'result': 'fail', 'errors': ['Could not create Project object.']}
 
 
-@projects.route('/download-export/<filepath>', methods=['GET', 'POST'])
-def download_export(filepath):
-    """Ajax route to trigger download and empty the temp folder."""
-    from flask import make_response
-    key, filename = filepath.split('#')
-    temp_folder = os.path.join(WORKSPACE_TEMP, key)
-    filepath = os.path.join(temp_folder, filename)
+@projects.route('/delete-version', methods=['GET', 'POST'])
+def delete_version():
+    """Delete a project version."""
+    project = p.Project(request.json['manifest'], templates_dir, workspace_dir, temp_dir)
+    return project.delete(version=request.json['version_number'])
+
+
+@projects.route('/export', methods=['GET', 'POST'])
+def export_version():
+    """Write a project version to the exports folder.
+
+    Returns a dict containing a result (success or fail), the
+    filepath to the project zip, and a list of errors.
+    """
+    project = p.Project(request.json['manifest'], templates_dir, workspace_dir, temp_dir)
+    return project.export(version=request.json['version_number'])
+
+
+@projects.route('/download-export/<filename>', methods=['GET', 'POST'])
+def download_export(filename):
+    """Ajax route to trigger download and delete the temporary file."""
+    filepath = os.path.join(exports_dir, filename)
     # Can't get Firefox to save the file extension by any means
     with open(filepath, 'rb') as f:
         response = make_response(f.read())
     os.remove(filepath)
     response.headers['Content-Type'] = 'application/octet-stream'
     response.headers["Content-Disposition"] = "attachment; filename={}".format(filename)
-    empty_tempfolder(key)
+    # Delete the file
+    os.remove(os.path.join(exports_dir, filename))
     return response
+
+
+@projects.route('/delete', methods=['GET', 'POST'])
+def deletet():
+    """Delete a project."""
+    project = p.Project(request.json['manifest'], templates_dir, workspace_dir, temp_dir)
+    return project.delete(version=request.json['version'])
 
 
 @projects.route('/search', methods=['GET', 'POST'])
@@ -467,8 +273,40 @@ def search():
         result, num_pages, errors = search_projects(query, limit, paginated, page, show_properties, sorting)
         if result == []:
             errors.append('No records were found matching your search criteria.')
-        # print(result['_id'])
         return json.dumps({'response': result, 'num_pages': num_pages, 'errors': errors}, default=JSON_UTIL)
+
+
+def export_results(results, export_filename):
+    """Save a zip archive of the results of a MongoDB query.
+
+    Returns a dict containing the path to the zip archive and any errors.
+    """
+    response = {'result': 'success', 'path': export_filename, 'errors': []}
+    # Create a memory buffer
+    mem_zip = BytesIO()
+    # Load the files into memory
+    docs = []
+    for result in results:
+        doc = json.dumps(result, indent=2)
+        docs.append((result['name'] + '.json', doc))
+    # Create the zip archive in memory
+    try:
+        with zipfile.ZipFile(mem_zip, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for doc in docs:
+                zf.writestr(doc[0], doc[1])
+    except RuntimeError as err:
+        print('{}: {}'.format(type(err).__name__, err), sys.stderr)
+        response['result'] = 'fail'
+        response['errors'].append('Could not create zipfile in memory.')
+    # Save the zip archive
+    try:
+        with open(export_filename, 'wb') as f:
+            f.write(mem_zip.getvalue())
+    except:
+        print('{}: {}'.format(type(err).__name__, err), sys.stderr)
+        response['result'] = 'fail'
+        response['errors'].append('Could not save zipfile.')
+    return response
 
 
 @projects.route('/export-search-results', methods=['GET', 'POST'])
@@ -494,23 +332,33 @@ def export_search_results():
         result, _, errors = search_projects(query, limit, paginated, page, show_properties, sorting)
         if not result:
             errors.append('No records were found matching your search criteria.')
-        else:
-            key = generate_key()
-            temp_folder = os.path.join(WORKSPACE_TEMP, key)
-            # Zip multiple files
-            if len(result) > 1:
-                zipfolder(temp_folder, 'search-results')
-            # Or write a single JSON file
-            else:
-                filename = os.path.join(temp_folder, 'search-results.json')
-                with open(filename, 'w') as f:
-                    f.write(json.dumps(result, indent=2, sort_keys=False, default=JSON_UTIL))
+        # This bit needs to be replaced
+        key = generate_key()
+        filename = 'search-results_' + key + '.zip'
+        export_filename = os.path.join(exports_dir, filename)
+        result = export_results(result, export_filename)
+        for error in result['errors']:
+            errors.append(error)
         return json.dumps({'filename': filename, 'errors': errors}, default=JSON_UTIL)
 
 
 @projects.route('/import-project', methods=['GET', 'POST'])
 def import_project():
-    """Handle import project request."""
+    """Handle import project request.
+
+    New procedures are required for this:
+    1. Upload a zipped file.
+    2. Validate that its structure is in project format.
+    3. If it is, copy in any missing templates.
+    4. Create a manifest from "Create" form metadata,
+       add the zipped file as version 1, then delete
+       the zipfile on disk.
+    5. Use the normal save function.
+
+    This will need to be modified if the project folder
+    has a manifest in it.
+
+    """
     if request.method == 'POST':
         response = {}
         manifest = {}
@@ -524,8 +372,6 @@ def import_project():
             key = generate_key()
             temp_folder = os.path.join(WORKSPACE_TEMP, key)
             file_to_save = os.path.join(temp_folder, filename)
-            # file_to_save = os.path.join(current_app.config['UPLOAD_FOLDER'], filename)
-            # file_to_save = os.path.join('app', file_to_save)
             file.save(file_to_save)
         except:
             errors.append('Could not save file to disk')
@@ -556,78 +402,58 @@ def import_project():
         return json.dumps(response, indent=2, sort_keys=False, default=JSON_UTIL)
 
 
-@projects.route('/launch-notebook', methods=['GET', 'POST'])
-def launch_notebook():
-    """Create a project folder on the server.
+@projects.route('/launch', methods=['GET', 'POST'])
+def launch():
+    """Launch a project folder in the Workspace.
 
-    Really simple test to create a project folder and save a file to it.
-    The project is saved to (e.g.)
-    we1s-wms/instance/workspace/topic-modeling/
-    followed by the manifest name + _id
+    Creates a Project object and calls Project.launch().
+
+    Parameters:
+    - workflow: The name of the templates to copy in a new project
+    - manifest: The manifest form values
+    - version: The version number of the project (default is None)
+    - new: Boolean indicating whether the project is new (default is True)
+
     """
-    errors = []
     workflow = request.json['workflow']
     manifest = request.json['manifest']
-    if '_id' in manifest:
-        project_dirname = manifest['name'] + '_' + manifest['_id']
-    else:
-        project_dirname = manifest['name'] + '_' + '1234'
-    workspace_path = os.path.join(current_app.instance_path, 'workspace')
-    workflow_path = os.path.join(workspace_path, workflow)
-    project_path = os.path.join(workflow_path, project_dirname)
-    print(project_path)
+    version = request.json['version'] or None
+    new = request.json['new'] or True
+    response = {'result': 'success', 'errors': []}
     try:
-        if not os.path.exists(project_path):
-            os.makedirs(project_path)
-        filename = os.path.join(project_path, 'test.txt')
-        with open(filename, 'w') as f:
-            f.write('test')
-    except:
-        errors.append('Could not make project directory.')
-    return json.dumps({'errors': errors})
-
-
-@projects.route('/launch-jupyter', methods=['GET', 'POST'])
-def launch_jupyter():
-    """Create a project folder on the server.
-
-    Produces a project datapackage, along with any workspace templates.
-    If successful, the Jupyter notebook is lost; otherwise, an error report
-    is returned to the front end.
-    """
-    errors = []
-    manifest = request.json['manifest']
-    # The folder containing the notebook (e.g. we1s-topic-modeling)
-    notebook_type = 'we1s-' + request.json['notebook']
-    # Notebook to launch
-    notebook_start = notebook_type + '/start'
-    # Path to notebook
-    # path = manifest['name'] + '/Workspace/' + notebook_start + '.ipynb'
-    # Fetch or create a datapackage based on the info received
-    datapackage = workspace.Datapackage(manifest, WORKSPACE_PROJECTS)
-    errors += datapackage.errors
-    # If the datapackage has no errors, create the notebook
-    if not errors:
-        notebook = workspace.Notebook(datapackage.manifest, datapackage.container, notebook_start, WORKSPACE_PROJECTS, WORKSPACE_TEMPLATES)
-        errors += notebook.errors
-    # If the notebook has no errors, launch it
-        try:
-            print('Launching from ' + notebook.output + '.')
-            subprocess.run(['nbopen', notebook.output], stdout=subprocess.PIPE)
-        except:
-            errors.append('<p>Could not launch the Jupyter notebook.</p>')
-    # If the process has accumulated errors on the way, send the
-    # error messages to the front end.
-    if errors:
-        response = json.dumps({'result': 'fail', 'errors': errors})
-    else:
-        response = json.dumps({'result': 'success', 'errors': []})
+        project = p.Project(manifest, templates_dir, workspace_dir, temp_dir)
+    except RuntimeError as err:
+        print('{}: {}'.format(type(err).__name__, err), sys.stderr)
+        response['result'] = 'fail'
+        response['errors'].append('Could not create project.')
+    try:
+        project.launch(workflow, version=version, new=new)
+    except RuntimeError as err:
+        print('{}: {}'.format(type(err).__name__, err), sys.stderr)
+        response['result'] = 'fail'
+        response['errors'].append('Could not launch project.')
     return response
 
 
 # ----------------------------------------------------------------------------#
 # Helpers.
 # ----------------------------------------------------------------------------#
+
+
+def parse_version(s, output=''):
+    """Separate a project folder name into its component parts.
+
+    The output argument allows you to return a single component.
+    """
+    version = re.search('(.+)_v([0-9]+)_(.+)', s)
+    if output == 'date':
+        return version.group(1)
+    elif output == 'number':
+        return version.group(2)
+    elif output == 'name':
+        return version.group(3)
+    else:
+        return version.group(1), version.group(2), version.group(3)
 
 
 def generate_key():
@@ -668,15 +494,14 @@ def search_projects(query, limit, paginated, page, show_properties, sorting):
                 pages = list(paginate(result, page_size=page_size))
                 num_pages = len(pages)
                 page = get_page(pages, page)
-                response = page, num_pages, errors
+                return page, num_pages, errors
             else:
-                response = result, 1, errors
+                return result, 1, errors
         else:
-            response = [], 1, errors
+            return [], 1, errors
     else:
         errors.append('The Projects database is empty.')
-        response = [], 1, errors
-    return response
+        return [], 1, errors
 
 
 def get_page(pages, page):
@@ -725,6 +550,8 @@ def manifest_from_datapackage(zipfilepath):
 
     The zip file is embedded in the `content` property, so the project manifest
     is read for insertion in the database.
+
+    This method is deprecated, but it might be useful in the future.
     """
     # Get the datapackage.json file
     manifest = {}
@@ -841,8 +668,6 @@ def testformat(s):
     if dateformat == 'unknown':
         try:
             d = dateutil.parser.parse(s)
-            # s = d.strftime("%Y-%m-%dT%H:%M:%SZ")
-            # dateformat = 'datetime'
             s = d.strftime("%Y-%m-%d")
             dateformat = 'date'
         except:
