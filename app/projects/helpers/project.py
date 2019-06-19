@@ -184,7 +184,10 @@ class Project():
     def copy_templates(self, templates, project_dir):
         """Copy the workflow templates from the templates folder to the a project folder."""
         try:
-            copytree(templates, project_dir, ignore=ignore_patterns(
+            copytree(
+                templates,
+                project_dir,
+                ignore=ignore_patterns(
                     '.ipynb_checkpoints',
                     '__pycache__'
                 )
@@ -276,14 +279,16 @@ class Project():
                     if item['version_number'] == version:
                         del self.reduced_manifest['content'][index]
                         projects_db.update_one(  # pylint: disable=undefined-variable
-                                                {'_id': ObjectId(self._id)},
+                                                {
+                                                    '_id': ObjectId(self._id)
+                                                },
                                                 {
                                                     '$set': {
                                                         'content': self.reduced_manifest['content']
                                                     }
                                                 },
                                                 upsert=False
-                                                )
+                                            )
             except mongoerrors.OperationFailure as err:
                 print(err.code)
                 print(err.details)
