@@ -168,8 +168,8 @@ function removeQueryBuilder () {
 
 $(document).ready(function () {
   $('#update').click(function () {
-    // If the user clicks edit and there is no datapackage, show the query builder
-    if ($('#update').attr('title') === 'Edit Project' && $('#datapackage-row').length === 0) {
+    // If the user clicks edit, show the query builder
+    if ($('#update').attr('title') === 'Edit Project') {
       addQueryBuilder()
     // This might not work. The function may have to be an ajax callback.
     } else {
