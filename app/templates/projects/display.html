@@ -17,8 +17,9 @@
         <button type="button" id="preview" class="btn btn-lg btn-outline-editorial" title="Preview"><i class="fa fa-search"></i></button>
         <button type="button" id="update" class="btn btn-lg btn-outline-editorial" title="Edit Project" data-action="edit"><i
             class="fa fa-pencil"></i></button>
-        <button type="button" id="delete" class="btn btn-lg btn-outline-editorial" title="Delete Project"><i
-          class="fa fa-trash"></i></button>
+        <button type="button" id="clone" class="btn btn-lg btn-outline-editorial" title="Save Project As.." data-action="clone"><i
+            class="fa fa-clone"></i></button>
+        <button type="button" id="delete" class="btn btn-lg btn-outline-editorial" title="Delete Project"><i class="fa fa-trash"></i></button>
         <button type="button" id="export" class="btn btn-lg btn-outline-editorial" title="Export"><i class="fa fa-download"></i></button>
         <button type="button" title="Open in Virtual Workspace" class="btn btn-lg btn-outline-editorial dropdown-toggle"
           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -44,6 +45,10 @@
       <li class="nav-item">
         <a class="nav-link" id="resources-tab" data-toggle="tab" href="#resources" role="tab" aria-controls="resources"
           aria-selected="false">Data Resources</a>
+      </li>
+      <li class="nav-item">
+        <a class="nav-link" id="workflows-tab" data-toggle="tab" href="#workflows" role="tab" aria-controls="resources"
+          aria-selected="false">Workflows</a>
       </li>
     </ul>
     <br>
@@ -245,20 +250,10 @@
           {% endfor %}
         </div>
         <div class="tab-pane fade show" id="resources" role="tabpanel" aria-labelledby="resources-tab">
-          {# 
-            '{"$and": [{"name": " "}]}' is the default empty database query
-            Currently, you are not forced to have a database-query
+          {#
+          '{"$and": [{"name": " "}]}' is the default empty database query
+          Currently, you are not forced to have a database-query
           #}
-          {% if manifest['content'] == 'datapackage.json' %}
-          <div id="datapackage-row" class="form-group row">
-            <div class="col-sm-12">
-              <button id="export-datapackage" class="btn btn-outline-editorial"><i class="fa fa-download"></i> Export
-                Datapackage</button>
-                <button id="delete-datapackage" class="btn btn-outline-editorial"><i class="fa fa-trash"></i> Delete
-                  Datapackage</button>  
-            </div>
-          </div>
-          {% endif %}
           <div id="query-row" class="form-group row">
             <div class="col-sm-10">
               <label class="col-form-label" for="databaseQuery">Database Query</label>
@@ -268,6 +263,40 @@
             </div>
           </div>
         </div> <!-- /tab-pane -->
+        <div class="tab-pane fade show" id="workflows" role="tabpanel" aria-labelledby="workflows-tab">
+          <table class="table">
+            <thead>
+              <tr>
+                <th scope="col">Version</th>
+                <th scope="col">Date</th>
+                <th scope="col">Workflow</th>
+                <th scope="col">Filename</th>
+                <th scope="col">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for item in manifest['content'] %}
+              <input type="hidden" id="versions" name="content" value="{{manifest['content']}}">
+              <tr id="workflow{{ item['version_number'] }}">
+                <th scope="row">{{ item['version_number'] }}</th>
+                <td>{{ item['date'] }}</td>
+                <td>{{ item['workflow'] | title | replace('-', ' ') }}</td>
+                <td>{{ item['filename'] }}</td>
+                <td>
+                  <button type="button" id="launch{{ item['version_number'] }}" class="btn btn-sm btn-outline-editorial launch-version"
+                    title="Launch Version"><i class="fa fa-rocket"></i></button>
+                    <button type="button" id="clone{{ item['version_number'] }}" class="btn btn-sm btn-outline-editorial clone-version" title="Save Version As.." data-action="clone"><i
+                      class="fa fa-clone"></i></button>          
+                    <button type="button" id="export{{ item['version_number'] }}" class="btn btn-sm btn-outline-editorial export-version"
+                    title="Export Version"><i class="fa fa-download"></i></button>
+                  <button type="button" id="delete{{ item['version_number'] }}" class="btn btn-sm btn-outline-editorial delete-version"
+                    title="Delete Version"><i class="fa fa-trash"></i></button>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div><!-- /tab-pane -->
       </div> <!-- /projectForm -->
     </div> <!-- /manifestCard -->
   </div>

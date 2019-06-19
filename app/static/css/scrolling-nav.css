@@ -1,0 +1,75 @@
+/*!
+ * Start Bootstrap - Scrolling Nav (https://startbootstrap.com/template-overviews/scrolling-nav)
+ * Copyright 2013-2019 Start Bootstrap
+ * Licensed under MIT (https://github.com/BlackrockDigital/startbootstrap-scrolling-nav/blob/master/LICENSE)
+ */
+header {
+  padding: 70px 0 20px;
+}
+
+section {
+  padding: 20px 0 20px;
+}
+
+#scroll {
+	position:fixed;
+	right:10px;
+	bottom:10px;
+	cursor:pointer;
+	width:50px;
+	height:50px;
+	background-color:#3498db;
+	text-indent:-9999px;
+	display:none;
+	-webkit-border-radius:60px;
+	-moz-border-radius:60px;
+	border-radius:60px
+}
+#scroll span {
+	position:absolute;
+	top:50%;
+	left:50%;
+	margin-left:-8px;
+	margin-top:-12px;
+	height:0;
+	width:0;
+	border:8px solid transparent;
+	border-bottom-color:#ffffff;
+}
+#scroll:hover {
+	background-color:#e74c3c;
+	opacity:1;filter:"alpha(opacity=100)";
+	-ms-filter:"alpha(opacity=100)";
+}
+
+#processingIcon {
+	width: 34px;
+	height: 34px;
+	margin: auto;
+	margin-top: 300px; /* In case the screen scrolls */
+	position: absolute;
+	top: 0; left: 0; bottom: 0; right: 0;
+	border: none;
+	display: none;
+}
+
+.icon-link {
+	height: 16px;
+	width: 16px;
+}
+
+.metadata {
+	text-align: left;
+}
+
+#metadata a, footer a {
+	color: #ffffff;
+}
+
+#metadata a:hover, #metadata a:focus, footer a:hover, footer a:focus {
+	color: #ffffff;
+}
+
+#project-name {
+	font-style: italic;
+}

@@ -1,57 +1,62 @@
 {% extends "base.html" %}
 {% block main %}
 <script>
-  var dbQuery = ''
+    var dbQuery = ''
 </script>
 <form method="POST" id="manifestForm">
-<br>
-<div class="row">
-    <div class="col-sm">
-        <header class="major">
-            <h2 id="pageAction">Create a New Project</h2>
-        </header>
-    </div>    
-    <div class="col-sm text-right">
+    <br>
+    <div class="row">
+        <div class="col-sm">
+            <header class="major">
+                <h2 id="pageAction">Create a New Project</h2>
+            </header>
+        </div>
+        <div class="col-sm text-right">
             <div class="btn-group">
                 <button type="button" id="preview" class="btn btn-lg btn-outline-editorial" title="Preview"><i class="fa fa-search"></i></button>
-                <button type="button" id="save" class="btn btn-lg btn-outline-editorial" title="Save Project" data-action="create"><i class="fa fa-save"></i></button>
-                <button type="button" id="delete" class="btn btn-lg btn-outline-editorial" style="display: none;" title="Delete"><i class="fa fa-trash"></i></button>
-                <button type="button" id="export" class="btn btn-lg btn-outline-editorial" title="Export"><i class="fa fa-download"></i></button>  
-                <button type="button" title="Open in Virtual Workspace" class="btn btn-lg btn-outline-editorial dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                  <i class="fa fa-rocket"></i>
-              </button>
-              <div class="dropdown-menu dropdown-menu-right">
-                <button id="topic-modeling-btn" class="dropdown-item" type="button">Topic Modeling</button>
-                <button id="word-embedding-btn" class="dropdown-item" type="button" disabled>Word Embedding</button>
-              </div>
-            </div>  
+                <button type="button" id="save" class="btn btn-lg btn-outline-editorial" title="Save Project"
+                    data-action="create"><i class="fa fa-save"></i></button>
+                <button type="button" id="delete" class="btn btn-lg btn-outline-editorial" style="display: none;" title="Delete"><i
+                        class="fa fa-trash"></i></button>
+                <button type="button" title="Open in Workspace" class="btn btn-lg btn-outline-editorial dropdown-toggle"
+                    data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa fa-rocket"></i>
+                </button>
+                <div class="dropdown-menu dropdown-menu-right">
+                    <button id="topic-modeling-btn" class="dropdown-item" type="button">Topic Modeling</button>
+                    <button id="word-embedding-btn" class="dropdown-item" type="button" disabled>Word Embedding</button>
+                </div>
+            </div>
         </div>
     </div>
-<div class="card card-body">
-    <ul class="nav nav-tabs" id="publicationsFormNav" role="tablist">
-      <li class="nav-item">
-          <a class="nav-link active" id="required-tab" data-toggle="tab" href="#required" role="tab" aria-controls="required" aria-selected="true">Required Properties</a>
-      </li>
-      <li class="nav-item">
-          <a class="nav-link" id="optional-tab" data-toggle="tab" href="#optional" role="tab" aria-controls="optional" aria-selected="false">Optional Properties</a>
-      </li>
-      <li class="nav-item">
-        <a class="nav-link" id="resources-tab" data-toggle="tab" href="#resources" role="tab" aria-controls="resources" aria-selected="false">Data Resources</a>
-      </li>
-    </ul>
-    <br>
-    {# Generate a unique ID - Keep everything on one line to prevent extra white space #}
-    {% macro random_int(vals) %}{% for n in range(6) %}{{ vals|random }}{% endfor %}{% endmacro %}
-    {% macro unique_id(property_name) %}{% set vals = [0,1,2,3,4,5,6,7,8,9,'c','a','t'] %}{% set parts =
-    [random_int(vals), random_int(vals), random_int(vals), random_int(vals), random_int(vals), random_int(vals)]
-    %}{{property_name}}{{parts|join('')}}{% endmacro %}
-    
-    <div id="manifestCard">
-        <div class="tab-content" id="projectsForm">
-          {% set template = templates['project-template'] %}
-          {% set required_opts = template[0]['required'] %}
-          {% set optional_opts = template[1]['optional'] %}
-            <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
+    <div class="card card-body">
+        <ul class="nav nav-tabs" id="publicationsFormNav" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="required-tab" data-toggle="tab" href="#required" role="tab"
+                    aria-controls="required" aria-selected="true">Required Properties</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="optional-tab" data-toggle="tab" href="#optional" role="tab" aria-controls="optional"
+                    aria-selected="false">Optional Properties</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="resources-tab" data-toggle="tab" href="#resources" role="tab" aria-controls="resources"
+                    aria-selected="false">Data Resources</a>
+            </li>
+        </ul>
+        <br>
+        {# Generate a unique ID - Keep everything on one line to prevent extra white space #}
+        {% macro random_int(vals) %}{% for n in range(6) %}{{ vals|random }}{% endfor %}{% endmacro %}
+        {% macro unique_id(property_name) %}{% set vals = [0,1,2,3,4,5,6,7,8,9,'c','a','t'] %}{% set parts =
+        [random_int(vals), random_int(vals), random_int(vals), random_int(vals), random_int(vals), random_int(vals)]
+        %}{{property_name}}{{parts|join('')}}{% endmacro %}
+
+        <div id="manifestCard">
+            <div class="tab-content" id="projectsForm">
+                {% set template = templates['project-template'] %}
+                {% set required_opts = template[0]['required'] %}
+                {% set optional_opts = template[1]['optional'] %}
+                <div class="tab-pane fade show active" id="required" role="tabpanel" aria-labelledby="required-tab">
                     {% for opt in required_opts %}
                     {% if not opt.skip %}
                     {% if opt.fieldtype == 'text' %}
@@ -66,42 +71,52 @@
                         </div>
                     </div>
                     {% elif opt.fieldtype == 'textarea' %}
-                  {% if opt.name == 'contributors' %}
-                  <input type="hidden" id="contributors" name="contributors" value="">
-                  <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
-                  data-id="{{ opt.name|safe + loop.index0|string or '' }}">
-                      <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
-                      <div class="col-sm-3">
-                          <input type="text" class="contributor-field" id="contributorTitle0" name="contributorTitle" placeholder="Contributor Title" required>
-                      </div>
-                      <div class="col-sm-3">
-                          <input type="text" class="contributor-field" id="contributorGroup0" name="contributorGroup" placeholder="Group">
-                      </div>
-                      <div class="col-sm-3">
-                          <input type="text" class="contributor-field" id="contributorOrg0" name="contributorOrg" placeholder="Organization">
-                      </div>    
-                      <div class="col-sm-1" style="padding: 5px 0px;">
-                          <button type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
-                          <button type="button" class="btn btn-sm btn-outline-editorial remove-contributor hidden" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
-                      </div>
-                          <label class="col-sm-2 col-form-label" for="contributorPath0"></label>
-                      <div class="col-sm-3">
-                          <input type="text" class="contributor-field" id="contributorPath0" name="contributorPath" placeholder="Path">
-                      </div>
-                      <div class="col-sm-3">
-                          <input type="text" class="contributor-field" id="contributorEmail0" name="contributorEmail" placeholder="Email">
-                      </div>
-                      <div class="col-sm-3">
-                          <input type="text" class="contributor-field" id="contributorRole0" name="contributorRole" placeholder="Role">
-                      </div>    
-                      <div class="col-sm-1" style="padding: 5px 0px;">
-                          <button hidden type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i class="fa fa-plus-circle"></i></button>
-                          <button hidden type="button" class="btn btn-sm btn-outline-editorial remove-contributor hidden" title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
-                      </div>
-                  </div>    
-                  {% elif opt.name == 'created' %}
-                  {# Skip this property and define it on the back end. #}
-                  {% else %}
+                    {% if opt.name == 'contributors' %}
+                    <input type="hidden" id="contributors" name="contributors" value="">
+                    <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
+                        data-id="{{ opt.name|safe + loop.index0|string or '' }}">
+                        <label class="col-sm-2 col-form-label" for="{{ opt.name|safe }}">{{ opt.name|safe }}</label>
+                        <div class="col-sm-3">
+                            <input type="text" class="contributor-field" id="contributorTitle0" name="contributorTitle"
+                                placeholder="Contributor Title" required>
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" class="contributor-field" id="contributorGroup0" name="contributorGroup"
+                                placeholder="Group">
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" class="contributor-field" id="contributorOrg0" name="contributorOrg"
+                                placeholder="Organization">
+                        </div>
+                        <div class="col-sm-1" style="padding: 5px 0px;">
+                            <button type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i
+                                    class="fa fa-plus-circle"></i></button>
+                            <button type="button" class="btn btn-sm btn-outline-editorial remove-contributor hidden"
+                                title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                        <label class="col-sm-2 col-form-label" for="contributorPath0"></label>
+                        <div class="col-sm-3">
+                            <input type="text" class="contributor-field" id="contributorPath0" name="contributorPath"
+                                placeholder="Path">
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" class="contributor-field" id="contributorEmail0" name="contributorEmail"
+                                placeholder="Email">
+                        </div>
+                        <div class="col-sm-3">
+                            <input type="text" class="contributor-field" id="contributorRole0" name="contributorRole"
+                                placeholder="Role">
+                        </div>
+                        <div class="col-sm-1" style="padding: 5px 0px;">
+                            <button hidden type="button" class="btn btn-sm btn-outline-editorial add-contributor" title="Add another contributor"><i
+                                    class="fa fa-plus-circle"></i></button>
+                            <button hidden type="button" class="btn btn-sm btn-outline-editorial remove-contributor hidden"
+                                title="Remove contributor"><i class="fa fa-minus-circle"></i></button>
+                        </div>
+                    </div>
+                    {% elif opt.name == 'created' %}
+                    {# Skip this property and define it on the back end. #}
+                    {% else %}
                     <!-- Generic Textarea -->
                     <div id="{{ opt.name|safe + loop.index0|string }}" class="form-group row" data-fieldtype="{{ opt.name|safe }}"
                         data-id="{{ opt.name|safe + loop.index0|string or '' }}">
@@ -113,12 +128,12 @@
                         </div>
                     </div>
                     <!-- End Generic Textarea -->
-                    {% endif %}    
-                  {% endif %}
-                {% endif %}
-                {% endfor %}
-            </div>
-            <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
+                    {% endif %}
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                </div>
+                <div class="tab-pane fade" id="optional" role="tabpanel" aria-labelledby="optional-tab">
                     {% for opt in optional_opts %}
                     {% if not opt.skip %}
                     {% if opt.fieldtype == 'text' %}
@@ -132,7 +147,7 @@
                                 {{ 'disabled' if opt.disabled }}>
                         </div>
                     </div>
-                {% elif opt.fieldtype == 'textarea' %}
+                    {% elif opt.fieldtype == 'textarea' %}
                     <!-- Date Field Should this be a textarea in the template? -->
                     <!-- might wanna change the div class=col-sm-10 to outside date -->
                     <!-- licenses Field -->
@@ -217,26 +232,27 @@
                     </div>
                     <!-- End Generic Textarea -->
                     {% endif %}
-                {% endif %}
-            {% endif %}
-        {% endfor %}
-            </div> <!-- /tab-pane -->
-            <div class="tab-pane fade show" id="resources" role="tabpanel" aria-labelledby="resources-tab">
-                <div class="form-group row">
-                <div class="col-sm-12">
-                    <div id="search-form">
-                      <textarea id="db-query" name="db-query" placeholder="Show database query here." readonly></textarea>
-                      <br>
-                      <div id="builder"></div>
-                      <br>
-                      <button id="test-query" class="btn btn-outline-editorial">Test Query</button>
-                    </div>                  
-                </div>
-              </div> 
-          </div> <!-- /tab-pane -->
-        </div> <!-- /manifestForm -->
-    </div> <!-- /manifestCard -->
-</div>
+                    {% endif %}
+                    {% endif %}
+                    {% endfor %}
+                </div> <!-- /tab-pane -->
+                <div class="tab-pane fade show" id="resources" role="tabpanel" aria-labelledby="resources-tab">
+                    <div class="form-group row">
+                        <div class="col-sm-12">
+                            <div id="search-form">
+                                <textarea id="db-query" name="db-query" placeholder="Show database query here."
+                                    readonly></textarea>
+                                <br>
+                                <div id="builder"></div>
+                                <br>
+                                <button id="test-query" class="btn btn-outline-editorial">Test Query</button>
+                            </div>
+                        </div>
+                    </div>
+                </div> <!-- /tab-pane -->
+            </div> <!-- /manifestForm -->
+        </div> <!-- /manifestCard -->
+    </div>
 </form>
 <!-- Preview -->
 <div id="previewDisplay" style="display: none;">
@@ -247,7 +263,7 @@
 
 <!-- Project Form Template - Is this used for anything??? -->
 <script type="text/html" id="project-template">
-  <div class="tab-content" id="projectsFormOld">
+    <div class="tab-content" id="projectsFormOld">
     {% set template = templates['project-template'] %}
     {% set required_opts = template[0]['required'] %}
     {% set optional_opts = template[1]['optional'] %}

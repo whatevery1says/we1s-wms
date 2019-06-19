@@ -10,8 +10,10 @@ import os
 import re
 import urllib
 # import: third-party
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, url_for
 import markdown
+import pymongo
+from pymongo import MongoClient
 # import: app
 from .sources import sources
 from .corpus import corpus
@@ -31,16 +33,23 @@ app = Flask(__name__, instance_relative_config=True)
 # Configurations that use app
 # application = app  # our hosting requires application in passenger_wsgi
 
-app.register_blueprint(sources, url_prefix='/sources')
-app.register_blueprint(corpus, url_prefix='/corpus')
-app.register_blueprint(projects, url_prefix='/projects')
-app.register_blueprint(scripts, url_prefix='/scripts')
-app.register_blueprint(tasks, url_prefix='/tasks')
-
 # Configurations
 app.config.from_object('config')
 app.config.from_pyfile('config.py')
 # print(app.instance_path)
+# print(app.config)
+
+
+def register_blueprints(application):
+    """Prevent circular imports."""
+    application.register_blueprint(sources, url_prefix='/sources')
+    application.register_blueprint(corpus, url_prefix='/corpus')
+    application.register_blueprint(projects, url_prefix='/projects')
+    application.register_blueprint(scripts, url_prefix='/scripts')
+    application.register_blueprint(tasks, url_prefix='/tasks')
+
+
+register_blueprints(app)
 
 # ----------------------------------------------------------------------------#
 # Controllers.
