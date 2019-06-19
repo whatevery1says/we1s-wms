@@ -14,6 +14,6 @@ TEMPLATES_DIR = 'templates'
 TEMP_DIR = 'temp'
 WORKSPACE_URL = 'http://harbor.english.ucsb.edu:10000/tree/write/projects-wms/'
 TEMPLATES = {
-    'topic-modeling': 'topic_browser_json_template_2'
+    'topic-modeling': 'multiple_topics_template'
 }
 EXPORT_DIR = 'exports'
