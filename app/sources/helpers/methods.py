@@ -379,9 +379,8 @@ def search_sources(options):
         num_pages = len(pages)
         page = get_page(pages, int(options['page']))
         return result, page, num_pages, errors
-    else:
-        errors.append('The Sources database is empty.')
-        return [], 1, errors
+    errors.append('The Sources database is empty.')
+    return [], 1, errors
 
 
 def update_record(manifest):
