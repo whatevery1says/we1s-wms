@@ -5,14 +5,14 @@ FROM python:3.7.0-stretch
 RUN pip install cython \
  && pip install pandas
 
-WORKDIR /
+WORKDIR /we1s-wms/
 
 # Install any needed packages specified in requirements.txt
 COPY requirements.txt requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 # Copy the current directory contents into the container
-ADD . /we1s-wms/
+ADD . /
 
 RUN /bin/bash deploy-fix.sh
 
