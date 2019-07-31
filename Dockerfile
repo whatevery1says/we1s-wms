@@ -12,11 +12,11 @@ COPY requirements.txt requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 # Copy the current directory contents into the container
-ADD . /
+ADD . /we1s-wms/
 
 RUN /bin/bash deploy-fix.sh
 
 # Expose port
 EXPOSE 5000
 
-ENTRYPOINT ["python", "/run.py"]
+ENTRYPOINT ["python", "/we1s-wms/run.py"]
