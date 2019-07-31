@@ -12,7 +12,7 @@ COPY requirements.txt requirements.txt
 RUN pip install --trusted-host pypi.python.org -r requirements.txt
 
 # Copy the current directory contents into the container
-ADD . /
+COPY . .
 
 RUN /bin/bash deploy-fix.sh
 
