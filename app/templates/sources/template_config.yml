@@ -57,3 +57,6 @@ source-template:
   - name: citation
     fieldtype: textarea
     placeholder: Enter a fully-formatted citation in Markdown format or a Citation Style Language JSON string.
+  - name: tags
+    fieldtype: textarea
+    placeholder: Enter tags here.
