@@ -143,10 +143,15 @@ $(document).ready(function () {
       'type': 'string',
       'size': 30
     },
-
     {
       'id': 'country',
       'label': 'country',
+      'type': 'string',
+      'size': 30
+    },
+    {
+      'id': 'language',
+      'label': 'language',
       'type': 'string',
       'size': 30
     },
@@ -270,6 +275,12 @@ $(document).ready(function () {
     {
       'id': 'edition',
       'label': 'edition',
+      'type': 'string',
+      'size': 30
+    },
+    {
+      'id': 'tags',
+      'label': 'tags',
       'type': 'string',
       'size': 30
     }
