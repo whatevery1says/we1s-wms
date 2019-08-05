@@ -71,9 +71,9 @@ function cleanup () {
   }
   // Handle citations
   try {
-    newform['citation'] = JSON.parse(formvals['citation'])
+    newform['citation'] = JSON.parse(formvals['citation'][0])
   } catch (err) {
-    newform['citation'] = formvals['citation']
+    newform['citation'] = formvals['citation'][0]
   }
   // Handle dates
   let result = processDates()
