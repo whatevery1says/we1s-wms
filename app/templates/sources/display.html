@@ -100,6 +100,15 @@
                     readonly disabled>{{ manifest['citation']|safe if manifest['citation'] }}</textarea>
             </div>
         </div>
+        {% elif prop['name'] == 'tags' %}
+        <div id="tagsRow" class="form-group row" data-fieldtype="{{ prop['name'] }}" data-id="{{ prop['name'] + loop.index0|string or '' }}">
+            <label class="col-sm-2 col-form-label" for="{{ prop['name'] }}">{{ prop['name'] }}</label>
+            <div class="col-sm-10">
+                <textarea name="citation" id="citation" class="form-control"
+                    placeholder="{{ prop['placeholder']|safe or '' }}" {{ 'required' if prop['required'] }}
+                    readonly disabled>{{ manifest['tags']|safe if manifest['tags'] }}</textarea>
+            </div>
+        </div>
         {% elif prop.fieldtype == 'select' %}
         <div id="{{unique_id(prop['name'])}}" class="form-group row" data-fieldtype="{{ prop['name'] }}"
             data-id="{{ prop['name'] + loop.index0|string or '' }}">
