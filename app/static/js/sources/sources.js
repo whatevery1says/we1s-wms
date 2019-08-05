@@ -70,10 +70,12 @@ function cleanup () {
     }
   }
   // Handle citations
-  try {
-    newform['citation'] = JSON.parse(formvals['citation'][0])
-  } catch (err) {
-    newform['citation'] = formvals['citation'][0]
+  if (formvals['citation'].length > 0) {
+    try {
+      newform['citation'] = JSON.parse(formvals['citation'])
+    } catch (err) {
+      newform['citation'] = formvals['citation']
+    }
   }
   // Handle dates
   let result = processDates()

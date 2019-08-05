@@ -372,6 +372,8 @@ $(document).ready(function () {
       'page': page,
       'advancedOptions': JSON.parse(advancedOptions)
     }
+    console.log('Sending...')
+    console.log(data)
     $.ajax({
       method: 'POST',
       url: '/sources/search',
