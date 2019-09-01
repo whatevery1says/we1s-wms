@@ -7,6 +7,21 @@
 {% else %}
 {% set fields = ['name', 'metapath', 'namespace', 'title', 'id', '_id', 'description', 'version', 'shortTitle', 'label', 'notes', 'keywords', 'image', 'webpage', 'publisher', 'authors', 'edition', 'contentType', 'country', 'language', 'citation', 'tags'] %}
 <style type="text/css">
+    .pagination-page-info {
+        padding: .6em;
+        padding-left: 0;
+        width: 40em;
+        margin: .5em;
+        margin-left: 0;
+        font-size: 12px;
+    }
+    .pagination-page-info b {
+        color: black;
+        background: #6aa6ed;
+        padding-left: 2px;
+        padding: .1em .25em;
+        font-size: 150%;
+    }
 .hidden { display: none; }
 .query-builder .btn-primary.active, .query-builder .btn-primary.focus,
 .query-builder .btn-primary:active, .query-builder .btn-primary:focus,
@@ -66,9 +81,9 @@ td { cursor: move !important;}
         </div>
     </div>
 </div>
-<div id="results" style="display:none;"></div> 
+<div id="results" style="display:none;"></div>
 <ul id="pagination" class="justify-content-center" style="display:none;"></ul>
-      
+
 <!-- Modal -->
 <div class="modal fade" id="advanced" tabindex="-1" role="dialog" aria-labelledby="advancedLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg" role="document">

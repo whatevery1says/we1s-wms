@@ -372,8 +372,8 @@ $(document).ready(function () {
       'page': page,
       'advancedOptions': JSON.parse(advancedOptions)
     }
-    console.log('Sending...')
-    console.log(data)
+    // console.log('Sending...')
+    // console.log(data)
     $.ajax({
       method: 'POST',
       url: '/sources/search',
@@ -381,8 +381,10 @@ $(document).ready(function () {
       contentType: 'application/json;charset=UTF-8'
     })
       .done(function (response) {
+        // console.log('Done. Here is the response')
         $('#results').empty()
         response = JSON.parse(response)
+        // console.log(response)
         if (response['errors'].length !== 0) {
           let result = response['errors']
           var message = ''
