@@ -429,8 +429,6 @@ def search_sources2(options):
     if list(sources_db.find()):
         query_properties = options['query']
         show_properties = options['show_properties']
-        print('show_properties')
-        print(show_properties)
         limit = int(options['limit'])
         # page = options['page']
         page_size = options['page_size']
