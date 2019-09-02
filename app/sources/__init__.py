@@ -254,12 +254,13 @@ def search():
                 'sorting': sorting
             }
             # Get the ids for all the results of the query
-            result = list(sources_db.find(
-                query,
-                limit=limit,
-                # projection={'_id': 1})
-                projection=[])
-            )
+            # result = list(sources_db.find(
+            #     query,
+            #     limit=limit,
+            #     # projection={'_id': 1})
+            #     projection=[])
+            # )
+            result = list(sources_db.find(query))
             print(result[0:15])
             # Get all the number of pages and the id_ranges for all pages
             pages, num_pages = grouper(result, page_size=page_size)
