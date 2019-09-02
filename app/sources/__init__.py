@@ -257,7 +257,8 @@ def search():
             result = list(sources_db.find(
                 query,
                 limit=limit,
-                projection={'_id': 1})
+                # projection={'_id': 1})
+                projection=[])
             )
             print(result[0:15])
             # Get all the number of pages and the id_ranges for all pages
