@@ -268,11 +268,10 @@ def delete_source(name, metapath):
     Returns 'success' or an error message string.
     """
     result = sources_db.delete_one({'name': name, 'metapath': metapath})
-    if result.deleted_count != 0:
-        response = 'success'
+    if result.deleted_count > 0:
+        return 'success'
     else:
-        response = 'Unknown error: The document could not be deleted.'
-    return response
+        return 'Unknown error: The document could not be deleted.'
 
 
 def import_manifests(source_files):

@@ -79,7 +79,7 @@ def index():
 def create():
     """Create Sources manifest page."""
     scripts = ['js/parsley.min.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/sources/sources.js']
-    styles = ['jquery-ui.css']
+    styles = ['css/jquery-ui.css']
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/create', 'label': 'Create Publication'}]
     with open("app/templates/sources/template_config.yml", 'r') as stream:
         templates = yaml.load(stream)
@@ -102,7 +102,7 @@ def create_manifest():
             manifest[key] = value
 
     # Validate the resulting manifest
-    print(json.dumps(manifest, indent=2, sort_keys=False))
+    # print(json.dumps(manifest, indent=2, sort_keys=False))
     if methods.validate_manifest(manifest) is True:
         database_errors = methods.create_record(manifest)
         errors = errors + database_errors
@@ -130,10 +130,13 @@ def delete_manifest():
     errors = []
     name = request.json['name']
     metapath = request.json['metapath']
-    msg = methods.delete_source(name, metapath)
-    if msg != 'success':
-        errors.append(msg)
-    return json.dumps({'errors': errors})
+    result = methods.delete_source(name, metapath)
+    result = 'success'
+    if result == 'success':
+        return json.dumps({'result': 'success', 'errors': errors})
+    else:
+        errors.append(result)
+        return json.dumps({'result': 'fail', 'errors': errors})
 
 
 # Helpers for /display
