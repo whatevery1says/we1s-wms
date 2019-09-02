@@ -8,9 +8,9 @@ import os
 import re
 import zipfile
 # import: third-party
+from itertools import zip_longest
 import dateutil.parser
 from flask import current_app
-from itertools import zip_longest
 from jsonschema import validate, FormatChecker
 import requests
 from tableschema_pandas import Storage
@@ -22,12 +22,12 @@ from bson.objectid import ObjectId
 
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
-client = MongoClient('mongodb://localhost:27017')
-db = client.we1s
-sources_db = db.Sources
-# client = MongoClient('mongodb://mongo:27017')
+# client = MongoClient('mongodb://localhost:27017')
+# db = client.we1s
+# sources_db = db.Sources
+client = MongoClient('mongodb://mongo:27017')
 # DB has one collection, so treat it as the whole DB
-# sources_db = client.Sources.Sources
+sources_db = client.Sources.Sources
 
 # ----------------------------------------------------------------------------#
 # General Helper Functions
