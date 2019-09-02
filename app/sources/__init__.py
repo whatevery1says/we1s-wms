@@ -25,12 +25,12 @@ from app.sources.helpers import methods
 JSON_UTIL = json_util.default
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
-client = MongoClient('mongodb://localhost:27017')
-db = client.we1s
-sources_db = db.Sources
-# client = MongoClient('mongodb://mongo:27017')
-# DB has one collection, so treat it as the whole DB
-# sources_db = client.Sources.Sources
+# client = MongoClient('mongodb://localhost:27017')
+# db = client.we1s
+# sources_db = db.Sources
+client = MongoClient('mongodb://mongo:27017')
+DB has one collection, so treat it as the whole DB
+sources_db = client.Sources.Sources
 
 sources = Blueprint('sources', __name__, template_folder='sources')
 
