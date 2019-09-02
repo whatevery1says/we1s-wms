@@ -259,6 +259,7 @@ def search():
                 limit=limit,
                 projection={'_id': 1})
             )
+            print(result[0:15])
             # Get all the number of pages and the id_ranges for all pages
             pages, num_pages = grouper(result, page_size=page_size)
             search_opts['id_range'] = pages[page]
