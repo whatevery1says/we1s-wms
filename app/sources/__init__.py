@@ -12,7 +12,6 @@ from bson import BSON
 from bson import json_util
 from flask import Blueprint, make_response, render_template, request, url_for, current_app
 from jsonschema import validate, FormatChecker
-from itertools import zip_longest
 import pymongo
 from pymongo import MongoClient
 import requests
@@ -25,12 +24,12 @@ from app.sources.helpers import methods
 JSON_UTIL = json_util.default
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
-# client = MongoClient('mongodb://localhost:27017')
-# db = client.we1s
-# sources_db = db.Sources
-client = MongoClient('mongodb://mongo:27017')
+client = MongoClient('mongodb://localhost:27017')
+db = client.we1s
+sources_db = db.Sources
+# client = MongoClient('mongodb://mongo:27017')
 # DB has one collection, so treat it as the whole DB
-sources_db = client.Sources.Sources
+# sources_db = client.Sources.Sources
 
 sources = Blueprint('sources', __name__, template_folder='sources')
 
@@ -47,24 +46,6 @@ country_list = ['AF', 'AX', 'AL', 'DZ', 'AS', 'AD', 'AO', 'AI', 'AQ', 'AG', 'AR'
 # ----------------------------------------------------------------------------#
 # Controllers.
 # ----------------------------------------------------------------------------#
-
-def grouper(iterable, page_size=10, padvalue=None):
-    """Separate query results into pages.
-    
-    Returns a dict with page numbers as keys and lists of first and last _id values
-    cast as strings.
-    """
-    groups = zip_longest(*[iter(iterable)]*page_size, fillvalue=padvalue)
-    pages = {}
-    for i, group in enumerate(groups):
-        page = [str(group[0]['_id'])]
-        if group[-1] is not None:
-            page.append(str(group[-1]['_id']))
-        else:
-            page.append(None)
-        pages[i + 1] = page
-    return pages, len(pages)
-
 
 @sources.route('/')
 def index():
@@ -229,58 +210,60 @@ def search():
     if request.method == 'GET':
         return render_template('sources/search.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs, result=[])
     if request.method == 'POST':
-        query = request.json['query']
-        page = int(request.json['page'])
-        limit = int(request.json['advancedOptions']['limit'])
+        # Default settings
+        errors = []
+        page_size = 5
+        page_num = 1
+        filters = {}
+        limit = 0
+        sort = [['name', 'ASC']]
+
+        # Assemble request data
+        if request.json['page']:
+            page_num = int(request.json['page'])
+        if request.json['query']:
+            filters = request.json['query']
+        if request.json['advancedOptions']['limit']:
+            limit = int(request.json['advancedOptions']['limit'])
         sorting = []
+        if request.json['advancedOptions']['sort']:
+            sort = request.json['advancedOptions']['sort']
+        for item in sort:
+            if item[1] == 'ASC':
+                opt = (item[0], pymongo.ASCENDING)
+            else:
+                opt = (item[0], pymongo.DESCENDING)
+            sorting.append(opt)
         if request.json['advancedOptions']['show_properties'] != []:
             show_properties = request.json['advancedOptions']['show_properties']
         else:
-            show_properties = ''
-        if query:
-            for item in request.json['advancedOptions']['sort']:
-                if item[1] == 'ASC':
-                    opt = (item[0], pymongo.ASCENDING)
-                else:
-                    opt = (item[0], pymongo.DESCENDING)
-                sorting.append(opt)
-            page_size = 10
-            search_opts = {
-                'query': query,
-                'limit': limit,
-                'page': page,
-                'page_size': page_size,
-                'show_properties': show_properties,
-                'sorting': sorting
-            }
-            # Get the ids for all the results of the query
-            # result = list(sources_db.find(
-            #     query,
-            #     limit=limit,
-            #     # projection={'_id': 1})
-            #     projection=[])
-            # )
-            result = list(sources_db.find(query))
-            print(result[0:15])
-            # Get all the number of pages and the id_ranges for all pages
-            pages, num_pages = grouper(result, page_size=page_size)
-            search_opts['id_range'] = pages[page]
-            # Fetch the records for the requested page
-            records, errors = methods.search_sources2(search_opts)
-            records = list(records)
-            # Don't show the MongoDB _id unless it is in show_properties
-            if '_id' not in request.json['advancedOptions']['show_properties']:
-                for k, _ in enumerate(records):
-                    del records[k]['_id']
-            errors = []
-            if records == []:
-                errors.append('No records were found matching your search criteria.')
-            result = {
+            show_properties = None
+
+        # Query the entire database
+        query = sources_db.find(filters, projection=show_properties).limit(limit).sort(sorting)
+        result = list(query)
+
+        # Paginate the result
+        pages, num_pages = methods.grouper(result, page_size, 0)
+
+        # Filter the full query to just _ids on the requested page
+        records = [doc for doc in result if str(doc['_id']) in pages[page_num]]
+
+        # Remove the _id field if not requested
+        if '_id' not in show_properties:
+            for k, _ in enumerate(records):
+                del records[k]['_id']
+
+        # Check whether records can be returned
+        if records == []:
+            errors.append('No records were found matching your search criteria.')
+
+        # Return the response
+        return json.dumps({
                 'response': records,
                 'errors': errors,
                 'num_pages': num_pages
-                }
-        return json.dumps(result, default=JSON_UTIL)
+                }, default=JSON_UTIL)
 
 
 @sources.route('/export-manifest', methods=['GET', 'POST'])

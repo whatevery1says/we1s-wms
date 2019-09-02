@@ -10,6 +10,7 @@ import zipfile
 # import: third-party
 import dateutil.parser
 from flask import current_app
+from itertools import zip_longest
 from jsonschema import validate, FormatChecker
 import requests
 from tableschema_pandas import Storage
@@ -21,12 +22,12 @@ from bson.objectid import ObjectId
 
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
-# client = MongoClient('mongodb://localhost:27017')
-# db = client.we1s
-# sources_db = db.Sources
-client = MongoClient('mongodb://mongo:27017')
+client = MongoClient('mongodb://localhost:27017')
+db = client.we1s
+sources_db = db.Sources
+# client = MongoClient('mongodb://mongo:27017')
 # DB has one collection, so treat it as the whole DB
-sources_db = client.Sources.Sources
+# sources_db = client.Sources.Sources
 
 # ----------------------------------------------------------------------------#
 # General Helper Functions
@@ -357,6 +358,20 @@ def import_manifests(source_files):
     return manifests, error_list
 
 
+def grouper(iterable, page_size=10, padvalue=None):
+    """Separate query results into pages.
+    
+    Returns a dict with page numbers as keys and lists of first and last _id values
+    cast as strings.
+    """
+    pages = {}
+    groups = zip_longest(*[iter(iterable)]*page_size, fillvalue=padvalue)
+    for i, group in enumerate(groups):
+        pages[i + 1] = [str(item['_id']) for item in group if item is not 0]
+    return pages, len(pages)
+
+
+# Deprecated method
 def search_sources(options):
     """Query the database from the search form.
 
