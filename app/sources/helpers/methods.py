@@ -18,7 +18,7 @@ from tableschema_pandas import Storage
 from tabulator import Stream
 
 # import: app
-from app import db  # pylint: disable=cyclical-import
+from app import db  # pylint: disable=cyclic-import
 sources_db = db.client[db.sources]['Sources']
 
 # from pymongo import MongoClient

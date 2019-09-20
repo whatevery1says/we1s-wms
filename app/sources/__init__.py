@@ -19,8 +19,8 @@ import requests
 import tabulator
 from werkzeug.utils import secure_filename
 # import: app
-from app.sources.helpers import methods  # pylint: disable=cyclical-import
-from app import db  # pylint: disable=cyclical-import
+from app.sources.helpers import methods  # pylint: disable=cyclic-import
+from app import db  # pylint: disable=cyclic-import
 sources_db = db.client[db.sources]['Sources']
 JSON_UTIL = json_util.default
 
