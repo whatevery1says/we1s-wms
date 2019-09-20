@@ -236,6 +236,7 @@ function searchCorpus (data) {
 }
 
 function sendExport (jsonform) {
+  // This is the working function.
   /* Sends the export options to the server
      Input: A serialised set of form values from the export modal
      Returns: The name of the file to download.
