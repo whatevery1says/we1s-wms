@@ -11,7 +11,7 @@ import zipfile
 import dateutil.parser
 from flask import current_app
 from jsonschema import validate, FormatChecker
-# import pymongo
+import pymongo
 from pymongo.collation import Collation
 import requests
 # import: app
