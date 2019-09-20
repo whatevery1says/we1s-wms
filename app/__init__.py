@@ -38,18 +38,19 @@ app.config.from_pyfile('config.py')
 
 # Configure database
 db = DB(
-    app.config['MONGO_CLIENT'],
-    app.config['SOURCES_DB'],
-    app.config['CORPUS_DB'],
-    app.config['PROJECTS_DB']
-    )
+        app.config['MONGO_CLIENT'],
+        app.config['SOURCES_DB'],
+        app.config['CORPUS_DB'],
+        app.config['PROJECTS_DB']
+       )
 
 # import app (must be after database is configured)
-from .sources import sources
-from .corpus import corpus
-from .projects import projects
-from .scripts import scripts
-from .tasks import tasks
+from .sources import sources  # nopep8 # pylint: disable=wrong-import-position
+from .corpus import corpus  # nopep8 # pylint: disable=wrong-import-position
+from .projects import projects  # nopep8 # pylint: disable=wrong-import-position
+from .scripts import scripts  # nopep8 # pylint: disable=wrong-import-position
+from .tasks import tasks  # nopep8 # pylint: disable=wrong-import-position
+
 
 def register_blueprints(application):
     """Prevent circular imports."""

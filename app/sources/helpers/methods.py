@@ -3,12 +3,13 @@
 # import: standard
 from datetime import datetime
 import itertools
+from itertools import zip_longest
 import json
 import os
 import re
 import zipfile
 # import: third-party
-from itertools import zip_longest
+from bson.objectid import ObjectId
 import dateutil.parser
 from flask import current_app
 from jsonschema import validate, FormatChecker
@@ -18,11 +19,9 @@ from tabulator import Stream
 
 # import: app
 from app import db
-database = 'we1s' # Sources
-sources_db = db.client[database]['Sources']
+sources_db = db.client[db.sources]['Sources']
 
 # from pymongo import MongoClient
-# from bson.objectid import ObjectId
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 # client = MongoClient('mongodb://localhost:27017')
 # db = client.we1s
@@ -271,10 +270,10 @@ def delete_source(name, metapath):
     Returns 'success' or an error message string.
     """
     result = sources_db.delete_one({'name': name, 'metapath': metapath})
-    if result.deleted_count > 0:
-        return 'success'
-    else:
-        return 'Unknown error: The document could not be deleted.'
+    response = 'success'
+    if result.deleted_count == 0:
+        response = 'Unknown error: The document could not be deleted.'
+    return response
 
 
 def import_manifests(source_files):
@@ -362,14 +361,14 @@ def import_manifests(source_files):
 
 def grouper(iterable, page_size=10, padvalue=None):
     """Separate query results into pages.
-    
+
     Returns a dict with page numbers as keys and lists of first and last _id values
     cast as strings.
     """
     pages = {}
-    groups = zip_longest(*[iter(iterable)]*page_size, fillvalue=padvalue)
+    groups = zip_longest(*[iter(iterable)] * page_size, fillvalue=padvalue)
     for i, group in enumerate(groups):
-        pages[i + 1] = [str(item['_id']) for item in group if item is not 0]
+        pages[i + 1] = [str(item['_id']) for item in group if item != 0]
     return pages, len(pages)
 
 
@@ -403,6 +402,7 @@ def search_sources(options):
     errors.append('The Sources database is empty.')
     return [], 1, errors
 
+
 def idlimit(page_size, query, limit, show_properties, id_range=None):
     """Return page_size number of docs after last_id and new last_id."""
     if id_range is not None:
@@ -420,7 +420,7 @@ def idlimit(page_size, query, limit, show_properties, id_range=None):
         limit=limit,
         projection=show_properties).limit(page_size)
 
-    # Get the data      
+    # Get the data
     data = [x for x in cursor]
 
     if not data:

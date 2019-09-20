@@ -119,12 +119,13 @@ def delete_manifest():
     name = request.json['name']
     metapath = request.json['metapath']
     result = methods.delete_source(name, metapath)
-    result = 'success'
+    response = {'errors': errors}
     if result == 'success':
-        return json.dumps({'result': 'success', 'errors': errors})
+        response['result'] = 'success'
     else:
+        response['result'] = 'fail'
         errors.append(result)
-        return json.dumps({'result': 'fail', 'errors': errors})
+    return json.dumps(response)
 
 
 # Helpers for /display
@@ -267,10 +268,10 @@ def search():
 
         # Return the response
         return json.dumps({
-                'response': records,
-                'errors': errors,
-                'num_pages': num_pages
-                }, default=JSON_UTIL)
+            'response': records,
+            'errors': errors,
+            'num_pages': num_pages
+            }, default=JSON_UTIL)
 
 
 @sources.route('/export-manifest', methods=['GET', 'POST'])

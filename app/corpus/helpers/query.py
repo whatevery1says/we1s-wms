@@ -24,6 +24,7 @@ import pandas as pd
 # Query Class
 # ----------------------------------------------------------------------------#
 
+
 def paginate(iterable, page_size=10, padvalue=None, ids_only=False):
     """Separate query results into pages.
 
@@ -32,13 +33,14 @@ def paginate(iterable, page_size=10, padvalue=None, ids_only=False):
     will be returned.
     """
     pages = {}
-    groups = zip_longest(*[iter(iterable)]*page_size, fillvalue=padvalue)
+    groups = zip_longest(*[iter(iterable)] * page_size, fillvalue=padvalue)
     for i, group in enumerate(groups):
         if ids_only:
-            pages[i + 1] = [str(item['_id']) for item in group if item is not 0]
+            pages[i + 1] = [str(item['_id']) for item in group if item != 0]
         else:
-            pages[i + 1] = [item for item in group if item is not 0]
+            pages[i + 1] = [item for item in group if item != 0]
     return pages, len(pages)
+
 
 class Query:
     """Define object to obtain query results."""
@@ -83,7 +85,7 @@ class Query:
             raise BaseException('The `sortby` parameter must be a list or `None`.')
         try:
             assert isinstance(projection, list) or projection is None
-            if projection == None:
+            if projection is None:
                 projection = ['_id', 'name']
             if sortby is not None:
                 sort_keys = [key[0] for key in sortby]
@@ -125,10 +127,10 @@ class Query:
         for collection in self.collection_list:
             corpus_db = self.client[self.db][collection]
             cursor = corpus_db.find(
-                    self.query,
-                    projection=self.projection,
-                    limit=self.head
-                )
+                self.query,
+                projection=self.projection,
+                limit=self.head
+            )
             results.append((collection, cursor))
         if len(results) > self.large_query_size:
             self.large_query = True
@@ -141,7 +143,7 @@ class Query:
             projection.append('_id')
         for i, result in enumerate(records):
             for key in list(result.keys()):
-                if key not in self.projection and key is not '_id' and key is not 'collection':
+                if key not in self.projection and key != '_id' and key != 'collection':
                     del records[i][key]
                 if remove_collection:
                     del records[i]['collection']
@@ -163,16 +165,15 @@ class Query:
                 df = df[df['collection'].isin(self.filters)]
         if self.sortby is not None:
             # Assign the sort order
-            ascending = [True if key[1] == 'ASC' else False for key in self.sortby]
+            ascending = [bool(key[1] == 'ASC') for key in self.sortby]
             df = df.sort_values(by=self.sort_keys, ascending=ascending)
         else:
             df = df.sort_values(by='name', ascending=False)
 
         # Return the dataframe
         if as_df:
-            return df
-        else:
-            return df.to_dict('records')
+            df = df.to_dict('records')
+        return df
 
     def get_records(self, sortby=None, projection=None, filters=None):
         """Perform a query on the result table.
@@ -186,7 +187,7 @@ class Query:
         for collection in unique_collections:
             # Get a list of _ids for the collection
             filtered = df.loc[df['collection'] == collection]
-            ids = filtered._id.values.tolist()
+            ids = filtered._id.values.tolist()  # pylint: disable=protected-access
             # Now query the collection for the ids
             corpus_db = self.client[self.db][collection]
             if sortby is not None and self.large_query is not False:

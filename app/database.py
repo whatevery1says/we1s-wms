@@ -1,9 +1,7 @@
 """database.py."""
 
-from bson import BSON
-from bson import json_util
-import pymongo
 from pymongo import MongoClient
+
 
 class DB:
     """Create database object."""

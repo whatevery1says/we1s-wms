@@ -3,23 +3,21 @@
 # import: standard
 from datetime import datetime
 import itertools
+from itertools import zip_longest
 import json
 import os
 import re
 import zipfile
 # import: third-party
-from itertools import zip_longest
 import dateutil.parser
 from flask import current_app
 from jsonschema import validate, FormatChecker
 import pymongo
-from pymongo import MongoClient
 from pymongo.collation import Collation
 import requests
 # import: app
 from app import db
-database = 'we1s' # Sources
-sources_db = db.client[database]['Sources']
+corpus_db = db.client[db.corpus]['Corpus']
 
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
