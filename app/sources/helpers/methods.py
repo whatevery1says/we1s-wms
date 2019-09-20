@@ -15,19 +15,21 @@ from jsonschema import validate, FormatChecker
 import requests
 from tableschema_pandas import Storage
 from tabulator import Stream
-from pymongo import MongoClient
-from bson.objectid import ObjectId
 
 # import: app
+from app import db
+database = 'we1s' # Sources
+sources_db = db.client[database]['Sources']
 
-
+# from pymongo import MongoClient
+# from bson.objectid import ObjectId
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 # client = MongoClient('mongodb://localhost:27017')
 # db = client.we1s
 # sources_db = db.Sources
-client = MongoClient('mongodb://mongo:27017')
+# client = MongoClient('mongodb://mongo:27017')
 # DB has one collection, so treat it as the whole DB
-sources_db = client.Sources.Sources
+# sources_db = client.Sources.Sources
 
 # ----------------------------------------------------------------------------#
 # General Helper Functions

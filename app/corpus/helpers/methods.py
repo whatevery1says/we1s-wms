@@ -8,6 +8,7 @@ import os
 import re
 import zipfile
 # import: third-party
+from itertools import zip_longest
 import dateutil.parser
 from flask import current_app
 from jsonschema import validate, FormatChecker
@@ -16,12 +17,18 @@ from pymongo import MongoClient
 from pymongo.collation import Collation
 import requests
 # import: app
+from app import db
+database = 'we1s' # Sources
+sources_db = db.client[database]['Sources']
 
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
-client = MongoClient('mongodb://localhost:27017')
-db = client.we1s
-corpus_db = db.Corpus
+# client = MongoClient('mongodb://localhost:27017')
+# db = client.we1s
+# corpus_db = db.Corpus
+# client = MongoClient('mongodb://mongo:27017')
+# DB has one collection, so treat it as the whole DB
+# corpus_db = client.Corpus.Corpus
 
 # ----------------------------------------------------------------------------#
 # General Helper Functions

@@ -10,6 +10,7 @@ import yaml
 # import: third-party
 from bson import BSON
 from bson import json_util
+from bson.objectid import ObjectId
 from flask import Blueprint, make_response, render_template, request, url_for, current_app
 from jsonschema import validate, FormatChecker
 import pymongo
@@ -19,17 +20,23 @@ import tabulator
 from werkzeug.utils import secure_filename
 # import: app
 from app.sources.helpers import methods
+from app import db
 
+sources_db = db.client[db.sources]['Sources']
 
 JSON_UTIL = json_util.default
+
+# Database info should be imported by the code above,
+# but the code below is retained in case it needs
+# to be activated for testing.
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
 # client = MongoClient('mongodb://localhost:27017')
 # db = client.we1s
 # sources_db = db.Sources
-client = MongoClient('mongodb://mongo:27017')
+# client = MongoClient('mongodb://mongo:27017')
 # DB has one collection, so treat it as the whole DB
-sources_db = client.Sources.Sources
+# sources_db = client.Sources.Sources
 
 sources = Blueprint('sources', __name__, template_folder='sources')
 

@@ -25,13 +25,24 @@ from werkzeug.utils import secure_filename
 import yaml
 # import: app
 from app.corpus.helpers import methods
+from app.corpus.helpers.query import Query, paginate
+from app import db
+
+corpus_db = db.client[db.corpus]['Corpus']
 
 JSON_UTIL = json_util.default
 
+# Database info should be imported by the code above,
+# but the code below is retained in case it needs
+# to be activated for testing.
+
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
-client = MongoClient('mongodb://localhost:27017')
-db = client.we1s
-corpus_db = db.Corpus
+# client = MongoClient('mongodb://localhost:27017')
+# db = client.we1s
+# corpus_db = db.Corpus
+# client = MongoClient('mongodb://mongo:27017')
+# DB has one collection, so treat it as the whole DB
+# corpus_db = client.Corpus.Corpus
 
 corpus = Blueprint('corpus', __name__, template_folder='corpus')
 
@@ -51,7 +62,6 @@ TRASH_DIR = os.path.join(instance_path, 'trash')
 # ----------------------------------------------------------------------------#
 # Controllers.
 # ----------------------------------------------------------------------------#
-
 
 @corpus.route('/')
 def index():
@@ -237,8 +247,6 @@ def update_manifest():
 def send_export():
     """Ajax route to process user export options and write the export files to the temp folder."""
     data = request.json
-    print('FLUFFFFFFYYY')
-    print(data)
     # The user only wants to print the manifest
     if data['exportoptions'] == ['manifestonly']:
         query = {'name': data['name'], 'metapath': data['metapath']}
@@ -252,8 +260,8 @@ def send_export():
             manifest = json.dumps(manifest, indent=2, sort_keys=False, default=JSON_UTIL)
             filename = data['name'] + '.json'
             doc = filename
-            methods.make_dir('app/temp')
-            filepath = os.path.join('app/temp', filename)
+            methods.make_dir(TEMP_DIR)
+            filepath = os.path.join(TEMP_DIR, filename)
             with open(filepath, 'w') as f:
                 f.write(manifest)
         except:
@@ -261,16 +269,17 @@ def send_export():
     # The user wants a zip of multiple data documents
     else:
         # Get the exportoptions with the correct case
-        methods.make_dir('app/temp/Corpus')
+        methods.make_dir(os.path.join(TEMP_DIR, 'Corpus'))
         name = data['name']
         metapath = data['metapath']
         # Ensures that there is a Corpus and collection folder with a collection manifest
-        methods.make_dir('app/temp/Corpus')
+        methods.make_dir(os.path.join(TEMP_DIR, 'Corpus'))
         if metapath == 'Corpus':
             collection = name
         else:
             collection = metapath.split(',')[2]
-        methods.make_dir('app/temp/Corpus/' + collection)
+        corpus_dir = os.path.join(TEMP_DIR, 'Corpus')
+        methods.make_dir(os.path.join(corpus_dir, collection))
         # result = corpus_db.find_one({'metapath': metapath, 'name': collection})
         result = corpus_db.find_one({'metapath': metapath})
         # assert result is not None
@@ -280,7 +289,7 @@ def send_export():
                 manifest[key] = value
         manifest = json.dumps(manifest, indent=2, sort_keys=False, default=JSON_UTIL)
         filename = name + '.json'
-        filepath = os.path.join('app/temp/Corpus', filename)
+        filepath = os.path.join(corpus_dir, filename)
         with open(filepath, 'w') as f:
             f.write(manifest)
         exportoptions = []
@@ -309,8 +318,8 @@ def send_export():
             path = item['metapath'].replace(',', '/')
             if item['name'] in exportoptions:
                 folder_path = os.path.join(path, item['name'])
-                methods.make_dir('app/temp' + folder_path)
-                folder = 'app/temp' + path
+                methods.make_dir(os.path.join(TEMP_DIR, folder_path))
+                folder = os.path.join(TEMP_DIR, path)
                 doc = item['name'] + '.json'
             # Handle data and branches
             else:
@@ -318,12 +327,12 @@ def send_export():
                 try:
                     assert item['content']
                     doc = item['name'] + '.json'
-                    folder = 'app/temp' + path
+                    folder = os.path.join(TEMP_DIR, path)
                     methods.make_dir(folder)
                 # Otherwise, use it to create a folder with a manifest file
                 except:
                     path = os.path.join(path, item['name'])
-                    folder = 'app/temp' + path
+                    folder = os.path.join(TEMP_DIR, path)
                     methods.make_dir(folder)
                     doc = item['name'] + '.json'
             filepath = os.path.join(folder, doc)
@@ -332,7 +341,7 @@ def send_export():
                 f.write(output)
         # Zip up the file structure
         try:
-            source_dir = 'app/temp/Corpus'
+            source_dir = os.path.join(TEMP_DIR, 'Corpus')
             doc = 'Corpus.zip'
             methods.zipfolder(source_dir, source_dir)
         except:
@@ -344,7 +353,7 @@ def send_export():
 def download_export(filename):
     """Ajax route to trigger download and empty the temp folder."""
     from flask import make_response
-    filepath = os.path.join('app/temp', filename)
+    filepath = os.path.join(TEMP_DIR, filename)
     # Can't get Firefox to save the file extension by any means
     with open(filepath, 'rb') as f:
         response = make_response(f.read())
@@ -352,8 +361,8 @@ def download_export(filename):
     response.headers['Content-Type'] = 'application/octet-stream'
     response.headers["Content-Disposition"] = "attachment; filename={}".format(filename)
     # As a precaution, empty the temp folder
-    shutil.rmtree('app/temp')
-    methods.make_dir('app/temp')
+    shutil.rmtree(TEMP_DIR)
+    methods.make_dir(TEMP_DIR)
     return response
 
 
@@ -382,37 +391,83 @@ def search():
                'js/jquery-sortable-min.js',
                'js/jquery-ui.js',
                'js/corpus/corpus.js',
-               'js/corpus/search.js'
+               'js/corpus/search.js',
+               'js/bootstrap-select-1.13.9/js/bootstrap-select.min.js'
                ]
-    styles = ['css/query-builder.default.css']
+
+    styles = ['css/query-builder.default.css', 'js/bootstrap-select-1.13.9/css/bootstrap-select.css']
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/search', 'label': 'Search Collections'}]
     if request.method == 'GET':
-        return render_template('corpus/search.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
+        collections = db.client[db.corpus].list_collection_names()
+        return render_template('corpus/search.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs, collections=collections)
     if request.method == 'POST':
-        query = request.json['query']
-        page = int(request.json['page'])
-        limit = int(request.json['advancedOptions']['limit'])
-        sorting = []
-        if request.json['advancedOptions']['show_properties'] != []:
-            show_properties = request.json['advancedOptions']['show_properties']
+        # Default settings
+        collection_list = db.client[db.corpus].list_collection_names()
+        errors = []
+        query = {}
+        page_size = 10
+        page_num = 1
+        num_pages = 1
+        pages = []
+        limit = 0
+        sortby = [['name', 'ASC']]
+        projection = ['name', '_id']
+        head = None
+        filters = None
+        # Assemble request data
+        if request.json['collections']:
+            collection_list = request.json['collections']
+            if isinstance(collection_list, str):
+                collection_list = [collection_list]
+        if request.json['page']:
+            page_num = request.json['page']
+        if request.json['query']:
+            query = request.json['query']
+        if request.json['advancedOptions']['limit']:
+            limit = request.json['advancedOptions']['limit']
+        if request.json['advancedOptions']['sort']:
+            sortby = request.json['advancedOptions']['sort']
         else:
-            show_properties = ''
-        paginated = True
-        sorting = []
-        for item in request.json['advancedOptions']['sort']:
-            if item[1] == 'ASC':
-                opt = (item[0], pymongo.ASCENDING)
-            else:
-                opt = (item[0], pymongo.DESCENDING)
-            sorting.append(opt)
-        result, num_pages, errors = methods.search_corpus(query, limit, paginated, page, show_properties, sorting)
-        # Don't show the MongoDB _id unless it is in show_properties
-        if '_id' not in request.json['advancedOptions']['show_properties']:
-            for k, _ in enumerate(result):
-                del result[k]['_id']
-        if result == []:
+            sortby = None
+        if request.json['advancedOptions']['show_properties'] != []:
+            projection = request.json['advancedOptions']['show_properties']
+            original_projection = [x for x in projection]
+        else:
+            projection = None
+
+        # Query the entire database
+        query = Query(db.client, db.corpus, collection_list, query, projection=projection, sortby=sortby, limit=limit, head=head, filters=filters)
+        records = query.get_records(sortby=sortby, projection=projection, filters=query.filters)
+
+        # Check whether records can be returned
+        if records == []:
             errors.append('No records were found matching your search criteria.')
-        return json.dumps({'response': result, 'num_pages': num_pages, 'errors': errors}, default=JSON_UTIL)
+        else:
+            # Paginate the result
+            pages, num_pages = paginate(records, page_size, None)
+            # print('Number of Pages: ' + str(num_pages) + '\n')
+
+            # Get just the requested page
+            records = pages[page_num]
+            # Remove None at the end
+            records = [record for record in records if record is not None]
+
+            # Remove the _id field if not requested
+            if '_id' not in original_projection:
+                for k, _ in enumerate(records):
+                    if records[k] is None:
+                        del records[k]
+                    else:
+                        del records[k]['_id']
+
+        # Return the response
+        return json.dumps({
+                'response': records,
+                'errors': errors,
+                'num_pages': num_pages,
+                'pages': pages,
+                'large_query': query.large_query
+                }, default=JSON_UTIL)
 
 
 @corpus.route('/export-search', methods=['GET', 'POST'])
@@ -441,13 +496,13 @@ def export_search():
         # Need to write the results to temp folder
         for item in result:
             filename = item['name'] + '.json'
-            filepath = os.path.join('app/temp', filename)
+            filepath = os.path.join(TEMP_DIR, filename)
             with open(filepath, 'w') as f:
                 f.write(json.dumps(item, indent=2, sort_keys=False, default=JSON_UTIL))
         # Need to zip up multiple files
         if len(result) > 1:
             filename = 'search_results.zip'
-            methods.zipfolder('app/temp', 'search_results')
+            methods.zipfolder(TEMP_DIR, 'search_results')
         return json.dumps({'filename': filename, 'errors': errors}, default=JSON_UTIL)
 
 
