@@ -11,12 +11,12 @@ import zipfile
 import dateutil.parser
 from flask import current_app
 from jsonschema import validate, FormatChecker
-import pymongo
+# import pymongo
 from pymongo.collation import Collation
 import requests
 # import: app
-from app import db
-corpus_db = db.client[db.corpus]['Corpus']
+# from app import db
+# corpus_db = db.client[db.corpus]['Corpus']
 
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"

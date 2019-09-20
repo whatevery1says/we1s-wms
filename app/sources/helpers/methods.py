@@ -18,8 +18,8 @@ from tableschema_pandas import Storage
 from tabulator import Stream
 
 # import: app
-from app import db
-sources_db = db.client[db.sources]['Sources']
+# from app import db
+# sources_db = db.client[db.sources]['Sources']
 
 # from pymongo import MongoClient
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"

@@ -19,12 +19,10 @@ import requests
 import tabulator
 from werkzeug.utils import secure_filename
 # import: app
-from app.sources.helpers import methods
 from app import db
-
 sources_db = db.client[db.sources]['Sources']
-
 JSON_UTIL = json_util.default
+from app.sources.helpers import methods
 
 # Database info should be imported by the code above,
 # but the code below is retained in case it needs

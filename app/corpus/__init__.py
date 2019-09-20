@@ -24,13 +24,11 @@ import tabulator
 from werkzeug.utils import secure_filename
 import yaml
 # import: app
+from app import db
+corpus_db = db.client[db.corpus]['Corpus']
+JSON_UTIL = json_util.default
 from app.corpus.helpers import methods
 from app.corpus.helpers.query import Query, paginate
-from app import db  # pylint: disable=cyclic-import
-
-corpus_db = db.client[db.corpus]['Corpus']
-
-JSON_UTIL = json_util.default
 
 # Database info should be imported by the code above,
 # but the code below is retained in case it needs
