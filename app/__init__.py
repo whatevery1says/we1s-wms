@@ -14,12 +14,9 @@ from flask import Flask, render_template, request, url_for
 import markdown
 import pymongo
 from pymongo import MongoClient
+
 # import: app
-from .sources import sources
-from .corpus import corpus
-from .projects import projects
-from .scripts import scripts
-from .tasks import tasks
+from .database import DB
 
 # Import constants
 # import app.helpers.methods as methods
@@ -38,6 +35,20 @@ app.config.from_object('config')
 app.config.from_pyfile('config.py')
 # print(app.instance_path)
 # print(app.config)
+
+# Configure database
+client = app.config['MONGO_CLIENT']
+sources_db = app.config['SOURCES_DB']
+corpus_db = app.config['CORPUS_DB']
+projects_db = app.config['PROJECTS_DB']
+db = DB(client, sources_db, corpus_db, projects_db)
+
+# import app (must be after database is configured)
+from .sources import sources  # nopep8 # pylint: disable=wrong-import-position
+from .corpus import corpus  # nopep8 # pylint: disable=wrong-import-position
+from .projects import projects  # nopep8 # pylint: disable=wrong-import-position
+from .scripts import scripts  # nopep8 # pylint: disable=wrong-import-position
+from .tasks import tasks  # nopep8 # pylint: disable=wrong-import-position
 
 
 def register_blueprints(application):

@@ -1,13 +1,15 @@
 {% extends "base.html" %}
 {% block main %}
 <style type="text/css">
-#previews {
+  #previews {
     display: none;
-}
-.dropzone.dz-clickable {
+  }
+
+  .dropzone.dz-clickable {
     cursor: pointer;
-}
-.dropzone {
+  }
+
+  .dropzone {
     border-radius: .2rem;
     border: dashed 1px #f56a6a;
     background: white;
@@ -16,149 +18,161 @@
     line-height: 1.5;
     text-align: center;
     color: #7f888f;
-}
-.dropzone, .dropzone * {
+  }
+
+  .dropzone,
+  .dropzone * {
     box-sizing: border-box;
-}
-.dropzone:focus, .dropzone:hover {
+  }
+
+  .dropzone:focus,
+  .dropzone:hover {
     box-shadow: 0 0 0 1px #f56a6a;
-}
-    #actions {
-      margin: 2em 0;
-    }
+  }
 
-    /* Mimic table appearance */
-    div.table {
-      display: table;
-    }
-    div.table .file-row {
-      display: table-row;
-    }
-    div.table .file-row > div {
-      display: table-cell;
-      vertical-align: top;
-      border-top: 1px solid #ddd;
-      padding: 8px;
-    }
-    div.table .file-row:nth-child(odd) {
-      background: #f9f9f9;
-    }
+  #actions {
+    margin: 2em 0;
+  }
 
-    /* The total progress gets shown by event listeners */
-    #total-progress {
-      opacity: 0;
-      transition: opacity 0.3s linear;
-    }
+  /* Mimic table appearance */
+  div.table {
+    display: table;
+  }
 
-    /* Hide the progress bar when finished */
-    #previews .file-row.dz-success .progress {
-      opacity: 0;
-      transition: opacity 0.3s linear;
-    }
+  div.table .file-row {
+    display: table-row;
+  }
 
-    /* Hide the delete button initially */
-    #previews .file-row .delete {
-      display: none;
-    }
+  div.table .file-row>div {
+    display: table-cell;
+    vertical-align: top;
+    border-top: 1px solid #ddd;
+    padding: 8px;
+  }
 
-    /* Hide the start and cancel buttons and show the delete button */
+  div.table .file-row:nth-child(odd) {
+    background: #f9f9f9;
+  }
 
-    #previews .file-row.dz-success .start,
-    #previews .file-row.dz-success .cancel {
-      display: none;
-    }
-    #previews .file-row.dz-success .delete {
-      display: block;
-    }
+  /* The total progress gets shown by event listeners */
+  #total-progress {
+    opacity: 0;
+    transition: opacity 0.3s linear;
+  }
+
+  /* Hide the progress bar when finished */
+  #previews .file-row.dz-success .progress {
+    opacity: 0;
+    transition: opacity 0.3s linear;
+  }
+
+  /* Hide the delete button initially */
+  #previews .file-row .delete {
+    display: none;
+  }
+
+  /* Hide the start and cancel buttons and show the delete button */
+
+  #previews .file-row.dz-success .start,
+  #previews .file-row.dz-success .cancel {
+    display: none;
+  }
+
+  #previews .file-row.dz-success .delete {
+    display: block;
+  }
 </style>
 <!-- Section -->
 <a name="features"></a>
 <section>
-    <!-- <header class="major">
+  <!-- <header class="major">
         <h2>Actions</h2>
     </header> -->
-    <div class="features">
-        <article>
-            <a href="/sources/create" class="module"><span class="icon fa-book"></span></a>
-            <div class="content">
-                <h3>Create Sources Manifest</h3>
-                <p>Create a new manifest for Source.</p>
+  <div class="features">
+    <article>
+      <a href="/sources/create" class="module"><span class="icon fa-book"></span></a>
+      <div class="content">
+        <h3>Create Sources Manifest</h3>
+        <p>Create a new manifest for Source.</p>
+      </div>
+    </article>
+    <article>
+      <span class="icon fa-book"></span>
+      <div class="content">
+        <h3>Display Sources Manifest</h3>
+        <div class="input-group input-group-sm">
+          <input type="text" id="display" placeholder="Enter manifest name." class="form-control" aria-label="Enter name to display." aria-describedby="go">
+          <div class="input-group-append">
+            <span class="input-group-text fa fa-search" id="go" onclick="trigger();"></span>
+          </div>
+        </div>
+      </div>
+    </article>
+    <article>
+      <a href="/sources/search" class="module"><span class="icon fa-book"></span></a>
+      <div class="content">
+        <h3>Search the sources Database</h3>
+        <p>Search all sources manifests.</p>
+      </div>
+    </article>
+    <article>
+      <span class="icon fa-book"></span>
+      <div class="content">
+        <h3>Import sources</h3>
+        <p>Import sources or binary tools.</p>
+        <form id="importForm">
+          <span class="btn btn-outline-editorial fileinput-button">
+            <i class="fa fa-plus"></i>
+            <span>Select file...</span>
+          </span>
+        </form>
+        <!-- The global file processing state -->
+        <span class="fileupload-process">
+          <div id="total-progress" class="progress progress-striped active" role="progressbar" aria-valuemin="0"
+            aria-valuemax="100" aria-valuenow="0">
+            <div class="progress-bar progress-bar-success" style="width:0%;" data-dz-uploadprogress></div>
+          </div>
+        </span>
+      </div>
+    </article>
+    <article></article>
+    <article>
+      <!-- Begin Upload Template -->
+      <div class="table table-striped files" id="previews">
+        <div id="template" class="file-row">
+          <!-- This is used as the file preview template -->
+          <div>
+            <span class="preview"><img data-dz-thumbnail /></span>
+          </div>
+          <div>
+            <p class="name" data-dz-name></p>
+            <strong class="error text-danger" data-dz-errormessage></strong>
+          </div>
+          <div>
+            <p class="size" data-dz-size></p>
+            <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100"
+              aria-valuenow="0">
+              <div class="progress-bar progress-bar-success" style="width:0%;" data-dz-uploadprogress></div>
             </div>
-        </article>
-        <article>
-            <span class="icon fa-book"></span>
-            <div class="content">
-                <h3>Display Sources Manifest</h3>
-                <div class="input-group input-group-sm"><input type="text" id="display" placeholder="Enter manifest name." class="form-control" aria-label="Enter name to display." aria-describedby="go">
-                  <div class="input-group-append">
-                    <span class="input-group-text fa fa-search" id="go"></span>
-                  </div>
-              </div>
-            </div>
-        </article>
-        <article>
-            <a href="/sources/search" class="module"><span class="icon fa-book"></span></a>
-            <div class="content">
-                <h3>Search the sources Database</h3>
-                <p>Search all sources manifests.</p>
-            </div>
-        </article>
-        <article>
-            <span class="icon fa-book"></span>
-            <div class="content">
-                <h3>Import sources</h3>
-                <p>Import sources or binary tools.</p>
-                <form id="importForm">
-                    <span class="btn btn-outline-editorial fileinput-button">
-                        <i class="fa fa-plus"></i>
-                        <span>Select file...</span>
-                    </span>
-                </form>
-                <!-- The global file processing state -->
-                <span class="fileupload-process">
-                    <div id="total-progress" class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                    <div class="progress-bar progress-bar-success" style="width:0%;" data-dz-uploadprogress></div>
-                    </div>
-                </span>
-            </div>
-        </article>
-        <article></article>
-        <article>
-        <!-- Begin Upload Template -->
-            <div class="table table-striped files" id="previews">
-              <div id="template" class="file-row">
-                <!-- This is used as the file preview template -->
-                <div>
-                    <span class="preview"><img data-dz-thumbnail /></span>
-                </div>
-                <div>
-                    <p class="name" data-dz-name></p>
-                    <strong class="error text-danger" data-dz-errormessage></strong>
-                </div>
-                <div>
-                    <p class="size" data-dz-size></p>
-                    <div class="progress progress-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
-                      <div class="progress-bar progress-bar-success" style="width:0%;" data-dz-uploadprogress></div>
-                    </div>
-                </div>
-                <div>
-                  <button class="btn btn-sm btn-outline-editorial start">
-                      <i class="fa fa-upload"></i>
-                      <span>Upload</span>
-                  </button>
-                  <button data-dz-remove class="btn btn-sm btn-outline-editorial cancel">
-                      <i class="fa fa-ban"></i>
-                      <span>Cancel</span>
-                  </button>
-                  <button data-dz-remove class="btn btn-sm btn-outline-editorial delete">
-                    <i class="fa fa-trash"></i>
-                    <span>Remove</span>
-                  </button>
-                </div>
-              </div>
-            </div>
-        <!-- End Upload Template -->
-        </article>
-    </div>
+          </div>
+          <div>
+            <button class="btn btn-sm btn-outline-editorial start">
+              <i class="fa fa-upload"></i>
+              <span>Upload</span>
+            </button>
+            <button data-dz-remove class="btn btn-sm btn-outline-editorial cancel">
+              <i class="fa fa-ban"></i>
+              <span>Cancel</span>
+            </button>
+            <button data-dz-remove class="btn btn-sm btn-outline-editorial delete">
+              <i class="fa fa-trash"></i>
+              <span>Remove</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <!-- End Upload Template -->
+    </article>
+  </div>
 </section>
 {% endblock main %}

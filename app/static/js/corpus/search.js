@@ -1,15 +1,19 @@
 /* global bootbox, moment */
 /* eslint no-undef: "error" */
-function sendQuery (query, advancedOptions, page = 1) {
+
+function sendQuery (query, collections, advancedOptions, page = 1) {
   /* Searches the Corpus
         Input: Values from the search form
         Returns: An array containing results and errors for display
   */
+  var pages = []
   var data = {
     'query': JSON.parse(query),
+    'advancedOptions': JSON.parse(advancedOptions),
     'page': page,
-    'advancedOptions': JSON.parse(advancedOptions)
+    'collections': $('#collections').val()
   }
+  $('#processingIcon').show()
   $.ajax({
     method: 'POST',
     url: '/corpus/search',
@@ -18,17 +22,24 @@ function sendQuery (query, advancedOptions, page = 1) {
   })
     .done(function (response) {
       $('#results').empty()
+      $('#processingIcon').hide()
       response = JSON.parse(response)
       if (response['errors'].length !== 0) {
         var result = response['errors']
         var message = ''
-        $.each(result, function (i, item) {
+        $.each(result, function (_, item) {
           message += '<p>' + item + '</p>'
         })
         bootbox.alert({
           message: message
         })
       } else {
+        if (response['large_query'] === true) {
+          $('#large-query-msg').show()
+        } else {
+          $('#large-query-msg').hide()
+        }
+        pages = response['pages']
         result = response['response']
         // Make the result into a string
         var out = ''
@@ -40,7 +51,13 @@ function sendQuery (query, advancedOptions, page = 1) {
             if (key === 'content' && value.length > 200) {
               value = value.substring(0, 200) + '...'
             }
-            out += '<code>' + key + '</code>: ' + value + '<br>'
+            if (key === '_id') {
+              if ($.inArray('_id', data['advancedOptions']['show_properties']) !== -1) {
+                out += '<code>' + key + '</code>: ' + value + '<br>'
+              }
+            } else {
+              out += '<code>' + key + '</code>: ' + value + '<br>'
+            }
           })
           out += '<hr>'
         })
@@ -54,7 +71,26 @@ function sendQuery (query, advancedOptions, page = 1) {
           visiblePages: 5,
           initiateStartPageClick: false,
           onPageClick: function (event, page) {
-            sendQuery(query, advancedOptions, page)
+            // sendQuery(query, collections, advancedOptions, page)
+            // Handle the "Last" button
+            if (page > (Object.keys(pages).length - 1)) {
+              page = page - 1
+            }
+            // Make the result into a string
+            out = ''
+            $.each(pages[page], function (i, item) {
+              var link = '/corpus/display/' + item['name']
+              out += '<h4><a href="' + link + '">' + item['name'] + '</a></h4><br>'
+              $.each(item, function (key, value) {
+                value = JSON.stringify(value)
+                if (key === 'content' && value.length > 200) {
+                  value = value.substring(0, 200) + '...'
+                }
+                out += '<code>' + key + '</code>: ' + value + '<br>'
+              })
+              out += '<hr>'
+            })
+            $('#results').empty().append(out)
             $('#scroll').click()
           }
         }
@@ -343,10 +379,19 @@ $(document).ready(function () {
       var advancedOptions = JSON.stringify(serialiseAdvancedOptions(), undefined, 2)
       var outputQueryString = JSON.stringify($('#builder').queryBuilder('getMongo'))
       var outputAdvancedOptions = JSON.stringify(serialiseAdvancedOptions())
+      var collections = $('#collections').val()
 
       // Perform the search or display the query
       if ($(this).attr('id') === 'search-query') {
-        sendQuery(querystring, advancedOptions)
+        // Make sure the user has chosen a collection before sending
+        if (collections !== null) {
+          if (typeof collections === 'string') {
+            collections = [collections]
+          }
+          sendQuery(querystring, collections, advancedOptions)
+        } else {
+          bootbox.alert('Please choose at least one collection.')
+        }
       } else {
         var msg = '<p>Query:</p><pre><code>' + outputQueryString + '</code></pre>'
         msg += '<p>Advanced Options:</p><pre><code>' + outputAdvancedOptions + '</code></pre>'

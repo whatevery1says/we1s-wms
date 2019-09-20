@@ -70,10 +70,12 @@ function cleanup () {
     }
   }
   // Handle citations
-  try {
-    newform['citation'] = JSON.parse(formvals['citation'])
-  } catch (err) {
-    newform['citation'] = formvals['citation']
+  if (formvals['citation'].length > 0) {
+    try {
+      newform['citation'] = JSON.parse(formvals['citation'])
+    } catch (err) {
+      newform['citation'] = formvals['citation']
+    }
   }
   // Handle dates
   let result = processDates()
@@ -262,17 +264,20 @@ function deleteManifest (name, metapath) {
     .done(function (response) {
       hideProcessing()
       var errors = JSON.parse(response)['errors']
-      if (errors !== '') {
-        var msg = '<p>Could not delete the manifest because of the following errors:</p>' + errors
+      if (JSON.parse(response)['result'] === 'success') {
+        bootbox.alert({
+          message: '<p>The manifest for <code>' + name + '</code> was deleted.</p>',
+          callback: function () {
+            window.location = '/sources'
+          }
+        })
       } else {
-        msg = '<p>The manifest for <code>' + name + '</code> was deleted.</p>'
+        var msg = '<p>Could not delete the manifest because of the following errors:</p><ul>'
+        $.each(errors, function (error) {
+          msg += '<li>' + error + '</li>'
+        })
+        bootbox.alert(msg + '</ul>')
       }
-      bootbox.alert({
-        message: msg,
-        callback: function () {
-          window.location = '/sources'
-        }
-      })
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
       hideProcessing()
@@ -360,8 +365,8 @@ function saveManifest (data, action) {
   Input: A JSON serialisation of the form values
   Returns: A copy of the manifest and an array of errors for display */
   let url = '/sources/' + action + '-manifest'
-  console.log(url)
-  console.log(data)
+  // console.log(url)
+  // console.log(data)
   $.ajax({
     method: 'POST',
     url: url,
@@ -401,10 +406,13 @@ $(document).ready(function () {
   // Index Page Functions
   //
 
-  /* Handles the Display form */
-  $('#go').click(function (e) {
+  /* Handles the Display form 
+  
+  Disabled because it doesn't work on this page for some reason.
+  */
+/*  $('#go').click(function (e) {
     e.preventDefault()
-    var name = $('#display').val()
+    var name = $('#displayy').val()
     window.location = '/sources/display/' + name
   })
   $('#display').on('keypress', function (e) {
@@ -414,6 +422,7 @@ $(document).ready(function () {
       $('#go').click()
     }
   })
+*/
 
   //
   // Create and Display Page Functions
@@ -796,3 +805,19 @@ $(document).ready(function () {
     searchSources(data)
   })
 }) /* End of $(document).ready() Event Handling */
+
+/* Replacement code to ensure text area is submitted. */
+function trigger () {
+  var name = $('#display').val()
+  window.location = '/sources/display/' + name
+}
+
+var input = document.getElementById('display')
+input.addEventListener('keyup', function (e) {
+  // Number 13 is the "Enter" key on the keyboard
+  if (e.keyCode === 13 || e.keyCode === 3) {
+    // Cancel the default action, if needed
+    e.preventDefault()
+    trigger()
+  }
+})

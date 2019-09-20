@@ -10,6 +10,7 @@ import yaml
 # import: third-party
 from bson import BSON
 from bson import json_util
+from bson.objectid import ObjectId
 from flask import Blueprint, make_response, render_template, request, url_for, current_app
 from jsonschema import validate, FormatChecker
 import pymongo
@@ -18,15 +19,22 @@ import requests
 import tabulator
 from werkzeug.utils import secure_filename
 # import: app
-from app.sources.helpers import methods
-
-
+from app.sources.helpers import methods  # pylint: disable=cyclic-import
+from app import db  # pylint: disable=cyclic-import
+sources_db = db.client[db.sources]['Sources']
 JSON_UTIL = json_util.default
 
+# Database info should be imported by the code above,
+# but the code below is retained in case it needs
+# to be activated for testing.
+
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
-client = MongoClient('mongodb://localhost:27017')
-db = client.we1s
-sources_db = db.Sources
+# client = MongoClient('mongodb://localhost:27017')
+# db = client.we1s
+# sources_db = db.Sources
+# client = MongoClient('mongodb://mongo:27017')
+# DB has one collection, so treat it as the whole DB
+# sources_db = client.Sources.Sources
 
 sources = Blueprint('sources', __name__, template_folder='sources')
 
@@ -44,7 +52,6 @@ country_list = ['AF', 'AX', 'AL', 'DZ', 'AS', 'AD', 'AO', 'AI', 'AQ', 'AG', 'AR'
 # Controllers.
 # ----------------------------------------------------------------------------#
 
-
 @sources.route('/')
 def index():
     """Create sources index page."""
@@ -58,7 +65,7 @@ def index():
 def create():
     """Create Sources manifest page."""
     scripts = ['js/parsley.min.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/sources/sources.js']
-    styles = ['jquery-ui.css']
+    styles = ['css/jquery-ui.css']
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/create', 'label': 'Create Publication'}]
     with open("app/templates/sources/template_config.yml", 'r') as stream:
         templates = yaml.load(stream)
@@ -81,7 +88,7 @@ def create_manifest():
             manifest[key] = value
 
     # Validate the resulting manifest
-    print(json.dumps(manifest, indent=2, sort_keys=False))
+    # print(json.dumps(manifest, indent=2, sort_keys=False))
     if methods.validate_manifest(manifest) is True:
         database_errors = methods.create_record(manifest)
         errors = errors + database_errors
@@ -109,10 +116,14 @@ def delete_manifest():
     errors = []
     name = request.json['name']
     metapath = request.json['metapath']
-    msg = methods.delete_source(name, metapath)
-    if msg != 'success':
-        errors.append(msg)
-    return json.dumps({'errors': errors})
+    result = methods.delete_source(name, metapath)
+    response = {'errors': errors}
+    if result == 'success':
+        response['result'] = 'success'
+    else:
+        response['result'] = 'fail'
+        errors.append(result)
+    return json.dumps(response)
 
 
 # Helpers for /display
@@ -203,39 +214,59 @@ def search():
     styles = ['css/query-builder.default.css']
     breadcrumbs = [{'link': '/sources', 'label': 'Sources'}, {'link': '/sources/search', 'label': 'Search Sources'}]
     if request.method == 'GET':
-        return render_template('sources/search.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs)
+        return render_template('sources/search.html', scripts=scripts, styles=styles, breadcrumbs=breadcrumbs, result=[])
     if request.method == 'POST':
-        query = request.json['query']
-        page = int(request.json['page'])
-        limit = int(request.json['advancedOptions']['limit'])
+        # Default settings
+        errors = []
+        page_size = 5
+        page_num = 1
+        filters = {}
+        limit = 0
+        sort = [['name', 'ASC']]
+
+        # Assemble request data
+        if request.json['page']:
+            page_num = int(request.json['page'])
+        if request.json['query']:
+            filters = request.json['query']
+        if request.json['advancedOptions']['limit']:
+            limit = int(request.json['advancedOptions']['limit'])
         sorting = []
-        if request.json['advancedOptions']['show_properties'] != []:
-            show_properties = request.json['advancedOptions']['show_properties']
-        else:
-            show_properties = ''
-        paginated = True
-        sorting = []
-        for item in request.json['advancedOptions']['sort']:
+        if request.json['advancedOptions']['sort']:
+            sort = request.json['advancedOptions']['sort']
+        for item in sort:
             if item[1] == 'ASC':
                 opt = (item[0], pymongo.ASCENDING)
             else:
                 opt = (item[0], pymongo.DESCENDING)
             sorting.append(opt)
-        search_opts = {
-            'query': query,
-            'limit': limit,
-            'paginated': paginated,
-            'page': page,
-            'show_properties': show_properties,
-            'sorting': sorting}
-        result, page, num_pages, errors = methods.search_sources(search_opts)
-        # Don't show the MongoDB _id unless it is in show_properties
-        if '_id' not in request.json['advancedOptions']['show_properties']:
-            for k, _ in enumerate(result):
-                del result[k]['_id']
-        if result == []:
+        if request.json['advancedOptions']['show_properties'] != []:
+            show_properties = request.json['advancedOptions']['show_properties']
+        else:
+            show_properties = None
+
+        # Query the entire database
+        query = sources_db.find(filters, projection=show_properties).limit(limit).sort(sorting)
+        result = list(query)
+
+        # Paginate the result
+        pages, num_pages = methods.grouper(result, page_size, 0)
+
+        # Filter the full query to just _ids on the requested page
+        records = [doc for doc in result if str(doc['_id']) in pages[page_num]]
+
+        # Remove the _id field if not requested
+        if '_id' not in show_properties:
+            for k, _ in enumerate(records):
+                del records[k]['_id']
+
+        # Check whether records can be returned
+        if records == []:
             errors.append('No records were found matching your search criteria.')
-        return json.dumps({'response': result, 'num_pages': num_pages, 'errors': errors}, default=JSON_UTIL)
+
+        # Return the response
+        response = {'response': records, 'errors': errors, 'num_pages': num_pages}
+        return json.dumps(response, default=JSON_UTIL)
 
 
 @sources.route('/export-manifest', methods=['GET', 'POST'])

@@ -3,25 +3,32 @@
 # import: standard
 from datetime import datetime
 import itertools
+from itertools import zip_longest
 import json
 import os
 import re
 import zipfile
 # import: third-party
+from bson.objectid import ObjectId
 import dateutil.parser
 from flask import current_app
 from jsonschema import validate, FormatChecker
 import requests
 from tableschema_pandas import Storage
 from tabulator import Stream
-from pymongo import MongoClient
+
 # import: app
+from app import db  # pylint: disable=cyclic-import
+sources_db = db.client[db.sources]['Sources']
 
-
+# from pymongo import MongoClient
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
-client = MongoClient('mongodb://localhost:27017')
-db = client.we1s
-sources_db = db.Sources
+# client = MongoClient('mongodb://localhost:27017')
+# db = client.we1s
+# sources_db = db.Sources
+# client = MongoClient('mongodb://mongo:27017')
+# DB has one collection, so treat it as the whole DB
+# sources_db = client.Sources.Sources
 
 # ----------------------------------------------------------------------------#
 # General Helper Functions
@@ -71,7 +78,7 @@ def check_date_format(dates):
 
 
 def get_page(pages, page):
-    """Take a list of paginated results form `paginate()` and returns a single page from the list."""
+    """Take a list of paginated results from `paginate()` and returns a single page from the list."""
     try:
         return pages[page - 1]
     except:
@@ -263,9 +270,8 @@ def delete_source(name, metapath):
     Returns 'success' or an error message string.
     """
     result = sources_db.delete_one({'name': name, 'metapath': metapath})
-    if result.deleted_count != 0:
-        response = 'success'
-    else:
+    response = 'success'
+    if result.deleted_count == 0:
         response = 'Unknown error: The document could not be deleted.'
     return response
 
@@ -353,6 +359,20 @@ def import_manifests(source_files):
     return manifests, error_list
 
 
+def grouper(iterable, page_size=10, padvalue=None):
+    """Separate query results into pages.
+
+    Returns a dict with page numbers as keys and lists of first and last _id values
+    cast as strings.
+    """
+    pages = {}
+    groups = zip_longest(*[iter(iterable)] * page_size, fillvalue=padvalue)
+    for i, group in enumerate(groups):
+        pages[i + 1] = [str(item['_id']) for item in group if item != 0]
+    return pages, len(pages)
+
+
+# Deprecated method
 def search_sources(options):
     """Query the database from the search form.
 
@@ -381,6 +401,70 @@ def search_sources(options):
         return result, page, num_pages, errors
     errors.append('The Sources database is empty.')
     return [], 1, errors
+
+
+def idlimit(page_size, query, limit, show_properties, id_range=None):
+    """Return page_size number of docs after last_id and new last_id."""
+    if id_range is not None:
+        start = id_range[0]
+        end = id_range[1]
+        if start is None and end is not None:
+            query['$and'].append({'_id': {'$lte': ObjectId(end)}})
+        if start is not None and end is None:
+            query['$and'].append({'_id': {'$gte': ObjectId(start)}})
+        if start is not None and end is not None:
+            query['$and'].append({'_id': {'$gte': ObjectId(start), '$lte': ObjectId(end)}})
+        # projection = {item: 1 for item in show_properties}
+    cursor = sources_db.find(
+        query,
+        limit=limit,
+        projection=show_properties).limit(page_size)
+
+    # Get the data
+    data = [x for x in cursor]
+
+    if not data:
+        # No documents left
+        # return None, None
+        return None
+
+    # Since documents are naturally ordered with _id,
+    # last document will have max id.
+    # last_id = data[-1]['_id']
+
+    # Return data and last_id
+    return data
+
+
+def search_sources2(options):
+    """Query the database from the search form.
+
+    Takes a list of values from the form and returns the search results.
+    """
+    errors = []
+    if list(sources_db.find()):
+        query_properties = options['query']
+        show_properties = options['show_properties']
+        limit = int(options['limit'])
+        # page = options['page']
+        page_size = options['page_size']
+        id_range = options['id_range']
+        # query_properties, show_properties = reshape_query_props(options['query'], options['show_properties'])
+        if 'regex' in options and options['regex'] is True:
+            query = {}
+            for k, v in query_properties.items():
+                REGEX = re.compile(v)
+                query[k] = {'$regex': REGEX}
+        else:
+            query = query_properties
+        records = idlimit(
+            page_size,
+            query,
+            limit,
+            show_properties,
+            id_range
+        )
+        return records, errors
 
 
 def update_record(manifest):
