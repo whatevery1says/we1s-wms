@@ -14,12 +14,9 @@ from flask import Flask, render_template, request, url_for
 import markdown
 import pymongo
 from pymongo import MongoClient
+
 # import: app
-from .sources import sources
-from .corpus import corpus
-from .projects import projects
-from .scripts import scripts
-from .tasks import tasks
+from .database import DB
 
 # Import constants
 # import app.helpers.methods as methods
@@ -39,6 +36,20 @@ app.config.from_pyfile('config.py')
 # print(app.instance_path)
 # print(app.config)
 
+# Configure database
+db = DB(
+    app.config['MONGO_CLIENT'],
+    app.config['SOURCES_DB'],
+    app.config['CORPUS_DB'],
+    app.config['PROJECTS_DB']
+    )
+
+# import app (must be after database is configured)
+from .sources import sources
+from .corpus import corpus
+from .projects import projects
+from .scripts import scripts
+from .tasks import tasks
 
 def register_blueprints(application):
     """Prevent circular imports."""
