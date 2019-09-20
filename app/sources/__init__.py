@@ -19,10 +19,10 @@ import requests
 import tabulator
 from werkzeug.utils import secure_filename
 # import: app
-from app import db
+from app.sources.helpers import methods  # pylint: disable=cyclical-import
+from app import db  # pylint: disable=cyclical-import
 sources_db = db.client[db.sources]['Sources']
 JSON_UTIL = json_util.default
-from app.sources.helpers import methods
 
 # Database info should be imported by the code above,
 # but the code below is retained in case it needs
