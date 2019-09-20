@@ -26,7 +26,7 @@ import yaml
 # import: app
 from app.corpus.helpers import methods
 from app.corpus.helpers.query import Query, paginate
-from app import db
+from app import db  # pylint: disable=cyclic-import
 
 corpus_db = db.client[db.corpus]['Corpus']
 
@@ -462,14 +462,14 @@ def search():
                         del records[k]['_id']
 
         # Return the response
-        return json.dumps({
+        response = {
             'response': records,
             'errors': errors,
             'num_pages': num_pages,
             'pages': pages,
             'large_query': query.large_query
-            }, default=JSON_UTIL
-        )
+        }
+        return json.dumps(response, default=JSON_UTIL)
 
 
 @corpus.route('/export-search', methods=['GET', 'POST'])

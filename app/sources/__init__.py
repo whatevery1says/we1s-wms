@@ -267,11 +267,8 @@ def search():
             errors.append('No records were found matching your search criteria.')
 
         # Return the response
-        return json.dumps({
-            'response': records,
-            'errors': errors,
-            'num_pages': num_pages
-            }, default=JSON_UTIL)
+        response = {'response': records, 'errors': errors, 'num_pages': num_pages}
+        return json.dumps(response, default=JSON_UTIL)
 
 
 @sources.route('/export-manifest', methods=['GET', 'POST'])
