@@ -37,12 +37,11 @@ app.config.from_pyfile('config.py')
 # print(app.config)
 
 # Configure database
-db = DB(
-        app.config['MONGO_CLIENT'],
-        app.config['SOURCES_DB'],
-        app.config['CORPUS_DB'],
-        app.config['PROJECTS_DB']
-       )
+client = app.config['MONGO_CLIENT']
+sources_db = app.config['SOURCES_DB']
+corpus_db = app.config['CORPUS_DB']
+projects_db = app.config['PROJECTS_DB']
+db = DB(client, sources_db, corpus_db, projects_db)
 
 # import app (must be after database is configured)
 from .sources import sources  # nopep8 # pylint: disable=wrong-import-position

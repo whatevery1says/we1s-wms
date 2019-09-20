@@ -63,6 +63,7 @@ TRASH_DIR = os.path.join(instance_path, 'trash')
 # Controllers.
 # ----------------------------------------------------------------------------#
 
+
 @corpus.route('/')
 def index():
     """Corpus index page."""
@@ -462,12 +463,13 @@ def search():
 
         # Return the response
         return json.dumps({
-                'response': records,
-                'errors': errors,
-                'num_pages': num_pages,
-                'pages': pages,
-                'large_query': query.large_query
-                }, default=JSON_UTIL)
+            'response': records,
+            'errors': errors,
+            'num_pages': num_pages,
+            'pages': pages,
+            'large_query': query.large_query
+            }, default=JSON_UTIL
+        )
 
 
 @corpus.route('/export-search', methods=['GET', 'POST'])

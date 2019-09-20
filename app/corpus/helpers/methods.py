@@ -3,7 +3,6 @@
 # import: standard
 from datetime import datetime
 import itertools
-from itertools import zip_longest
 import json
 import os
 import re
