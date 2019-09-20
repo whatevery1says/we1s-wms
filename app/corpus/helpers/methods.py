@@ -15,8 +15,8 @@ from jsonschema import validate, FormatChecker
 from pymongo.collation import Collation
 import requests
 # import: app
-# from app import db
-# corpus_db = db.client[db.corpus]['Corpus']
+from app import db  # pylint: disable=cyclic-import
+corpus_db = db.client[db.corpus]['Corpus']
 
 
 # Set up the MongoDB client, configure the databases, and assign variables to the "collections"
