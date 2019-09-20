@@ -171,7 +171,7 @@ class Query:
             df = df.sort_values(by='name', ascending=False)
 
         # Return the dataframe
-        if as_df:
+        if not as_df:
             df = df.to_dict('records')
         return df
 
