@@ -77,7 +77,8 @@ def create():
     scripts = ['js/parsley.min.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/corpus/corpus.js']
     styles = ['css/jquery-ui.css']
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/create', 'label': 'Create Collection'}]
-    with open("app/templates/corpus/template_config.yml", 'r') as stream:
+    templates_dir = os.path.join(current_app.root_path, 'templates')
+    with open(os.path.join(templates_dir, 'corpus/template_config.yml'), 'r') as stream:
         templates = yaml.load(stream)
     return render_template('corpus/create.html', scripts=scripts, styles=styles, templates=templates, breadcrumbs=breadcrumbs)
 
@@ -174,7 +175,8 @@ def display(name):
             nodetype = manifest['name'].lower()
         else:
             nodetype = 'branch'
-        with open("app/templates/corpus/template_config.yml", 'r') as stream:
+        templates_dir = os.path.join(current_app.root_path, 'templates')
+        with open(os.path.join(templates_dir, 'corpus/template_config.yml'), 'r') as stream:
             templates = yaml.load(stream)
         # Reshape Lists
         for key, value in manifest.items():

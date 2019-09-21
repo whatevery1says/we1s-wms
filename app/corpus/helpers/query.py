@@ -183,9 +183,6 @@ class Query:
         """
         records = []
         df = self.get_result_table(sortby=sortby, filters=filters, as_df=True)
-        print('dataframe length')
-        print(df.to_dict('records'))
-        print(df['collection'].values)
         unique_collections = list(set(df['collection'].values.tolist()))
         for collection in unique_collections:
             # Get a list of _ids for the collection
