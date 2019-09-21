@@ -1,4 +1,4 @@
-/* global bootbox, hideProcessing, moment, nodetype, showProcessing */
+/* global bootbox, hideProcessing, moment, nodetype, docCollection, docId, showProcessing */
 /* eslint no-undef: "error" */
 //
 // General Helper Functions
@@ -29,6 +29,8 @@ function saveManifest (data, action) {
   Returns: A copy of the manifest and an array of errors for display */
   // data['nodetype'] = $('input[name="nodetype"]').val()
   data['nodetype'] = nodetype
+  data['doc_collection'] = docCollection
+  data['doc_id'] = docId
   let url = '/corpus/' + action + '-manifest'
   $.ajax({
     method: 'POST',
@@ -99,10 +101,17 @@ function deleteManifest (name, metapath) {
   /* Deletes a manifest
    Input: A name value
    Returns: An array of errors for display */
+  let data = {
+    'name': name,
+    'metapath': metapath,
+    'doc_collection': docCollection,
+    'doc_id': docId
+  }
+
   $.ajax({
     method: 'POST',
     url: '/corpus/delete-manifest',
-    data: JSON.stringify({ 'name': name, 'metapath': metapath }),
+    data: JSON.stringify(data),
     contentType: 'application/json;charset=UTF-8',
     beforeSend: showProcessing()
   })
@@ -241,6 +250,8 @@ function sendExport (jsonform) {
      Input: A serialised set of form values from the export modal
      Returns: The name of the file to download.
      Automatically redirects to the download function. */
+  jsonform['doc_id'] = docId
+  jsonform['doc_id'] = docCollection
   $.ajax({
     method: 'POST',
     url: '/corpus/send-export',
@@ -265,7 +276,6 @@ function sendExport (jsonform) {
 }
 
 function updateManifest (jsonform, name) {
-  console.log('updateManifest')
   /* Updates the displayed manifest
      Input: A JSON serialisation of the form values
      Returns: A copy of the manifest and an array of errors for display */

@@ -15,6 +15,7 @@ import zipfile
 # import: third-party
 from bson import BSON
 from bson import json_util
+from bson.objectid import ObjectId
 from flask import Blueprint, render_template, request, url_for, current_app, send_file, session
 from jsonschema import validate, FormatChecker
 import pymongo
@@ -88,12 +89,19 @@ def create_manifest():
     """Ajax route for creating manifests."""
     errors = []
     data = request.json
+    # Get a top-level collection from the metapath
+    parts = data['metapath'].split(',')
+    if parts[0] == 'Corpus':
+        del parts[0]
+    doc_collection = parts[0]
     # Set name and path by branch
     if data['nodetype'] == 'collection':
-        try:
-            assert data['metapath'] == 'Corpus'
-        except:
-            errors.append('The <code>metapath</code> for a collection must be "Corpus".')
+        # Ensure that the metapath begins with 'Corpus'
+        data['metapath'] = 'Corpus' + ','.join(parts)
+        # try:
+        #     assert data['metapath'] == 'Corpus'
+        # except:
+        #     errors.append('The <code>metapath</code> for a collection must be "Corpus".')
     elif data['nodetype'] in ['RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results']:
         data['name'] = data['nodetype']
     else:
@@ -113,7 +121,7 @@ def create_manifest():
     # Validate the resulting manifest
     # print(json.dumps(manifest, indent=2, sort_keys=False))
     if methods.validate_manifest(manifest, nodetype) is True:
-        database_errors = methods.create_record(manifest)
+        database_errors = methods.create_record(manifest, doc_collection)
         errors = errors + database_errors
     else:
         msg = '''A valid manifest could not be created with the
@@ -160,50 +168,55 @@ def reshape_list(key, value, template):
     return new_value
 
 
-@corpus.route('/display/<name>')
-def display(name):
+# @corpus.route('/display/<name>')
+# def display(name):
+@corpus.route('/display')
+def display():
     """Page for displaying Corpus manifests."""
     scripts = ['js/parsley.min.js', 'js/jquery-ui.js', 'js/moment.min.js', 'js/corpus/corpus.js']
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/display', 'label': 'Display Collection'}]
     errors = []
     manifest = {}
-    # try:
-    manifest = corpus_db.find_one({'name': name})
-    print('manifest')
-    print(manifest)
-    if manifest['metapath'] == 'Corpus':
-        nodetype = 'collection'
-    elif manifest['name'] in ['RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results']:
-        nodetype = manifest['name'].lower()
-    else:
-        nodetype = 'branch'
-    templates_dir = os.path.join(current_app.root_path, 'templates')
-    with open(os.path.join(templates_dir, 'corpus/template_config.yml'), 'r') as stream:
-        templates = yaml.load(stream)
-    # Reshape Lists
-    for key, value in manifest.items():
-        # The property is a list
-        if isinstance(value, list):
-            manifest[key] = reshape_list(key, value, templates)
+    try:
+        collection = request.args.get('c')
+        doc_id = request.args.get('_id')
+        collection_db = db.client[db.corpus][collection]
+        manifest = collection_db.find_one({'_id': ObjectId(doc_id)})
+        if manifest['metapath'] == 'Corpus':
+            nodetype = 'collection'
+        elif manifest['name'] in ['RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results']:
+            nodetype = manifest['name'].lower()
+        else:
+            nodetype = 'branch'
+        templates_dir = os.path.join(current_app.root_path, 'templates')
+        with open(os.path.join(templates_dir, 'corpus/template_config.yml'), 'r') as stream:
+            templates = yaml.load(stream)
+        # Reshape Lists
+        for key, value in manifest.items():
+            # The property is a list
+            if isinstance(value, list):
+                manifest[key] = reshape_list(key, value, templates)
 
-    # Make sure the manifest has all template properties
-    templates = templates[nodetype + '-template']
-    opts = [templates[0]['required'], templates[1]['optional']]
-    for opt in opts:
-        for prop in opt:
-            if prop['name'] not in manifest and prop['fieldtype'] == 'text':
-                manifest[prop['name']] = ''
-            if prop['name'] not in manifest and prop['fieldtype'] == 'textarea':
-                manifest[prop['name']] = ['']
-    # except:
-    #     nodetype = None
-    #     templates = yaml.load('')
-    #     errors.append('Unknown Error: The manifest does not exist or could not be loaded.')
+        # Make sure the manifest has all template properties
+        templates = templates[nodetype + '-template']
+        opts = [templates[0]['required'], templates[1]['optional']]
+        for opt in opts:
+            for prop in opt:
+                if prop['name'] not in manifest and prop['fieldtype'] == 'text':
+                    manifest[prop['name']] = ''
+                if prop['name'] not in manifest and prop['fieldtype'] == 'textarea':
+                    manifest[prop['name']] = ['']
+    except:
+        nodetype = None
+        collection = None
+        doc_id = None
+        templates = yaml.load('')
+        errors.append('Unknown Error: The manifest does not exist or could not be loaded.')
 
     return render_template('corpus/display.html', scripts=scripts,
                            breadcrumbs=breadcrumbs, manifest=manifest,
-                           errors=errors, nodetype=nodetype,
-                           template=templates)
+                           errors=errors, nodetype=nodetype, doc_id=doc_id,
+                           template=templates, collection=collection)
 
 
 @corpus.route('/update-manifest', methods=['GET', 'POST'])
@@ -230,7 +243,9 @@ def update_manifest():
     if 'OCR' in manifest.keys() and manifest['OCR'] == "on":
         manifest['OCR'] = True
     # Validate the resulting manifest and update the record
-    database_errors = methods.update_record(manifest, nodetype)
+    doc_collection = data['doc_collection']
+    doc_id = data['doc_id']
+    database_errors = methods.update_record(manifest, nodetype, doc_collection, doc_id)
     errors = errors + database_errors
 
     manifest = json.dumps(manifest, indent=2, sort_keys=False)
@@ -250,11 +265,14 @@ def update_manifest():
 def send_export():
     """Ajax route to process user export options and write the export files to the temp folder."""
     data = request.json
+    doc_id = data.pop('doc_id')
+    doc_collection = data.pop('doc_collection')
     # The user only wants to print the manifest
     if data['exportoptions'] == ['manifestonly']:
-        query = {'name': data['name'], 'metapath': data['metapath']}
+        query = {'_id': ObjectId(doc_id)}
+        # query = {'name': data['name'], 'metapath': data['metapath']}
         try:
-            result = corpus_db.find_one(query)
+            result = corpus_db[doc_collection].find_one(query)
             assert result is not None
             manifest = {}
             for key, value in result.items():
@@ -284,7 +302,8 @@ def send_export():
         corpus_dir = os.path.join(TEMP_DIR, 'Corpus')
         methods.make_dir(os.path.join(corpus_dir, collection))
         # result = corpus_db.find_one({'metapath': metapath, 'name': collection})
-        result = corpus_db.find_one({'metapath': metapath})
+        # result = corpus_db.find_one({'metapath': metapath})
+        result = corpus_db[doc_collection].find_one({'_id': ObjectId(doc_id)})
         # assert result is not None
         manifest = {}
         for key, value in result.items():
@@ -310,7 +329,7 @@ def send_export():
         excluded = '|'.join(exclude)
         excluded = re.compile(excluded)
         regex_path = re.compile(metapath + name + ',.*')
-        result = corpus_db.find(
+        result = corpus_db[doc_id].find(
             {'metapath': {
                 '$regex': regex_path,
                 '$not': excluded
@@ -460,8 +479,8 @@ def search():
                 for k, _ in enumerate(records):
                     if records[k] is None:
                         del records[k]
-                    else:
-                        del records[k]['_id']
+                    # else:
+                    #     del records[k]['_id']
 
         # Return the response
         response = {
@@ -516,7 +535,9 @@ def delete_manifest():
     errors = []
     name = request.json['name']
     metapath = request.json['metapath']
-    msg = methods.delete_collection(name, metapath)
+    doc_id = request.json['doc_id']
+    doc_collection = request.json['doc_collection']
+    msg = methods.delete_collection(name, metapath, doc_id, doc_collection)
     if msg != 'success':
         errors.append(msg)
     return json.dumps({'errors': errors})
