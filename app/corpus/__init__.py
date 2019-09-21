@@ -167,36 +167,36 @@ def display(name):
     breadcrumbs = [{'link': '/corpus', 'label': 'Corpus'}, {'link': '/corpus/display', 'label': 'Display Collection'}]
     errors = []
     manifest = {}
-    try:
-        manifest = corpus_db.find_one({'name': name})
-        if manifest['metapath'] == 'Corpus':
-            nodetype = 'collection'
-        elif manifest['name'] in ['RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results']:
-            nodetype = manifest['name'].lower()
-        else:
-            nodetype = 'branch'
-        templates_dir = os.path.join(current_app.root_path, 'templates')
-        with open(os.path.join(templates_dir, 'corpus/template_config.yml'), 'r') as stream:
-            templates = yaml.load(stream)
-        # Reshape Lists
-        for key, value in manifest.items():
-            # The property is a list
-            if isinstance(value, list):
-                manifest[key] = reshape_list(key, value, templates)
+    # try:
+    manifest = corpus_db.find_one({'name': name})
+    if manifest['metapath'] == 'Corpus':
+        nodetype = 'collection'
+    elif manifest['name'] in ['RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results']:
+        nodetype = manifest['name'].lower()
+    else:
+        nodetype = 'branch'
+    templates_dir = os.path.join(current_app.root_path, 'templates')
+    with open(os.path.join(templates_dir, 'corpus/template_config.yml'), 'r') as stream:
+        templates = yaml.load(stream)
+    # Reshape Lists
+    for key, value in manifest.items():
+        # The property is a list
+        if isinstance(value, list):
+            manifest[key] = reshape_list(key, value, templates)
 
-        # Make sure the manifest has all template properties
-        templates = templates[nodetype + '-template']
-        opts = [templates[0]['required'], templates[1]['optional']]
-        for opt in opts:
-            for prop in opt:
-                if prop['name'] not in manifest and prop['fieldtype'] == 'text':
-                    manifest[prop['name']] = ''
-                if prop['name'] not in manifest and prop['fieldtype'] == 'textarea':
-                    manifest[prop['name']] = ['']
-    except:
-        nodetype = None
-        templates = yaml.load('')
-        errors.append('Unknown Error: The manifest does not exist or could not be loaded.')
+    # Make sure the manifest has all template properties
+    templates = templates[nodetype + '-template']
+    opts = [templates[0]['required'], templates[1]['optional']]
+    for opt in opts:
+        for prop in opt:
+            if prop['name'] not in manifest and prop['fieldtype'] == 'text':
+                manifest[prop['name']] = ''
+            if prop['name'] not in manifest and prop['fieldtype'] == 'textarea':
+                manifest[prop['name']] = ['']
+    # except:
+    #     nodetype = None
+    #     templates = yaml.load('')
+    #     errors.append('Unknown Error: The manifest does not exist or could not be loaded.')
 
     return render_template('corpus/display.html', scripts=scripts,
                            breadcrumbs=breadcrumbs, manifest=manifest,
