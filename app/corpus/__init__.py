@@ -169,6 +169,8 @@ def display(name):
     manifest = {}
     # try:
     manifest = corpus_db.find_one({'name': name})
+    print('manifest')
+    print(manifest)
     if manifest['metapath'] == 'Corpus':
         nodetype = 'collection'
     elif manifest['name'] in ['RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results']:
