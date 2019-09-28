@@ -265,6 +265,7 @@ def update_manifest():
 def send_export():
     """Ajax route to process user export options and write the export files to the temp folder."""
     data = request.json
+    print(data)
     doc_id = data.pop('doc_id')
     doc_collection = data.pop('doc_collection')
     # The user only wants to print the manifest
