@@ -271,11 +271,12 @@ def send_export():
     # The user only wants to print the manifest
     if data['exportoptions'] == ['manifestonly']:
         query = {'_id': ObjectId(doc_id)}
+        cdb = db.client[db.corpus]
         # query = {'name': data['name'], 'metapath': data['metapath']}
         # try:
         print('corpus_db')
-        print(corpus_db)
-        result = corpus_db['humanities_keywords'].find_one({'_id': ObjectId('5d3a98b0f123b8357f3c86d6')})
+        print(cdb)
+        result = cdb['humanities_keywords'].find_one({'_id': ObjectId('5d3a98b0f123b8357f3c86d6')})
         # result = corpus_db[doc_collection].find_one(query)
         # assert result is not None
         print(result)
