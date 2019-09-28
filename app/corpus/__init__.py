@@ -273,8 +273,9 @@ def send_export():
         # query = {'name': data['name'], 'metapath': data['metapath']}
         # try:
         result = corpus_db[doc_collection].find_one(query)
-        assert result is not None
+        # assert result is not None
         print('query worked')
+        print(result)
         manifest = {}
         for key, value in result.items():
             if value != '' and value != []:
