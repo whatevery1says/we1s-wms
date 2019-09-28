@@ -259,13 +259,25 @@ function sendExport (jsonform) {
     contentType: 'application/json;charset=UTF-8'
   })
     .done(function (response) {
-      var filename = JSON.parse(response)['filename']
-      // $('.modal-body').html(filename)
-      $('#exportModal').modal('hide')
-      // bootbox.alert({
-      //   message: filename
-      // })
-      window.location = '/corpus/download-export/' + filename
+      var errors = JSON.parse(response)['errors']
+      if (errors) {
+        var msg = '<p>Could not export because of the following errors:</p><ul>'
+        $.each(errors, function (error) {
+          msg += '<li>' + error + '</li>'
+        })
+        msg += '</ul>'
+        bootbox.alert({
+          message: msg
+        })
+      } else {
+        var filename = JSON.parse(response)['filename']
+        // $('.modal-body').html(filename)
+        $('#exportModal').modal('hide')
+        // bootbox.alert({
+        //   message: filename
+        // })
+        window.location = '/corpus/download-export/' + filename
+      }
     })
     .fail(function (jqXHR, textStatus, errorThrown) {
       hideProcessing()

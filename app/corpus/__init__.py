@@ -285,8 +285,9 @@ def send_export():
             filepath = os.path.join(TEMP_DIR, filename)
             with open(filepath, 'w') as f:
                 f.write(manifest)
+            return json.dumps({'filename': doc})
         except:
-            print('Could not find the manifest in the database.')
+            return json.dumps({'errors': ['Could not find the manifest in the database.']})
     # The user wants a zip of multiple data documents
     else:
         # Get the exportoptions with the correct case
@@ -366,9 +367,9 @@ def send_export():
             source_dir = os.path.join(TEMP_DIR, 'Corpus')
             doc = 'Corpus.zip'
             methods.zipfolder(source_dir, source_dir)
+            return json.dumps({'filename': doc})
         except:
-            print('Could not make zip archive.')
-    return json.dumps({'filename': doc})
+            return json.dumps({'errors': ['Could not make zip archive.']})
 
 
 @corpus.route('/download-export/<filename>', methods=['GET', 'POST'])
