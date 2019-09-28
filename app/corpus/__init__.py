@@ -275,7 +275,6 @@ def send_export():
         try:
             result = db.client[db.corpus][doc_collection].find_one(query)
             assert result is not None
-            # print(result['name'])
             manifest = {}
             for key, value in result.items():
                 if value != '' and value != []:
@@ -283,10 +282,8 @@ def send_export():
             manifest = json.dumps(manifest, indent=2, sort_keys=False, default=JSON_UTIL)
             filename = data['name'] + '.json'
             doc = filename
-            print('Trying to make TEMP_DIR at ' + TEMP_DIR)
             methods.make_dir(TEMP_DIR)
             filepath = os.path.join(TEMP_DIR, filename)
-            print('Trying to write to ' + filepath)
             with open(filepath, 'w') as f:
                 f.write(manifest)
             return json.dumps({'filename': doc})
