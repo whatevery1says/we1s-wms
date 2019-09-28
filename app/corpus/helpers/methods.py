@@ -6,8 +6,8 @@ import itertools
 import json
 import os
 import re
-import yaml
 import zipfile
+import yaml
 # import: third-party
 import dateutil.parser
 from bson.objectid import ObjectId

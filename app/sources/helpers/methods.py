@@ -8,6 +8,7 @@ import json
 import os
 import re
 import zipfile
+import yaml
 # import: third-party
 from bson.objectid import ObjectId
 import dateutil.parser
@@ -421,7 +422,7 @@ def idlimit(page_size, query, limit, show_properties, id_range=None):
         projection=show_properties).limit(page_size)
 
     # Get the data
-    data = [x for x in cursor]
+    data = cursor.copy()
 
     if not data:
         # No documents left
@@ -502,8 +503,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
     supplied from main_key. A list of valid properties is supplied in valid_props.
     If any property is invalid the function returns a dict with only the error key and
     a list of errors.
-    """
-    import yaml
+    """    
     lines = textarea.split('\n')
     all_lines = []
     errors = []
