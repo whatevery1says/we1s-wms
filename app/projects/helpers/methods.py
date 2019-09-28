@@ -7,6 +7,7 @@ import json
 import os
 import re
 import zipfile
+import yaml
 # import: third-party
 import dateutil.parser
 from flask import current_app
@@ -394,7 +395,6 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
     property is invalid the function returns a dict with only the error key and a
     list of errors.
     """
-    import yaml
     lines = textarea.split('\n')
     all_lines = []
     errors = []

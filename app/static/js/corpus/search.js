@@ -43,8 +43,9 @@ function sendQuery (query, collections, advancedOptions, page = 1) {
         result = response['response']
         // Make the result into a string
         var out = ''
-        $.each(result, function (i, item) {
-          var link = '/corpus/display/' + item['name']
+        $.each(result, function (_, item) {
+          var link = '/corpus/display?c=' + item['collection'] + '&_id=' + item['_id']['$oid']
+          // var link = '/corpus/display/' + item['name']
           out += '<h4><a href="' + link + '">' + item['name'] + '</a></h4><br>'
           $.each(item, function (key, value) {
             value = JSON.stringify(value)

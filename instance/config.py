@@ -16,7 +16,7 @@ TEMP_FOLDER = 'temp'
 # Remote Server Settings
 MONGO_CLIENT = 'mongodb://mongo:27017'
 SOURCES_DB = 'Sources'
-CORPUS_DB = 'Corpus'
+CORPUS_DB = 'we1s'
 PROJECTS_DB = 'Projects'
 
 # Project Configurations

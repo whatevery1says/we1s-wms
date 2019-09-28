@@ -171,7 +171,7 @@ class Query:
             df = df.sort_values(by='name', ascending=False)
 
         # Return the dataframe
-        if as_df:
+        if not as_df:
             df = df.to_dict('records')
         return df
 
@@ -200,6 +200,8 @@ class Query:
                 result = corpus_db.find({'_id': {'$in': ids}}, projection=projection).sort(sorting)
             else:
                 result = corpus_db.find({'_id': {'$in': ids}}, projection=projection)
+            # Ensure that the collection is passed with the manifest
             for record in result:
+                record['collection'] = collection
                 records.append(record)
         return records

@@ -7,8 +7,10 @@ import json
 import os
 import re
 import zipfile
+import yaml
 # import: third-party
 import dateutil.parser
+from bson.objectid import ObjectId
 from flask import current_app
 from jsonschema import validate, FormatChecker
 import pymongo
@@ -196,12 +198,14 @@ def reshape_query_props(temp_query, temp_show_properties):
     return query_props, show_props
 
 
-def validate_manifest(manifest, nodetype):
+def validate_manifest(manifest, nodetype, skip=False):
     """Validate a manifest against the WE1S schema on GitHub.
 
     Takes a manifest dict and a nodetype string (which identifies
     which subschema to validate against). Returns a Boolean.
     """
+    if skip:
+        return True
     url = 'https://raw.githubusercontent.com/whatevery1says/manifest/master/schema/v2.0/Corpus/'
     if nodetype in ['collection', 'RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results', 'Data']:
         filename = nodetype + '.json'
@@ -241,19 +245,19 @@ def zipfolder(source_dir, output_filename):
 # ----------------------------------------------------------------------------#
 
 
-def create_record(manifest):
+def create_record(manifest, doc_collection):
     """Create a new manifest record in the database.
 
     Takes a manifest dict and returns a list of errors if any.
     """
     errors = []
     try:
-        result = list(corpus_db.find({'name': manifest['name'], 'metapath': manifest['metapath']}))
+        result = list(corpus_db[doc_collection].find({'name': manifest['name'], 'metapath': manifest['metapath']}))
         assert result == []
         # assert manifest['name'] not in corpus_db.distinct('name')
-        corpus_db.insert_one(manifest)
+        corpus_db[doc_collection].insert_one(manifest)
     except:
-        # We need to add some code here that looks for a LexisNexis
+        # We may need to add some code here that looks for a LexisNexis
         # `doc_id` and appends a portion of it to `manifest['name']`
         # until it is unique within the collection. Otherwise, add a
         # random number or display the error below.
@@ -262,12 +266,13 @@ def create_record(manifest):
     return errors
 
 
-def delete_collection(name, metapath):
+def delete_collection(name, metapath, doc_id, doc_collection):
     """Delete a collection manifest based on name.
 
     Returns 'success' or an error message string.
     """
-    result = corpus_db.delete_one({'name': name, 'metapath': metapath})
+    # result = corpus_db.delete_one({'name': name, 'metapath': metapath})
+    result = corpus_db[doc_collection].delete_one({'_id': ObjectId(doc_id)})
     if result.deleted_count != 0:
         response = 'success'
     else:
@@ -359,19 +364,20 @@ def search_corpus(query, limit, paginated, page, show_properties, sorting):
     return response
 
 
-def update_record(manifest, nodetype):
+def update_record(manifest, nodetype, doc_collection, doc_id):
     """Update a manifest record in the database.
 
     Takes a manifest dict and returns a list of errors if any.
     """
     errors = []
-    if validate_manifest(manifest, nodetype) is True:
+    if validate_manifest(manifest, nodetype, skip=True) is True:
         name = manifest.pop('name')
-        metapath = manifest['metapath']
+        # metapath = manifest['metapath']
         if '_id' in manifest:
             _id = manifest.pop('_id')
         try:
-            corpus_db.update_one({'name': name, 'metapath': metapath}, {'$set': manifest}, upsert=False)
+            # corpus_db.update_one({'name': name, 'metapath': metapath}, {'$set': manifest}, upsert=False)
+            corpus_db[doc_collection].update_one({'_id': ObjectId(doc_id)}, {'$set': manifest}, upsert=False)
         except pymongo.errors.OperationFailure as e:
             print(e.code)
             print(e.details)
@@ -401,7 +407,6 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
     property is invalid the function returns a dict with only the error key and a
     list of errors.
     """
-    import yaml
     lines = textarea.split('\n')
     all_lines = []
     errors = []
