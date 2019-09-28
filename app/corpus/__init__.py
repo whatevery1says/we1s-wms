@@ -453,7 +453,7 @@ def search():
             sortby = None
         if request.json['advancedOptions']['show_properties'] != []:
             projection = request.json['advancedOptions']['show_properties']
-            original_projection = [x for x in projection]
+            original_projection = projection.copy()
         else:
             projection = None
 
@@ -749,8 +749,7 @@ def save_upload():
                     print(manifest['metapath'])
                     try:
                         methods.validate(manifest, schema, format_checker=FormatChecker())
-                        result = methods.create_record(manifest)
-                        print('Is this my error')
+                        result = methods.create_record(manifest, collection)
                         errors = errors + result
                         print(errors)
                     except:

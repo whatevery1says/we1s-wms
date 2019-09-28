@@ -6,9 +6,11 @@ import itertools
 import json
 import os
 import re
+import yaml
 import zipfile
 # import: third-party
 import dateutil.parser
+from bson.objectid import ObjectId
 from flask import current_app
 from jsonschema import validate, FormatChecker
 import pymongo
@@ -204,21 +206,20 @@ def validate_manifest(manifest, nodetype, skip=False):
     """
     if skip:
         return True
+    url = 'https://raw.githubusercontent.com/whatevery1says/manifest/master/schema/v2.0/Corpus/'
+    if nodetype in ['collection', 'RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results', 'Data']:
+        filename = nodetype + '.json'
     else:
-        url = 'https://raw.githubusercontent.com/whatevery1says/manifest/master/schema/v2.0/Corpus/'
-        if nodetype in ['collection', 'RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results', 'Data']:
-            filename = nodetype + '.json'
-        else:
-            filename = 'PathNode.json'
-        schema_file = url + filename
-        schema = json.loads(requests.get(schema_file).text)
-        print(schema_file)
-        print(manifest)
-        try:
-            validate(manifest, schema, format_checker=FormatChecker())
-            return True
-        except:
-            return False
+        filename = 'PathNode.json'
+    schema_file = url + filename
+    schema = json.loads(requests.get(schema_file).text)
+    print(schema_file)
+    print(manifest)
+    try:
+        validate(manifest, schema, format_checker=FormatChecker())
+        return True
+    except:
+        return False
 
 
 def zipfolder(source_dir, output_filename):
@@ -371,12 +372,12 @@ def update_record(manifest, nodetype, doc_collection, doc_id):
     errors = []
     if validate_manifest(manifest, nodetype, skip=True) is True:
         name = manifest.pop('name')
-        metapath = manifest['metapath']
+        # metapath = manifest['metapath']
         if '_id' in manifest:
             _id = manifest.pop('_id')
         try:
             # corpus_db.update_one({'name': name, 'metapath': metapath}, {'$set': manifest}, upsert=False)
-            corpus_db[collection].update_one({'_id': ObjectId(doc_id)}, {'$set': manifest}, upsert=False)
+            corpus_db[doc_collection].update_one({'_id': ObjectId(doc_id)}, {'$set': manifest}, upsert=False)
         except pymongo.errors.OperationFailure as e:
             print(e.code)
             print(e.details)
@@ -406,7 +407,6 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
     property is invalid the function returns a dict with only the error key and a
     list of errors.
     """
-    import yaml
     lines = textarea.split('\n')
     all_lines = []
     errors = []
