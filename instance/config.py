@@ -27,4 +27,4 @@ WORKSPACE_URL = 'http://harbor.english.ucsb.edu:10000/tree/write/projects-wms/'
 TEMPLATES = {
     'topic-modeling': 'multiple_topics_template'
 }
-EXPORT_DIR = 'exports'
+EXPORTS_DIR = 'exports'
