@@ -273,9 +273,9 @@ def send_export():
         query = {'_id': ObjectId(doc_id)}
         # query = {'name': data['name'], 'metapath': data['metapath']}
         # try:
-        result = corpus_db[doc_collection].find_one(query)
+        result = corpus_db['humanities_keywords'].find_one({'_id': ObjectId('5d3a98b0f123b8357f3c86d6')})
+        # result = corpus_db[doc_collection].find_one(query)
         # assert result is not None
-        print('query worked')
         print(result)
         manifest = {}
         for key, value in result.items():
