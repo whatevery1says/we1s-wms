@@ -120,7 +120,7 @@ def create_manifest():
 
     # Validate the resulting manifest
     # print(json.dumps(manifest, indent=2, sort_keys=False))
-    if methods.validate_manifest(manifest, nodetype) is True:
+    if methods.validate_manifest(manifest, nodetype, skip=True) is True:
         database_errors = methods.create_record(manifest, doc_collection)
         errors = errors + database_errors
     else:

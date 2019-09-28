@@ -196,26 +196,29 @@ def reshape_query_props(temp_query, temp_show_properties):
     return query_props, show_props
 
 
-def validate_manifest(manifest, nodetype):
+def validate_manifest(manifest, nodetype, skip=False):
     """Validate a manifest against the WE1S schema on GitHub.
 
     Takes a manifest dict and a nodetype string (which identifies
     which subschema to validate against). Returns a Boolean.
     """
-    url = 'https://raw.githubusercontent.com/whatevery1says/manifest/master/schema/v2.0/Corpus/'
-    if nodetype in ['collection', 'RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results', 'Data']:
-        filename = nodetype + '.json'
-    else:
-        filename = 'PathNode.json'
-    schema_file = url + filename
-    schema = json.loads(requests.get(schema_file).text)
-    print(schema_file)
-    print(manifest)
-    try:
-        validate(manifest, schema, format_checker=FormatChecker())
+    if skip:
         return True
-    except:
-        return False
+    else:
+        url = 'https://raw.githubusercontent.com/whatevery1says/manifest/master/schema/v2.0/Corpus/'
+        if nodetype in ['collection', 'RawData', 'ProcessedData', 'Metadata', 'Outputs', 'Results', 'Data']:
+            filename = nodetype + '.json'
+        else:
+            filename = 'PathNode.json'
+        schema_file = url + filename
+        schema = json.loads(requests.get(schema_file).text)
+        print(schema_file)
+        print(manifest)
+        try:
+            validate(manifest, schema, format_checker=FormatChecker())
+            return True
+        except:
+            return False
 
 
 def zipfolder(source_dir, output_filename):
@@ -366,7 +369,7 @@ def update_record(manifest, nodetype, doc_collection, doc_id):
     Takes a manifest dict and returns a list of errors if any.
     """
     errors = []
-    if validate_manifest(manifest, nodetype) is True:
+    if validate_manifest(manifest, nodetype, skip=True) is True:
         name = manifest.pop('name')
         metapath = manifest['metapath']
         if '_id' in manifest:
