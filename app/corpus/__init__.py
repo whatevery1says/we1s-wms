@@ -271,31 +271,27 @@ def send_export():
     # The user only wants to print the manifest
     if data['exportoptions'] == ['manifestonly']:
         query = {'_id': ObjectId(doc_id)}
-        cdb = db.client[db.corpus]
         # query = {'name': data['name'], 'metapath': data['metapath']}
-        # try:
-        print('corpus_db')
-        print(cdb)
-        result = cdb['humanities_keywords'].find_one({'_id': ObjectId('5d3a98b0f123b8357f3c86d6')})
-        # result = corpus_db[doc_collection].find_one(query)
-        # assert result is not None
-        print(result)
-        manifest = {}
-        for key, value in result.items():
-            if value != '' and value != []:
-                manifest[key] = value
-        manifest = json.dumps(manifest, indent=2, sort_keys=False, default=JSON_UTIL)
-        filename = data['name'] + '.json'
-        doc = filename
-        print('Trying to make TEMP_DIR at ' + TEMP_DIR)
-        methods.make_dir(TEMP_DIR)
-        filepath = os.path.join(TEMP_DIR, filename)
-        print('Trying to write to ' + filepath)
-        with open(filepath, 'w') as f:
-            f.write(manifest)
-        # return json.dumps({'filename': doc})
-        # except:
-        return json.dumps({'errors': ['Could not find the manifest in the database.']})
+        try:
+            result = db.client[db.corpus][doc_collection].find_one(query)
+            assert result is not None
+            # print(result['name'])
+            manifest = {}
+            for key, value in result.items():
+                if value != '' and value != []:
+                    manifest[key] = value
+            manifest = json.dumps(manifest, indent=2, sort_keys=False, default=JSON_UTIL)
+            filename = data['name'] + '.json'
+            doc = filename
+            print('Trying to make TEMP_DIR at ' + TEMP_DIR)
+            methods.make_dir(TEMP_DIR)
+            filepath = os.path.join(TEMP_DIR, filename)
+            print('Trying to write to ' + filepath)
+            with open(filepath, 'w') as f:
+                f.write(manifest)
+            return json.dumps({'filename': doc})
+        except:
+            return json.dumps({'errors': ['Could not find the manifest in the database.']})
     # The user wants a zip of multiple data documents
     else:
         # Get the exportoptions with the correct case
