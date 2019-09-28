@@ -265,7 +265,6 @@ def update_manifest():
 def send_export():
     """Ajax route to process user export options and write the export files to the temp folder."""
     data = request.json
-    print(data)
     doc_id = data.pop('doc_id')
     doc_collection = data.pop('doc_collection')
     # The user only wants to print the manifest
@@ -305,8 +304,8 @@ def send_export():
         methods.make_dir(os.path.join(corpus_dir, collection))
         # result = corpus_db.find_one({'metapath': metapath, 'name': collection})
         # result = corpus_db.find_one({'metapath': metapath})
-        result = corpus_db[doc_collection].find_one({'_id': ObjectId(doc_id)})
-        # assert result is not None
+        result = db.client[db.corpus][doc_collection].find_one({'_id': ObjectId(doc_id)})
+        assert result is not None
         manifest = {}
         for key, value in result.items():
             if value != '' and value != []:
@@ -331,7 +330,7 @@ def send_export():
         excluded = '|'.join(exclude)
         excluded = re.compile(excluded)
         regex_path = re.compile(metapath + name + ',.*')
-        result = corpus_db[doc_id].find(
+        result = db.client[db.corpus][doc_collection].find(
             {'metapath': {
                 '$regex': regex_path,
                 '$not': excluded
