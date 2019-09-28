@@ -251,7 +251,7 @@ function sendExport (jsonform) {
      Returns: The name of the file to download.
      Automatically redirects to the download function. */
   jsonform['doc_id'] = docId
-  jsonform['doc_id'] = docCollection
+  jsonform['doc_collection'] = docCollection
   $.ajax({
     method: 'POST',
     url: '/corpus/send-export',
