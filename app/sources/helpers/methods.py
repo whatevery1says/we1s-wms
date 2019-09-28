@@ -503,7 +503,7 @@ def textarea2dict(fieldname, textarea, main_key, valid_props):
     supplied from main_key. A list of valid properties is supplied in valid_props.
     If any property is invalid the function returns a dict with only the error key and
     a list of errors.
-    """    
+    """
     lines = textarea.split('\n')
     all_lines = []
     errors = []
